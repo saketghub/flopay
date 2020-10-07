@@ -2262,7 +2262,6 @@
                         type = 'Paying through cashier'
                     break;
             }
-
             if (processed === 'false') {
                 icon = `<svg class="icon pending" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
                                 <title>pending</title>
@@ -2275,6 +2274,7 @@
                 showReportButton.classList.remove('hide')
             }
             else{
+                cautionMessage.innerHTML = ``
                 showReportButton.classList.add('hide')
                 icon = `
                 <svg class="icon success" viewBox="0 0 64 64">
@@ -12676,7 +12676,7 @@
 
                     if (typeof sender_token_balance.balance !== "number" ||
                         sender_token_balance.balance < token_amount) {
-                        err_msg = `Sender has insufficient ${token_name_radio} balance.`;
+                        err_msg = `Insufficient ${token_name_radio} balance.`;
                         notify(err_msg, 'error');
                         hidePopup()
                         return false;
