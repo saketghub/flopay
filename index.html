@@ -2221,6 +2221,7 @@
                         if (status) {
                             refresh_balance()
                             withdrawRequest.remove()
+                            notify('Withdraw request confirmed', 'success')
                         }
                     }
                 // Function for confirming pay requests 
@@ -12966,7 +12967,7 @@
                     token_app.master_configurations.TYPE_MSGES, {
                     receiverID: input_data['withdrawer_flo_id']
                 })
-
+                return true
             } catch (error) {
                 notify('Cash withdrawal failed.', 'error')
                 throw new Error(error, 'error')
