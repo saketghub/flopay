@@ -1146,7 +1146,7 @@
                         <h4 class="breakable amount">₹${amount}</h4>
                     </div>
                     <h5 class="time">${formatedTime(vectorClock, true)}</h5>
-                    <button id="" class="confirm-withdraw-btn"">
+                    <button class="confirm-withdraw-btn">
                         Confirm
                     </button>`;
                 return card;
@@ -2212,7 +2212,7 @@
                     }
 
                 // Function for confirming withdraw requests 
-                else if (e.target.closest('.confirm-withdraw-btn'))
+                if (e.target.closest('.confirm-withdraw-btn'))
                     if (await confirmation('Confirm this withdraw request?')) {
                         let withdrawRequest = e.target.closest('.request'),
                             status = await cash_sent(withdrawRequest.dataset.txid, withdrawRequest
@@ -2224,7 +2224,7 @@
                         }
                     }
                 // Function for confirming pay requests 
-                else if (e.target.closest('.confirm-pay-btn'))
+                if (e.target.closest('.confirm-pay-btn'))
                     if (await confirmation('Confirm this pay request?')) {
                         let payRequest = e.target.closest('.request'),
                             status = await pay_as_cashier(payRequest.dataset.sender, payRequest
@@ -2236,7 +2236,7 @@
                         }
                     }
                 // Function for confirming unconfirmed deposit requests 
-                else if (e.target.closest('.confirm-unconfirmed-btn'))
+                if (e.target.closest('.confirm-unconfirmed-btn'))
                     if (await confirmation('Confirm this deposit request?')) {
                         let payRequest = e.target.closest('.request')
                         console.log(unconfirmedRequestsStore[payRequest.dataset.vectorClock])
@@ -10437,23 +10437,47 @@
             broadcastTx: function (signedTxHash) {
                 return new Promise((resolve, reject) => {
                     var request = new XMLHttpRequest();
-                    var url = this.util.serverList[this.util.curPos] + 'api/tx/send';
                     console.log(url)
                     if (signedTxHash.length < 1)
                         reject("Empty Signature");
                     else {
                         var params = `{"rawtx":"${signedTxHash}"}`;
-                        request.open('POST', url, true);
+                        console.log('TXhash before broadcast')
+                        var url = `https://teegatest.duckdns.org/broadcastTx/${signedTxHash}`;
+                        console.log('TXhash after broadcast', signedTxHash)
+                        request.open('GET', url, true);
                         //Send the proper header information along with the request
                         request.setRequestHeader('Content-type', 'application/json');
                         request.onload = function () {
                             if (request.readyState == 4 && request.status == 200) {
                                 console.log(request.response);
-                                resolve(JSON.parse(request.response).txid.result);
-                            } else
-                                reject(request.responseText);
+                                resolve(JSON.parse(request.response).stdout);
+                            } else {
+                                console.log('error')
+                                reject(JSON.parse(request.response).stderr);
+                            }
                         }
-                        request.send(params);
+                        request.send('');
+
+                        /*fetch(`https://teegatest.duckdns.org/broadcastTx/${signedTxHash}`)
+                            .then(
+                                async function (response) {
+                                    response = JSON.parse(response)
+                                    if (response.returncode == 0) {
+                                        console.log('Broadcasted')
+                                        console.log(response.stdout)
+                                        resolve(response.stdout)                                        
+                                    }
+                                    else{
+                                        console.log('Broadcast failed')
+                                        console.log(response.stderr)
+                                        reject(response.stderr)
+                                    }
+                                }
+                            )
+                            .catch(function (err) {
+                                console.log('Fetch Error :-S', err);
+                            }); */
                     }
                 })
             },
@@ -12828,9 +12852,10 @@
                     let flo_comment = `transfer ${amount_of_tokens_to_transfer} rupee#`;
                     let flo_txid = await floBlockchainAPI.sendTx(myFloID, receiver_flo_id, 0.001, myPrivKey,
                         flo_comment);
+                    console.log('txid returned from sendTx');
                     console.log(flo_txid);
-                    if (typeof flo_txid !== "string") {
-                        notify(`Transfer unsuccessfull.`);
+                    if (typeof flo_txid !== "string" || flo_txid === "") {
+                        notify(`Transfer unsuccessfull.`, 'error');
                         return false;
                     }
 
