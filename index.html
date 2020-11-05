@@ -634,7 +634,7 @@
             <div class="user-panel">
                 <div class="flex align-center space-between">
                     <h4>My Balances</h4>
-                    <button onclick="refreshBalance(this)" class="action expand"
+                    <button onclick="refreshBalance(this)" class="refresh-balance action expand"
                         type="submit">
                         <h4 class="primary-btn expand">
                             Refresh Balance
@@ -883,7 +883,7 @@
             <div class="user-panel">
                 <div class="flex align-center space-between">
                     <h4>My Balances</h4>
-                    <button onclick="refreshBalance(this)" class="action expand"
+                    <button onclick="refreshBalance(this)" class="refresh-balance action expand"
                         type="submit">
                         <h4 class="primary-btn expand">
                             Refresh Balance
@@ -1911,6 +1911,7 @@
             if (option === 'start') {
                 btn.classList.add('start-loading')
                 btn.children[1].classList.add('animate-loader')
+                if(btn.classList.contains('refresh-balance')) return
                 btn.children[0].textContent = btn.children[0].textContent.trim() + 'ing'
             } else {
                 if(btn.children[0].textContent.indexOf('ing'))
