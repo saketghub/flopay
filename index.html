@@ -42,22 +42,54 @@
         <sm-button onclick="signOut()">Sign Out</sm-button>
     </section>
     <!-- Sign in page-->
-    <section id="sign_in_page" class="grid hide-completely">
+    <section id="sign_in_page" class="grid space-between hide-completely">
         <div class="info">
             <h4>RanchiMall Pay</h4>
             <h1>Send & request money <br> using <br> UPI on Blockchain</h1>
         </div>
-        <div class="sign-in-box flex direction-column">
-            <h3>Sign In</h3>
-            <h4 class="expand light-text">Welcome to RanchiMall Pay.</h4>
-            <form action="" onsubmit="return false">        
-                <sm-input id="get_priv_key_field" privateKey placeholder="FLO Private Key" type="password" required animate>
-                </sm-input>
-                <button id="sign_in_btn" class="primary-btn expand" type="submit" disabled>
-                    Sign In
-                </button>
-            </form>
-            <p>New here? <a href="https://flo-webwallet.duckdns.org/" target="_blank">Get your sign-in credentials.</a></p>
+        <div class="sign-in-box flex direction-column"> 
+            <sm-tab-header target="user_entry">
+                <sm-tab>Sign In</sm-tab>
+                <sm-tab>Sign Up</sm-tab>
+            </sm-tab-header>
+            <sm-tab-panels id="user_entry">
+                <sm-panel>
+                    <h3>Welcome back</h3>
+                    <p>Just enter your FLO private key to continue.</p>
+                    <form action="" onsubmit="return false">        
+                        <sm-input id="get_priv_key_field" privateKey placeholder="FLO Private Key" type="password" required animate>
+                        </sm-input>
+                        <button id="sign_in_btn" class="primary-btn expand" type="submit" disabled>
+                            Sign In
+                        </button>
+                    </form>
+                </sm-panel>
+                <sm-panel>
+                    <h3>Get started</h3>
+                    <p>Create your FLO public and private key pair. <Strong>Don't forget to store them securely!</Strong></p>
+                    <sm-button id="generate_flo_id" onclick="generateId()" variant="primary">Get FLO credentials</sm-button>
+                    <section id="credentials_section" class="hide-completely">
+                        <h5>FLO ID</h5>
+                        <div class="copy-row">
+                            <h4 id="generated_id" class="copy"></h4>
+                            <svg class="icon" onclick="copyToClipboard(this.parentNode)" viewBox="0 0 64 64">
+                                <title>Copy</title>
+                                <rect x="16" y="16" width="48" height="48" rx="6" />
+                                <path d="M.5,47.52V6.5a6,6,0,0,1,6-6h41" />
+                            </svg>
+                        </div>
+                        <h5>Private key</h5>
+                        <div class="copy-row">
+                            <h4 id="generated_key" class="copy"></h4>
+                            <svg class="icon" onclick="copyToClipboard(this.parentNode)" viewBox="0 0 64 64">
+                                <title>Copy</title>
+                                <rect x="16" y="16" width="48" height="48" rx="6" />
+                                <path d="M.5,47.52V6.5a6,6,0,0,1,6-6h41" />
+                            </svg>
+                        </div>
+                    </section>
+                </sm-panel>
+            </sm-tab-panels>
         </div>
     </section>
     <sm-popup id="qr_code_popup">
@@ -2688,6 +2720,19 @@
                         notify(error, 'error')
                     })
             }
+        }
+
+        const   credentialsSection = document.getElementById('credentials_section'),
+                generateFloId = document.getElementById('generate_flo_id'),
+                generatedId = document.getElementById('generated_id'),
+                generatedKey = document.getElementById('generated_key')
+
+        function generateId(){
+            generateFloId.classList.add('hide-completely')
+            credentialsSection.classList.remove('hide-completely')
+            let {floID, privKey} = floCrypto.generateNewID()
+            generatedId.textContent = floID
+            generatedKey.textContent = privKey
         }
 
         const signIn = () => {

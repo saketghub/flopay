@@ -558,18 +558,21 @@ details p {
 
 #sign_in_page {
   position: fixed;
-  overflow-y: auto;
   gap: 2rem;
   width: 100vw;
   height: 100vh;
+  overflow-y: auto;
   left: 0;
   top: 0;
   align-items: center;
   justify-content: space-between;
-  background: url(sign-in-bg.svg) no-repeat center, rgba(var(--foreground-color), 1);
+  background: url(sign-in-bg.svg) center, rgba(var(--foreground-color), 1);
   background-size: cover;
   z-index: 5;
   padding: 0 6vw;
+}
+#sign_in_page .info {
+  align-items: center;
 }
 #sign_in_page .info h1 {
   line-height: 1.1em;
@@ -577,44 +580,85 @@ details p {
   font-size: clamp(1.5rem, 8vw, 4rem);
   margin-top: 1rem;
 }
-#sign_in_page .info h4 {
-  color: var(--accent-color);
-}
 #sign_in_page .sign-in-box {
-  background: rgba(var(--foreground-color), 1);
+  width: 100%;
+  margin: 0 -2rem;
   z-index: 1;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 0 1rem #00000016, 0 4rem 2rem -2rem #00000016;
   justify-self: center;
-  align-items: center;
-  text-align: center;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background: rgba(var(--foreground-color), 1);
 }
 #sign_in_page .sign-in-box sm-input {
   text-align: left;
 }
+#sign_in_page .sign-in-box sm-panel {
+  width: 100%;
+}
+#sign_in_page .sign-in-box sm-tab-header {
+  margin: 0;
+  background: none;
+  align-self: flex-start;
+}
+#sign_in_page .sign-in-box sm-tab-header::part(tab-header) {
+  padding-bottom: 0.4rem;
+  gap: 1.5rem;
+}
+#sign_in_page .sign-in-box sm-tab::part(tab) {
+  padding: 0.4rem 0;
+}
+#sign_in_page .sign-in-box sm-tab-panels {
+  margin-top: 3rem;
+}
 #sign_in_page .sign-in-box form {
   width: 100%;
 }
+#sign_in_page .sign-in-box h2 {
+  margin-bottom: 0.5rem;
+}
 #sign_in_page .sign-in-box h3 {
-  margin-top: 1rem;
-  font-weight: 700;
+  font-weight: 500;
 }
 #sign_in_page .sign-in-box h4 {
   font-weight: 500;
-  margin-bottom: 3rem;
-  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+#sign_in_page .sign-in-box h5 {
+  opacity: 0.8;
+  font-weight: 500;
+}
+#sign_in_page .sign-in-box .copy-row h4 {
+  max-width: 34ch;
+}
+#sign_in_page .sign-in-box .copy-row:not(:last-of-type) {
+  margin-bottom: 1rem;
 }
 #sign_in_page .sign-in-box button {
+  width: auto;
   margin-top: 1rem;
+  padding: 0.6rem 1.6rem;
 }
 #sign_in_page .sign-in-box p {
   margin-bottom: 0.5rem;
+  max-width: 35ch;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
 }
-#sign_in_page .sign-in-box p:last-of-type {
-  margin-top: 1.5rem;
+#sign_in_page .sign-in-box #credentials_section {
+  border-top: 1px rgba(var(--text-color), 0.2) solid;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  animation: slide-down 0.3s forwards;
 }
 
+@keyframes slide-down {
+  from {
+    transform: translateY(-1rem);
+  }
+  to {
+    transform: none;
+  }
+}
 .primary-btn {
   padding: 0.6rem 1.2rem !important;
   background: var(--accent-color);
@@ -1751,6 +1795,14 @@ sm-panel {
   #sign_in_page {
     grid-auto-flow: column;
   }
+  #sign_in_page .sign-in-box {
+    align-self: auto;
+    width: 26rem;
+    padding: 2rem;
+    min-height: 80vh;
+    min-width: 26rem;
+    box-shadow: 0 0 0.3rem #00000016, 0 6rem 2rem -2rem #00000016;
+  }
 
   sm-popup {
     background: rgba(var(--foreground-color), 1);
@@ -1808,10 +1860,6 @@ sm-panel {
 
   .page {
     padding-bottom: 2rem;
-  }
-
-  #sign_in_popup {
-    width: 24rem;
   }
 
   #home_page {
