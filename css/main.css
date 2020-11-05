@@ -259,7 +259,7 @@ sm-button[variant=outlined] {
 }
 .action.start-loading h4 {
   transform: translateX(0.6rem);
-  background: inherit;
+  background: inherit !important;
   color: rgba(var(--text-color), 0.9);
 }
 .action h4 {
@@ -280,6 +280,7 @@ sm-button[variant=outlined] {
   width: 1.2rem;
   stroke-dashoffset: 220;
   stroke-dasharray: 220;
+  margin: 0 !important;
   left: 0;
   transition: opacity 0.3s;
 }
@@ -557,6 +558,7 @@ details p {
 
 #sign_in_page {
   position: fixed;
+  overflow-y: auto;
   gap: 2rem;
   width: 100vw;
   height: 100vh;
@@ -713,9 +715,6 @@ details p {
   background-color: rgba(var(--text-color), 0.1);
   color: rgba(var(--text-color), 1);
   width: auto;
-}
-.user-panel .action .loader {
-  align-self: flex-end;
 }
 .user-panel .action .clip {
   clip-path: circle(0 at 100% 0) !important;
