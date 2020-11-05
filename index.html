@@ -1909,12 +1909,13 @@
             if (typeof btn === 'string')
                 btn = document.getElementById(btn);
             if (option === 'start') {
-                btn.style.pointerEvents = 'none'
-                btn.children[0].classList.add('clip')
+                btn.classList.add('start-loading')
                 btn.children[1].classList.add('animate-loader')
+                btn.children[0].textContent = btn.children[0].textContent.trim() + 'ing'
             } else {
-                btn.style.pointerEvents = 'all'
-                btn.children[0].classList.remove('clip')
+                if(btn.children[0].textContent.indexOf('ing'))
+                    btn.children[0].textContent = btn.children[0].textContent.trim().replace('ing', '')
+                btn.classList.remove('start-loading')
                 btn.children[1].classList.remove('animate-loader')
             }
         }
@@ -2170,8 +2171,8 @@
             })
 
             document.addEventListener('click', (e) => {
-                if (e.target.closest('.option')) {
-                    createRipple(e, e.target.closest('.option'))
+                if (e.target.closest('.option, .activity')) {
+                    createRipple(e, e.target.closest('.option, .activity'))
                 }
             })
 
@@ -2181,18 +2182,19 @@
                 const diameter = Math.max(target.clientWidth, target.clientHeight);
                 const radius = diameter / 2;
                 circle.style.width = circle.style.height = `${diameter}px`;
-                circle.style.left = `${event.clientX - (target.offsetLeft + radius)}px`;
-                circle.style.top = `${event.clientY - (target.offsetTop + radius)}px`;
+                circle.style.left = `${event.clientX - (target.getBoundingClientRect().left + radius)}px`;
+                circle.style.top = `${event.clientY - (target.getBoundingClientRect().top + radius)}px`;
                 circle.classList.add("ripple"); 
+                const duration = radius > 200 ? 1200 : 600
                 const rippleAnimation =  circle.animate([
 
                     {
-                        transform: 'scale(4)',
+                        transform: 'scale(3)',
                         opacity: 0
                     }
                 ],
                     {
-                        duration: 600,
+                        duration,
                         fill: "forwards",
                         easing: 'ease-out'
                     })
@@ -2272,13 +2274,11 @@
                 if (e.target.closest('.confirm-unconfirmed-btn'))
                     if (await confirmation('Confirm this deposit request?')) {
                         let payRequest = e.target.closest('.request')
-                        console.log(unconfirmedRequestsStore[payRequest.dataset.vectorClock])
-                        /*,
                             status = await process_unconfirmed_balance_claim_requests(unconfirmedRequestsStore[payRequest.dataset.vectorClock])
                         if (status) {
                             refreshBalance()
                             payRequest.remove()
-                        }*/
+                        }
                     }
             })
 
@@ -13048,7 +13048,7 @@
                     let flo_txid = await floBlockchainAPI.sendTx(myFloID, token_receiver, 0.001, myPrivKey,
                         flo_comment)
                     console.log(flo_txid);
-                    if (typeof flo_txid !== "string") {
+                    if (typeof flo_txid !== "string" || flo_txid === "") {
                         hidePopup()
                         showTransactionStatus('failure', `Transaction failed.`);
                         return false;

@@ -200,7 +200,7 @@ span.ripple {
   position: absolute;
   border-radius: 50%;
   transform: scale(0);
-  border: 1.5rem solid rgba(var(--text-color), 0.2);
+  background: rgba(var(--text-color), 0.2);
 }
 
 sm-button[variant=outlined] {
@@ -245,7 +245,6 @@ sm-button[variant=outlined] {
   position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   padding: 0;
   background: none;
 }
@@ -255,12 +254,21 @@ sm-button[variant=outlined] {
 .action:focus {
   outline: none;
 }
+.action.start-loading {
+  pointer-events: none;
+}
+.action.start-loading h4 {
+  transform: translateX(0.6rem);
+  background: inherit;
+  color: rgba(var(--text-color), 0.9);
+}
 .action h4 {
   padding: 0.5rem 1.2rem;
   font-size: 0.9rem;
   clip-path: circle(100%);
   transition: clip-path 0.3s;
   border-radius: 0.2rem;
+  transition: 0.3s transform;
 }
 .action .btn {
   z-index: 2;
@@ -268,19 +276,18 @@ sm-button[variant=outlined] {
 .action .loader {
   position: absolute;
   z-index: 1;
-  padding: 0.4em;
+  height: 1.2rem;
+  width: 1.2rem;
   stroke-dashoffset: 220;
   stroke-dasharray: 220;
+  left: 0;
+  transition: opacity 0.3s;
 }
 .action .loader:not(.animate-loader) {
   opacity: 0;
 }
 .action .animate-loader {
   animation: load-btn-loader 2.6s infinite, rotate 1s infinite linear;
-}
-
-.clip {
-  clip-path: circle(0) !important;
 }
 
 .animate-loader {
@@ -1305,6 +1312,8 @@ sm-panel {
 }
 
 .activity {
+  position: relative;
+  overflow: hidden;
   display: grid;
   background: rgba(var(--text-color), 0.06);
   border-radius: 0.6rem;
@@ -1315,9 +1324,6 @@ sm-panel {
   align-items: center;
   cursor: pointer;
   transition: transform 0.3s;
-}
-.activity:active {
-  transform: scale(0.95);
 }
 .activity .icon {
   grid-area: icon;

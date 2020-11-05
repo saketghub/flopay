@@ -72,7 +72,7 @@ span.ripple {
     position: absolute;
     border-radius: 50%;
     transform: scale(0);
-    border: 1.5rem solid rgba(var(--text-color), 0.2);
+    background: rgba(var(--text-color), 0.2);
 }
 :host(:not([disabled])) .button:focus{
     -webkit-box-shadow: 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.2rem 0.8rem rgba(0, 0, 0, 0.2);
