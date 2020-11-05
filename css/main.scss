@@ -341,6 +341,7 @@ textarea {
     width: 100%;
     max-width: 100%;
     background: rgba(var(--text-color), 0.1);
+    color: inherit;
     border: none;
     border-radius: 0.2rem;
     resize: none;
