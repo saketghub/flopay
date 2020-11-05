@@ -2169,6 +2169,39 @@
                 }
             })
 
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.option')) {
+                    createRipple(e, e.target.closest('.option'))
+                }
+            })
+
+            function createRipple(event, target){
+                const ripple = target.querySelector('.ripple');
+                const circle = document.createElement("span");
+                const diameter = Math.max(target.clientWidth, target.clientHeight);
+                const radius = diameter / 2;
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${event.clientX - (target.offsetLeft + radius)}px`;
+                circle.style.top = `${event.clientY - (target.offsetTop + radius)}px`;
+                circle.classList.add("ripple"); 
+                const rippleAnimation =  circle.animate([
+
+                    {
+                        transform: 'scale(4)',
+                        opacity: 0
+                    }
+                ],
+                    {
+                        duration: 600,
+                        fill: "forwards",
+                        easing: 'ease-out'
+                    })
+                target.append(circle);
+                rippleAnimation.onfinish = () => {
+                    circle.remove()
+                }
+            }
+
             //Function for handling contact click event
 
             peopleContainer.addEventListener('click', e => {

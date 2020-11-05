@@ -196,6 +196,13 @@ button:disabled ~ .loader {
   text-transform: capitalize;
 }
 
+span.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  border: 1.5rem solid rgba(var(--text-color), 0.2);
+}
+
 sm-button[variant=outlined] {
   --accent-color: rgba(var(--text-color), 1);
 }
@@ -849,9 +856,9 @@ details p {
   border-radius: 0.4rem;
   width: 5rem;
   text-transform: capitalize;
-  transition: transform 0.3s;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  overflow: hidden;
 }
 .option .icon {
   height: 3rem;
@@ -865,9 +872,6 @@ details p {
   font-size: 0.85rem;
   opacity: 0.8;
   font-weight: 500;
-}
-.option:active {
-  transform: scale(0.95);
 }
 
 .request-icon {
