@@ -634,7 +634,7 @@
             <div class="user-panel">
                 <div class="flex align-center space-between">
                     <h4>My Balances</h4>
-                    <button id="refresh_balance_btn" onclick="refresh_balance(this)" class="action expand"
+                    <button onclick="refreshBalance(this)" class="action expand"
                         type="submit">
                         <h4 class="primary-btn expand">
                             Refresh Balance
@@ -883,7 +883,7 @@
             <div class="user-panel">
                 <div class="flex align-center space-between">
                     <h4>My Balances</h4>
-                    <button id="refresh_balance_btn" onclick="refresh_balance(this)" class="action expand"
+                    <button onclick="refreshBalance(this)" class="action expand"
                         type="submit">
                         <h4 class="primary-btn expand">
                             Refresh Balance
@@ -1082,7 +1082,6 @@
             floDapps.launchStartUp().then(async result => {
                 console.log(`Welcome ${myFloID}`)
                 clearElements(['my_qr_code'])
-                refresh_balance()
                 userFloIdContainers.forEach(container => container.textContent = myFloID)
 
                 await token_app.actions.doShreeGanesh();
@@ -2206,7 +2205,7 @@
                             .amount))
                         console.log(depositRequest)
                         if (status) {
-                            refresh_balance()
+                            refreshBalance()
                             depositRequest.remove()
                         }
                     }
@@ -2219,7 +2218,7 @@
                                 .dataset.userFloId, withdrawRequest.dataset.upi, parseInt(withdrawRequest.dataset
                                 .amount))
                         if (status) {
-                            refresh_balance()
+                            refreshBalance()
                             withdrawRequest.remove()
                             notify('Withdraw request confirmed', 'success')
                         }
@@ -2232,7 +2231,7 @@
                                 .dataset.receiverFloId, payRequest.dataset.txid, payRequest.dataset
                                 .amount)
                         if (status) {
-                            refresh_balance()
+                            refreshBalance()
                             payRequest.remove()
                         }
                     }
@@ -2244,7 +2243,7 @@
                         /*,
                             status = await process_unconfirmed_balance_claim_requests(unconfirmedRequestsStore[payRequest.dataset.vectorClock])
                         if (status) {
-                            refresh_balance()
+                            refreshBalance()
                             payRequest.remove()
                         }*/
                     }
@@ -12303,6 +12302,7 @@
                     allHelplineOptions.forEach(option => {
                         option.classList.add('hide-completely')
                     })
+                    refreshBalance()
                     hideLoader()
                     showDepositRequests()
                     showWithdrawRequests()
@@ -12325,6 +12325,7 @@
                     allUserOptions.forEach(option => {
                         option.classList.add('hide-completely')
                     })
+                    document.getElementById('activity_page_btn').classList.add('hide-completely')
                     hideLoader()
                     let cashierList = ``,
                         cashierSelect = document.getElementById('select_cashier')
@@ -12349,6 +12350,7 @@
                     allUserOptions.forEach(option => {
                         option.classList.remove('hide-completely')
                     })
+                    refreshBalance()
                     userType.forEach(user => user.textContent = 'Me')
                     defaultUPI = localStorage.getItem(`defaultUPI${myFloID}`)
                     if(mobileCheck())
@@ -12902,7 +12904,7 @@
                     });
 
                     notify(`Transfer successful: ${flo_txid}`, 'success', true, true);
-                    refresh_balance()
+                    refreshBalance()
                     return true;
                 }
             } catch (error) {
@@ -13045,7 +13047,7 @@
                         hidePopup()
                         showTransactionStatus('success', 'Rupee Sent', 'It may take upto 48 working hours for transaction to be completed.', flo_txid);
                         sentActivityContainer.prepend(render.activityCard({ type: 'sent', processed: false, amount: token_amount, timeStamp: `${Date.now()}_${myFloID}`, tokenTxId: flo_txid, receiver: token_receiver }))
-                        refresh_balance()
+                        refreshBalance()
                         return true;
                     }
                 }
@@ -13056,7 +13058,7 @@
             }
         }
 
-        async function refresh_balance(refreshButton) {
+        async function refreshBalance(refreshButton) {
             try {
                 if (refreshButton)
                     btnLoading(refreshButton, 'start')

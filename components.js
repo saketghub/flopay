@@ -40,6 +40,7 @@ smButton.innerHTML = `
     border-radius: 10rem;
 }
 .button {
+    position: relative;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -65,6 +66,13 @@ smButton.innerHTML = `
     background: rgba(var(--text-color), 0.1); 
     -webkit-tap-highlight-color: transparent;
     outline: none;
+    overflow: hidden;
+}
+span.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    border: 1.5rem solid rgba(var(--text-color), 0.2);
 }
 :host(:not([disabled])) .button:focus{
     -webkit-box-shadow: 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.2rem 0.8rem rgba(0, 0, 0, 0.2);
@@ -75,14 +83,6 @@ smButton.innerHTML = `
             box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset, 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.4rem 0.8rem rgba(0, 0, 0, 0.2);
 }
 @media (hover: hover){
-    :host(:not([disabled])) .button:active{
-        -webkit-box-shadow: none !important;
-                box-shadow: none !important;
-    }
-    :host([variant='outlined']) .button:active{
-        -webkit-box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset !important;
-                box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset !important;
-    }
     :host(:not([disabled])) .button:hover{
         -webkit-box-shadow: 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.2rem 0.8rem rgba(0, 0, 0, 0.12);
                 box-shadow: 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.2rem 0.8rem rgba(0, 0, 0, 0.12);
@@ -90,9 +90,6 @@ smButton.innerHTML = `
     :host([variant='outlined']) .button:hover{
         -webkit-box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset, 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.4rem 0.8rem rgba(0, 0, 0, 0.12);
                 box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset, 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.4rem 0.8rem rgba(0, 0, 0, 0.12);
-    }
-    :host([variant="primary"]:not([disabled])) .button:active{
-        background: hsl(var(--hue), var(--saturation), calc(var(--lightness) - 20%)) !important;
     }
     :host([variant="primary"]:not([disabled])) .button:hover{
         background: hsl(var(--hue), var(--saturation), calc(var(--lightness) - 10%));
@@ -149,6 +146,33 @@ customElements.define('sm-button',
                 }))
             }
         }
+        createRipple(event){
+            const target = this.shadowRoot.querySelector('.button')
+            const ripple = target.querySelector('.ripple');
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (target.offsetLeft + radius)}px`;
+            circle.style.top = `${event.clientY - (target.offsetTop + radius)}px`;
+            circle.classList.add("ripple"); 
+            const rippleAnimation =  circle.animate([
+
+                {
+                    transform: 'scale(4)',
+                    opacity: 0
+                }
+            ],
+                {
+                    duration: 400,
+                    fill: "forwards",
+                    easing: 'ease-in'
+                })
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove()
+            }
+        }
 
         connectedCallback() {
             this.isDisabled = false
@@ -156,6 +180,7 @@ customElements.define('sm-button',
             if (this.hasAttribute('disabled') && !this.isDisabled)
                 this.isDisabled = true
             this.addEventListener('click', (e) => {
+                this.createRipple(e)
                 this.dispatch()
             })
             this.addEventListener('keyup', (e) => {
@@ -234,6 +259,7 @@ border: none;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
+    cursor: text;
     -webkit-box-align: center;
         -ms-flex-align: center;
             align-items: center;
@@ -246,7 +272,6 @@ border: none;
     -o-transition: opacity 0.3s;
     transition: opacity 0.3s;
     background: rgba(var(--text-color), 0.06);
-    font-family: var(--font-family);
     width: 100%;
     outline: none;
     min-width: 0;
@@ -263,8 +288,7 @@ input:focus{
     caret-color: var(--accent-color);
 }
 .input:focus-within:not(.readonly){
-    -webkit-box-shadow: 0 0 0 0.1em var(--accent-color) inset;
-            box-shadow: 0 0 0 0.1em var(--accent-color) inset;
+    background: rgba(var(--text-color), 0.1);
 }
 .disabled{
     pointer-events: none;
@@ -340,6 +364,7 @@ input{
     color: var(--error-color);
     background: rgba(var(--foreground-color), 1);
     padding: 0.6rem 1rem;
+    text-align: left;
 }
 .feedback-text:empty{
     padding: 0;
@@ -606,8 +631,9 @@ smTextarea.innerHTML = `
     -webkit-transition: opacity 0.3s;
     -o-transition: opacity 0.3s;
     transition: opacity 0.3s;
-    background: rgba(var(--text-color), 0.1);
-    font-family: var(--font-family);
+    -webkit-box-shadow: 0 0 0.2rem rgba(var(--text-color), 0.2) inset;
+            box-shadow: 0 0 0.2rem rgba(var(--text-color), 0.2) inset;
+    background: rgba(var(--text-color), 0.06);
     width: 100%;
     outline: none;
     min-width: 0;
@@ -617,8 +643,7 @@ textarea:focus{
     caret-color: var(--accent-color);
 }
 .input:focus-within{
-    -webkit-box-shadow: 0 0 0 0.1em var(--accent-color) inset;
-            box-shadow: 0 0 0 0.1em var(--accent-color) inset;
+    background: rgba(var(--text-color), 0.1);
 }
 
 .label {
@@ -1195,6 +1220,8 @@ customElements.define('sm-switch', class extends HTMLElement {
     connectedCallback() {
         if (this.hasAttribute('disabled'))
             this.switch.classList.add('disabled')
+        if (this.hasAttribute('checked'))
+            this.input.checked = true
         this.addEventListener('keyup', e => {
             if ((e.code === "Enter" || e.code === "Space") && !this.isDisabled) {
                 this.input.click()
@@ -1323,7 +1350,7 @@ smSelect.innerHTML = `
             <polyline points="63.65 15.99 32 47.66 0.35 15.99"/>
         </svg>
     </div>
-    <div class="options hide">
+    <div part="options" class="options hide">
         <slot></slot> 
     </div>
 </div>`;
@@ -2093,7 +2120,6 @@ customElements.define('sm-popup', class extends HTMLElement {
             this.popup.style.transform = 'translateY(100%)';
         else
             this.popup.style.transform = 'translateY(1rem)';
-        this.click()
         this.popupContainer.classList.add('hide')
         this.removeAttribute('open')
         if (typeof this.popupStack !== 'undefined') {
@@ -2207,7 +2233,7 @@ customElements.define('sm-popup', class extends HTMLElement {
             setTimeout(() => {
                 this.threshold = this.popup.getBoundingClientRect().height * 0.3
             }, 200);
-            this.inputFields = this.querySelectorAll('sm-input', 'sm-checkbox', 'textarea', 'radio')
+            this.inputFields = this.querySelectorAll('sm-input', 'sm-checkbox', 'textarea', 'sm-textarea', 'radio')
         })
 
         this.popupHeader.addEventListener('touchstart', (e) => {
@@ -2651,10 +2677,11 @@ smNotifications.innerHTML = `
     }
     @media screen and (min-width: 640px){
     .notification-panel{
-        width: 40vw;
+        max-width: 40vw;
+        width: max-content;
         -webkit-box-pack: end;
             -ms-flex-pack: end;
-                justify-content: flex-end;
+        justify-content: flex-end;
     }
     .notification{
         -ms-grid-column-align: end;
