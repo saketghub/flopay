@@ -197,6 +197,7 @@ span.ripple{
     border-radius: 50%;
     transform: scale(0);
     background: rgba(var(--text-color), 0.2);
+    pointer-events: none;
 }
 
 sm-button[variant="outlined"]{
@@ -214,6 +215,7 @@ sm-button[variant="outlined"]{
     stroke-dasharray: 230;
     padding: 2px;
     justify-self: center;
+    transition: opacity 0.3s;
 }
 
 @keyframes rotate {
@@ -238,6 +240,54 @@ sm-button[variant="outlined"]{
 
     100% {
         stroke-dashoffset: -220;
+    }
+}
+
+#on_boarding{
+    position: fixed;
+    left: 0;
+    top: 0;
+    border-radius: 0.8rem;
+    box-shadow: 0.1em 0.2em 1em rgba(var(--text-color), 0.16);
+    padding: 1.5rem;
+    background: var(--accent-color);
+    z-index: 50;
+    color: rgba(var(--foreground-color), 1);
+    transition: transform 0.3s, opacity 0.3s;
+    &::before{
+        content: '';
+        position: absolute;
+        transform: rotate(45deg);
+        top: 1rem;
+        left: -0.5rem;
+        width: 1rem;
+        height: 1rem;
+        background: inherit;
+        box-shadow: -0.1em 0 1em rgba(var(--text-color), 0.16);
+    }
+    &::after{
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 1rem;
+        width: 1.5rem;
+        height: 2rem;
+        background: inherit;
+    }
+    h4{
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+        transition: transform 0.3s;
+    }
+    p{
+        color: inherit;
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s;
+    }
+    .icon{
+        stroke: rgba(var(--foreground-color), 1);
+        padding: 0.2rem;
+        cursor: pointer;
     }
 }
 
@@ -454,16 +504,6 @@ textarea {
 }
 
 sm-popup{
-    .illustration{
-        position: relative;
-        height: 4rem;
-        width: 4rem;
-        padding: 1rem;
-        stroke: var(--accent-color);
-        margin-bottom: 1rem;
-        border-radius: 5rem;
-        background: rgba(var(--text-color), 0.06);
-    }   
     sm-input:not(:last-of-type) {
         margin-bottom: 1rem;
     }
@@ -716,6 +756,7 @@ details{
     border-radius: 1rem 1rem 0 0;
     .navbar-item {
         position: relative;
+        overflow: hidden;
         text-align: center;
         cursor: pointer;
         padding: 0.3rem;
@@ -727,6 +768,7 @@ details{
         text-transform: capitalize;
         width: 100%;
         font-weight: 600;
+        -webkit-tap-highlight-color: transparent;
         h5 {
             margin-top: 0.4em;
         }
@@ -1076,9 +1118,19 @@ sm-panel{
     width: 100%;
 }
 
+@keyframes fade-in{
+    from{
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}
+
 .page {
     padding: 1rem 1.5rem;
     padding-bottom: 5rem;
+    animation: fade-in 0.4s;
     .container-header {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -1685,6 +1737,8 @@ sm-panel{
     }
 }
 .person{
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1692,9 +1746,6 @@ sm-panel{
     transition: transform 0.3s;
     width: 5rem;
     -webkit-tap-highlight-color: transparent;
-    &:active{
-        transform: scale(0.95);
-    }
 }
 .person-initials, #person_initials{
     display: flex;
@@ -1846,6 +1897,10 @@ sm-panel{
 
     #confirmation {
         width: 24rem;
+    }
+
+    #on_boarding{
+        width: 26rem;
     }
 
     #navbar {

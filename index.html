@@ -32,6 +32,19 @@
         </div>
     </sm-popup>
     <sm-notifications id="show_message"></sm-notifications>
+    <div id="on_boarding" class="flex direction-column hide">
+        <svg class="icon justify-right" onclick="finishOnBoarding()" viewBox="0 0 64 64">
+            <title>close</title>
+            <line x1="64" y1="0" x2="0" y2="64" />
+            <line x1="64" y1="64" x2="0" y2="0" />
+        </svg>
+        <h4 id="feature_title">Get Started</h4>
+        <p id="feature_details">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum eaque tempore cumque?</p>
+        <div class="flex space-between">
+            <sm-button id="prev_tut_button" onclick="previousTutorial()" variant="primary">Back</sm-button>
+            <sm-button id="next_tut_button" onclick="nextTutorial()" variant="no-outline">Next</sm-button>
+        </div>
+    </div>
     <!-- Loading screen-->
     <section id="main_loader" class="grid hide-completely">
         <svg id="loader" viewBox="0 0 73 73">
@@ -176,7 +189,7 @@
             </button>
         </header>
         <p>
-            Deposit money through UPI.
+            Add balance to your RanchiMall pay wallet. This money can be used directly within our apps ecosystem.
         </p>
         <details>
             <summary>
@@ -233,7 +246,7 @@
             </button>
         </header>
         <p>
-            Withdraw or redeem your rupee to your specified UPI address.
+            Withdraw or redeem money back to your specified UPI address.
         </p>
         <details>
             <summary>
@@ -279,7 +292,7 @@
                 </button>
         </header>
         <p>
-            Request rupee from other's using FLO address.
+            Request money from others using their FLO address.
         </p>
         <details>
             <summary>
@@ -323,8 +336,7 @@
                 What is this?
             </summary>
             <p>
-                Don't have enough Rupee balance? Pay to our cashier through UPI and your cash will be
-                sent as Rupee.
+                Don't have enough wallet balance? Pay to our cashier through UPI and our cashier will complete that transaction on your behalf.
             </p>
         </details>
         <details>
@@ -547,7 +559,7 @@
             </svg>
             <h5>Home</h5>
         </div>
-        <div title="requests page" class="navbar-item user-option" onclick="showPage('request_page', this)">
+        <div title="requests page" id="request_page_btn" class="navbar-item user-option" onclick="showPage('request_page', this)">
             <svg class="icon request-icon" viewBox="0 0 64 64">
                 <path
                     d="M47.28,16.8,29.6,34.64a3.3,3.3,0,0,1-3.59.71L2.5,25.42a3.28,3.28,0,0,1,.26-6.13L59.21.87A3.28,3.28,0,0,1,63.32,5l-18.93,56a3.26,3.26,0,0,1-6.12.18l-6.4-15.68" />
@@ -589,7 +601,7 @@
             </svg>
             <h5>Complaints</h5>
         </div>
-        <div title="profile page" class="navbar-item" onclick="showPage('settings_page', this)">
+        <div title="profile page" id="profile_page_btn" class="navbar-item" onclick="showPage('settings_page', this)">
             <svg viewBox="0 0 64 64" class="icon">
                 <path d="M31.6,0.5c8.3,0,14.2,5.6,14.2,15S41.1,32.9,32,32.9s-13.8-8-13.8-17.3s5.9-15,14.2-15" />
                 <path d="M25.4,33.4c-2.5,4.7-10.5,7.1-16.4,9.7c-2.4,1-4.4,14-1.6,14c7.7,4.4,16.4,6.6,25.2,6.4
@@ -603,14 +615,14 @@
             <div class="left">
                 <h4>Rupee actions</h4>
                 <section class="options-tab">
-                    <div class="option" onclick="showPopup('send_rupee_popup')">
+                    <div class="option" id="send_rupee_option" onclick="showPopup('send_rupee_popup')">
                         <svg class="icon" viewBox="0 0 64 64">
                             <path
                                 d="M47.28,16.8,29.6,34.64a3.3,3.3,0,0,1-3.59.71L2.5,25.42a3.28,3.28,0,0,1,.26-6.13L59.21.87A3.28,3.28,0,0,1,63.32,5l-18.93,56a3.26,3.26,0,0,1-6.12.18l-6.4-15.68" />
                         </svg>
                         <h4>Send</h4>
                     </div>
-                    <div class="option" onclick="showPopup('deposit_rupee')">
+                    <div class="option" id="deposit_rupee_option" onclick="showPopup('deposit_rupee')">
                         <svg class="icon" viewBox="0 0 64 64">
                             <title>deposit</title>
                             <path d="M29.58,35.76V60.47H5.13A4.63,4.63,0,0,1,.5,55.83V9.63" />
@@ -623,7 +635,7 @@
                         </svg>
                         <h4>deposit</h4>
                     </div>
-                    <div class="option" onclick="showPopup('withdraw_rupee')">
+                    <div class="option" id="withdraw_rupee_option" onclick="showPopup('withdraw_rupee')">
                         <svg class="icon" viewBox="0 0 64 64">
                             <title>withdraw</title>
                             <path d="M15.18,60.47h-10A4.63,4.63,0,0,1,.5,55.83V9.63" />
@@ -637,14 +649,14 @@
                         </svg>
                         <h4>Withdraw</h4>
                     </div>
-                    <div class="option" onclick="showPopup('request_rupee')">
+                    <div class="option" id="request_rupee_option" onclick="showPopup('request_rupee')">
                         <svg class="icon request-icon" viewBox="0 0 64 64">
                             <path
                                 d="M47.28,16.8,29.6,34.64a3.3,3.3,0,0,1-3.59.71L2.5,25.42a3.28,3.28,0,0,1,.26-6.13L59.21.87A3.28,3.28,0,0,1,63.32,5l-18.93,56a3.26,3.26,0,0,1-6.12.18l-6.4-15.68" />
                         </svg>
                         <h4>Request</h4>
                     </div>
-                    <div class="option" onclick="showPopup('pay_anyone')">
+                    <div class="option" id="pay_rupee_option" onclick="showPopup('pay_anyone')">
                         <svg class="icon" viewBox="0 0 64 64">
                             <path d="M32,37.75A10.19,10.19,0,1,0,21.81,27.44V46.62" />
                             <rect height="64" width="64" rx="8"></rect>
@@ -2203,14 +2215,13 @@
                 }
             })
 
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.option, .activity')) {
-                    createRipple(e, e.target.closest('.option, .activity'))
+            document.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.option, .activity, .person, .navbar-item, sm-button')) {
+                    createRipple(e, e.target.closest('.option, .activity, .person, .navbar-item, sm-button'))
                 }
             })
 
             function createRipple(event, target){
-                const ripple = target.querySelector('.ripple');
                 const circle = document.createElement("span");
                 const diameter = Math.max(target.clientWidth, target.clientHeight);
                 const radius = diameter / 2;
@@ -2218,7 +2229,6 @@
                 circle.style.left = `${event.clientX - (target.getBoundingClientRect().left + radius)}px`;
                 circle.style.top = `${event.clientY - (target.getBoundingClientRect().top + radius)}px`;
                 circle.classList.add("ripple"); 
-                const duration = radius > 200 ? 1200 : 600
                 const rippleAnimation =  circle.animate([
 
                     {
@@ -2227,7 +2237,7 @@
                     }
                 ],
                     {
-                        duration,
+                        duration: 1000,
                         fill: "forwards",
                         easing: 'ease-out'
                     })
@@ -2409,6 +2419,146 @@
             })
 
         })
+
+        const onBoarding = [
+                {
+                    id: '',
+                    title: 'Welcome',
+                    details: 'We are glad that you chose our service.<br>This service can be used throughout our <strong>ecosystem</strong> to pay/receive money.'
+                },
+                {
+                    id: 'send_rupee_option',
+                    title: 'Send money',
+                    details: 'Send money to any FLO addres. This uses wallet balance to send money.'
+                },
+                {
+                    id: 'deposit_rupee_option',
+                    title: 'Deposit money',
+                    details: 'Add balance to your RanchiMall pay wallet. This money can be used directly within our apps ecosystem.'
+                },
+                {
+                    id: 'withdraw_rupee_option',
+                    title: 'Withdraw money',
+                    details: `Withdraw or redeem money back to your specified UPI address.`
+                },
+                {
+                    id: 'request_rupee_option',
+                    title: 'Request money',
+                    details: `Request money from others using their FLO address. Requested money will be stored in wallet balance.`
+                },
+                {
+                    id: 'pay_rupee_option',
+                    title: 'Pay through cashier',
+                    details: `Don't have enough wallet balance? Pay to our cashier through UPI and our cashier will complete that transaction on your behalf.`
+                },
+                {
+                    id: 'request_page_btn',
+                    title: `Request page`,
+                    details: 'This will show all the payment requests you received from other users and shop keepers.'
+                },
+                {
+                    id: 'activity_page_btn',
+                    title: 'Activity page',
+                    details: 'This page displays all the transactions such as sent, received money etc.'
+                },
+                {
+                    id: 'profile_page_btn',
+                    title: 'Profile page',
+                    details: 'This page contains all the personal data as well as app settings.'
+                }
+            ]
+
+            const   onBoardingPanel = document.getElementById('on_boarding'),
+                    featureTitle = document.getElementById('feature_title'),
+                    featureDetails = document.getElementById('feature_details'),
+                    nextTutButton = document.getElementById('next_tut_button'),
+                    prevTutButton = document.getElementById('prev_tut_button')
+
+
+            let currentFeatureIndex = 0;
+
+            function startOnBoarding(){
+                onBoardingPanel.classList.remove('hide')
+                currentFeatureIndex = 0
+                showTutorial(0)
+            }
+            function finishOnBoarding(){
+                onBoardingPanel.classList.add('hide')
+                currentFeatureIndex = 0
+            }
+            function nextTutorial(){
+                showTutorial(+1)
+            }
+            function previousTutorial(){
+                showTutorial(-1)
+            }
+            function showTutorial(index = 0){
+                if(currentFeatureIndex === onBoarding.length - 1 && index > 0){
+                    finishOnBoarding()
+                }
+                index = Math.min(Math.max(index + currentFeatureIndex,0), onBoarding.length-1)
+                if(index === 0)
+                    prevTutButton.classList.add('hide')
+                else
+                    prevTutButton.classList.remove('hide')
+                if(index === onBoarding.length - 1){
+                    nextTutButton.textContent = `Got it`
+                }
+                else{
+                    if(nextTutButton.textContent !== 'Next')
+                        nextTutButton.textContent = 'Next'
+                }
+                const flyOut = [
+                    {
+                        transform: 'translateX(-1rem)',
+                        opacity: 0
+                    }
+                ]
+                const flyIn = [
+                    {
+                        transform: 'translateX(1rem)',
+                        opacity: 0,
+                    },
+                    {
+                        transform: 'translateX(0)',
+                        opacity: 1
+                    }
+                ]
+                const options = {
+                    duration: 300,
+                    fill: "forwards",
+                    easing: 'ease'
+                }
+                let titleAnime
+                if(currentFeatureIndex > index){
+                    titleAnime = featureTitle.animate(flyIn, options)
+                    featureDetails.animate(flyIn, options).reverse()
+                    titleAnime.reverse()
+                }
+                else{
+                    titleAnime = featureTitle.animate(flyOut, options)
+                    featureDetails.animate(flyOut, options)
+                }
+                titleAnime.onfinish = () => {
+                    featureTitle.textContent = onBoarding[index].title
+                    featureDetails.innerHTML  = onBoarding[index].details
+                    if(onBoarding[index].id !== ''){
+                        const targetOption = document.getElementById(onBoarding[index].id)
+                        const targetPosition = targetOption.getBoundingClientRect()
+                        onBoardingPanel.setAttribute('style', `transform: translate(${targetPosition.left + targetPosition.width}px, ${targetPosition.top}px)`)
+                    }
+                    if(currentFeatureIndex > index){
+                        featureTitle.animate(flyOut, options).reverse()
+                        featureDetails.animate(flyOut, options).reverse()
+                    }
+                    else{
+                        featureTitle.animate(flyIn, options)
+                        featureDetails.animate(flyIn, options)
+                    }
+                    currentFeatureIndex = index
+                }
+            }
+            showTutorial(0)
 
         const transactionSuccessSection = document.getElementById('success_section'),
             transactionFailedSection = document.getElementById('failure_section'),
@@ -12442,6 +12592,10 @@
                     new QRCode(document.getElementById('my_qr_code'), myFloID);
 
                     showPage('home_page', 'home_page_btn')
+                    if(localStorage.getItem(`${myFloID}IsNew`) === null || localStorage.getItem(`${myFloID}IsNew`) === 'true'){
+                        startOnBoarding()
+                        //localStorage.setItem(`${myFloID}IsNew`, false)
+                    }
                     hideLoader()
                     
                     request_rupee_token()
@@ -13499,6 +13653,7 @@
         }
 
         function showActivities(showRefresh = false){
+            if(activityLoaded && !showRefresh) return
             if(!activityLoaded || showRefresh){                
                 depositActivityContainer.innerHTML = ''
                 withdrawActivityContainer.innerHTML = ''

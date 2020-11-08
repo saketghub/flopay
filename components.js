@@ -20,7 +20,7 @@ smButton.innerHTML = `
     color: rgba(var(--foreground-color), 1);
 }
 :host([variant='primary']) .button{
-    background: hsl(var(--hue), var(--saturation), var(--lightness));
+    background: var(--accent-color);
     color: rgba(var(--foreground-color), 1);
 }
 :host([variant='outlined']) .button{
@@ -91,9 +91,6 @@ span.ripple {
         -webkit-box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset, 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.4rem 0.8rem rgba(0, 0, 0, 0.12);
                 box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset, 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1), 0 0.4rem 0.8rem rgba(0, 0, 0, 0.12);
     }
-    :host([variant="primary"]:not([disabled])) .button:hover{
-        background: hsl(var(--hue), var(--saturation), calc(var(--lightness) - 10%));
-    }
 }
 @media (hover: none){
     :host(:not([disabled])) .button:active{
@@ -146,33 +143,6 @@ customElements.define('sm-button',
                 }))
             }
         }
-        createRipple(event){
-            const target = this.shadowRoot.querySelector('.button')
-            const ripple = target.querySelector('.ripple');
-            const circle = document.createElement("span");
-            const diameter = Math.max(target.clientWidth, target.clientHeight);
-            const radius = diameter / 2;
-            circle.style.width = circle.style.height = `${diameter}px`;
-            circle.style.left = `${event.clientX - (target.offsetLeft + radius)}px`;
-            circle.style.top = `${event.clientY - (target.offsetTop + radius)}px`;
-            circle.classList.add("ripple"); 
-            const rippleAnimation =  circle.animate([
-
-                {
-                    transform: 'scale(4)',
-                    opacity: 0
-                }
-            ],
-                {
-                    duration: 400,
-                    fill: "forwards",
-                    easing: 'ease-in'
-                })
-            target.append(circle);
-            rippleAnimation.onfinish = () => {
-                circle.remove()
-            }
-        }
 
         connectedCallback() {
             this.isDisabled = false
@@ -180,7 +150,6 @@ customElements.define('sm-button',
             if (this.hasAttribute('disabled') && !this.isDisabled)
                 this.isDisabled = true
             this.addEventListener('click', (e) => {
-                this.createRipple(e)
                 this.dispatch()
             })
             this.addEventListener('keyup', (e) => {
