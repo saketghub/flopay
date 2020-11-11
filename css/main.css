@@ -36,6 +36,10 @@ body[data-theme=dark] {
 body[data-theme=dark] .flo-balance-card {
   color: rgba(var(--text-color), 1);
 }
+body[data-theme=dark] #focus_illu {
+  opacity: 0.6;
+  fill: rgba(var(--text-color), 0.5);
+}
 
 a {
   font-weight: 500;
@@ -243,6 +247,21 @@ sm-button[variant=outlined] {
     stroke-dashoffset: -220;
   }
 }
+#focus_illu {
+  pointer-events: none;
+  height: 3rem;
+  width: 3rem;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10;
+  transition: transform 0.3s, opacity 0.3s;
+  fill: var(--accent-color);
+}
+#focus_illu path {
+  opacity: 0.3;
+}
+
 #on_boarding {
   position: fixed;
   left: 0;
@@ -250,21 +269,10 @@ sm-button[variant=outlined] {
   border-radius: 0.8rem;
   box-shadow: 0.1em 0.2em 1em rgba(var(--text-color), 0.16);
   padding: 1.5rem;
-  background: var(--accent-color);
-  z-index: 50;
   color: rgba(var(--foreground-color), 1);
+  background: var(--accent-color);
+  z-index: 10;
   transition: transform 0.3s, opacity 0.3s;
-}
-#on_boarding::before {
-  content: "";
-  position: absolute;
-  transform: rotate(45deg);
-  top: 1rem;
-  left: -0.5rem;
-  width: 1rem;
-  height: 1rem;
-  background: inherit;
-  box-shadow: -0.1em 0 1em rgba(var(--text-color), 0.16);
 }
 #on_boarding::after {
   content: "";
@@ -274,6 +282,10 @@ sm-button[variant=outlined] {
   width: 1.5rem;
   height: 2rem;
   background: inherit;
+}
+#on_boarding #total_tuts {
+  opacity: 0.8;
+  font-size: 0.8rem;
 }
 #on_boarding h4 {
   margin-bottom: 0.5rem;
@@ -1868,6 +1880,17 @@ sm-panel {
 
   #on_boarding {
     width: 26rem;
+  }
+  #on_boarding::before {
+    content: "";
+    position: absolute;
+    transform: rotate(45deg);
+    top: 1rem;
+    left: -0.5rem;
+    width: 1rem;
+    height: 1rem;
+    background: inherit;
+    box-shadow: -0.1em 0 1em rgba(var(--text-color), 0.16);
   }
 
   #navbar {

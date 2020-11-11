@@ -32,6 +32,10 @@
         </div>
     </sm-popup>
     <sm-notifications id="show_message"></sm-notifications>
+    <svg xmlns="http://www.w3.org/2000/svg" class="hide-on-desktop" id="focus_illu" viewBox="0 0 128 128">
+        <path d="M64,0a64,64,0,1,0,64,64A64,64,0,0,0,64,0Zm0,89A25,25,0,1,1,89,64,25,25,0,0,1,64,89Z"/>
+        <path d="M64,20a44,44,0,1,0,44,44A44,44,0,0,0,64,20Zm0,69A25,25,0,1,1,89,64,25,25,0,0,1,64,89Z"/>
+    </svg>
     <div id="on_boarding" class="flex direction-column hide">
         <svg class="icon justify-right" onclick="finishOnBoarding()" viewBox="0 0 64 64">
             <title>close</title>
@@ -40,8 +44,9 @@
         </svg>
         <h4 id="feature_title">Get Started</h4>
         <p id="feature_details">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum eaque tempore cumque?</p>
-        <div class="flex space-between">
+        <div class="flex space-between align-center">
             <sm-button id="prev_tut_button" onclick="previousTutorial()" variant="primary">Back</sm-button>
+            <div id="total_tuts"></div>
             <sm-button id="next_tut_button" onclick="nextTutorial()" variant="no-outline">Next</sm-button>
         </div>
     </div>
@@ -2496,7 +2501,7 @@
             {
                 id: 'send_rupee_option',
                 title: 'Send money',
-                details: 'Send money to any FLO addres. This uses wallet balance to send money.'
+                details: 'Send money to any FLO address. This uses wallet balance to send money.'
             },
             {
                 id: 'deposit_rupee_option',
@@ -2519,6 +2524,11 @@
                 details: `Don't have enough wallet balance? Pay to our cashier through UPI and our cashier will complete that transaction on your behalf.`
             },
             {
+                id: 'add_person_btn',
+                title: 'Add a person',
+                details: `You can save someone's FLO ID as person for easier access in future.`
+            },
+            {
                 id: 'request_page_btn',
                 title: `Request page`,
                 details: 'This will show all the payment requests you received from other users and shop keepers.'
@@ -2539,7 +2549,9 @@
             featureTitle = document.getElementById('feature_title'),
             featureDetails = document.getElementById('feature_details'),
             nextTutButton = document.getElementById('next_tut_button'),
-            prevTutButton = document.getElementById('prev_tut_button')
+            prevTutButton = document.getElementById('prev_tut_button'),
+            totalTuts = document.getElementById('total_tuts'),
+            focusIllu = document.getElementById('focus_illu')
 
 
         let currentFeatureIndex = 0;
@@ -2564,11 +2576,16 @@
                 finishOnBoarding()
             }
             index = Math.min(Math.max(index + currentFeatureIndex, 0), onBoarding.length - 1)
-            if (index === 0)
+            if (index === 0){
                 prevTutButton.classList.add('hide')
-            else
+                focusIllu.classList.add('hide')
+            }
+            else{
+                focusIllu.classList.remove('hide')
                 prevTutButton.classList.remove('hide')
+            }
             if (index === onBoarding.length - 1) {
+                focusIllu.classList.add('hide')
                 nextTutButton.textContent = `Got it`
             }
             else {
@@ -2609,10 +2626,36 @@
             titleAnime.onfinish = () => {
                 featureTitle.textContent = onBoarding[index].title
                 featureDetails.innerHTML = onBoarding[index].details
+                totalTuts.textContent = `${index + 1}/${onBoarding.length}`
                 if (onBoarding[index].id !== '') {
                     const targetOption = document.getElementById(onBoarding[index].id)
-                    const targetPosition = targetOption.getBoundingClientRect()
-                    onBoardingPanel.setAttribute('style', `transform: translate(${targetPosition.left + targetPosition.width}px, ${targetPosition.top}px)`)
+                    let targetPosition = targetOption.getBoundingClientRect()
+                    if(window.innerWidth > 640){
+                        onBoardingPanel.setAttribute('style', `transform: translate(${targetPosition.left + targetPosition.width}px, ${targetPosition.top}px)`)
+                    }
+                    else{
+                        if(targetPosition.bottom + onBoardingPanel.getBoundingClientRect().height < window.innerHeight)
+                            onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.bottom}px + 1.5rem))`)
+                        else{
+                            if(targetPosition.top + targetPosition.height > window.innerHeight)
+                                setTimeout(() => {
+                                    onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.top - onBoardingPanel.getBoundingClientRect().height}px - 1.5rem))`)
+                                }, 300);
+                            else
+                                onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.top - onBoardingPanel.getBoundingClientRect().height}px - 1.5rem))`)
+                        }
+                        if(targetPosition.top + targetPosition.height > window.innerHeight){
+                            targetOption.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'start'})
+                            setTimeout(() => {
+                                targetPosition = targetOption.getBoundingClientRect()
+                                onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.top - onBoardingPanel.getBoundingClientRect().height}px - 1.5rem))`)
+                                focusIllu.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width/2}px - 1.5rem), ${targetPosition.top}px)`)
+                            }, 300);
+                        }
+                        else{
+                            focusIllu.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width/2}px - 1.5rem), ${targetPosition.top}px)`)
+                        }
+                    }
                 }
                 if (currentFeatureIndex > index) {
                     featureTitle.animate(flyOut, options).reverse()
