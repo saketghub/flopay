@@ -32,7 +32,7 @@
         </div>
     </sm-popup>
     <sm-notifications id="show_message"></sm-notifications>
-    <svg xmlns="http://www.w3.org/2000/svg" class="hide-on-desktop" id="focus_illu" viewBox="0 0 128 128">
+    <svg xmlns="http://www.w3.org/2000/svg" class="hide-on-desktop hide" id="focus_illu" viewBox="0 0 128 128">
         <path d="M64,0a64,64,0,1,0,64,64A64,64,0,0,0,64,0Zm0,89A25,25,0,1,1,89,64,25,25,0,0,1,64,89Z"/>
         <path d="M64,20a44,44,0,1,0,44,44A44,44,0,0,0,64,20Zm0,69A25,25,0,1,1,89,64,25,25,0,0,1,64,89Z"/>
     </svg>
@@ -322,7 +322,7 @@
                     d="M51.65,8H42.07A18.44,18.44,0,0,1,45,15.78h8.88l-2.2,8H45q-1,7.26-5.8,11.1T25.54,39.47L46,63.43V64H33.41L11,37.93l0-6.72H22.11a13.19,13.19,0,0,0,7.8-2.05,9.77,9.77,0,0,0,3.85-5.38H10.11l2.24-8H33.58Q31.44,9,21.93,9H10.11l2.37-9H53.89Z" />
             </svg>
         </sm-input>
-        <sm-input floId id="requested_address" placeholder="Request from" required animate></sm-input>
+        <sm-input floId id="requested_address" placeholder="Request from FLO ID" required animate></sm-input>
     </sm-popup>
     <sm-popup id="pay_anyone">
         <header class="popup-header" slot="header">
@@ -506,10 +506,10 @@
                 <line x1="64" y1="0" x2="0" y2="64" />
                 <line x1="64" y1="64" x2="0" y2="0" />
             </svg>
-            <h4>Add a person</h4>
+            <h4>Add a contact</h4>
             <button class="expand action" type="submit" onclick="addPerson()" disabled>
                 <h4 class="primary-btn expand">
-                    Add person
+                    Add contact
                 </h4>
                 <svg viewBox="0 0 73 73" class="loader">
                     <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
@@ -729,7 +729,7 @@
                     </div>
                 </section>
                 <header>
-                    <h4>People</h4>
+                    <h4>Contacts</h4>
                 </header>
                 <section id="people_container">
                     <div class="person">
@@ -2525,8 +2525,8 @@
             },
             {
                 id: 'add_person_btn',
-                title: 'Add a person',
-                details: `You can save someone's FLO ID as person for easier access in future.`
+                title: 'Add a contact',
+                details: `You can save someone's FLO ID as contact for easier access in future.`
             },
             {
                 id: 'request_page_btn',
@@ -2563,6 +2563,7 @@
         }
         function finishOnBoarding() {
             onBoardingPanel.classList.add('hide')
+            focusIllu.classList.add('hide')
             currentFeatureIndex = 0
         }
         function nextTutorial() {
@@ -2581,11 +2582,11 @@
                 focusIllu.classList.add('hide')
             }
             else{
-                focusIllu.classList.remove('hide')
                 prevTutButton.classList.remove('hide')
+                if(currentFeatureIndex)
+                    focusIllu.classList.remove('hide')
             }
             if (index === onBoarding.length - 1) {
-                focusIllu.classList.add('hide')
                 nextTutButton.textContent = `Got it`
             }
             else {
@@ -2969,10 +2970,10 @@
         }
 
         async function deletePerson() {
-            if (await confirmation('Do you want to remove this person ?', 'No', 'Remove')) {
+            if (await confirmation('Do you want to remove this contact ?', 'No', 'Remove')) {
                 compactIDB.removeData('contacts', person.dataset.floId)
                     .then(success => {
-                        notify('Deleted person', 'success')
+                        notify('Deleted contact', 'success')
                         hidePopup()
                         renderAllContacts()
                     })
