@@ -2287,8 +2287,8 @@
             })
 
             document.addEventListener('mousedown', (e) => {
-                if (e.target.closest('.option, .activity, .person, .navbar-item, sm-button')) {
-                    createRipple(e, e.target.closest('.option, .activity, .person, .navbar-item, sm-button'))
+                if (e.target.closest('.option, .activity, .person, .navbar-item, sm-button, .action:not(:disabled), #add_person_btn')) {
+                    createRipple(e, e.target.closest('.option, .activity, .person, .navbar-item, sm-button, .action:not(:disabled), #add_person_btn'))
                 }
             })
 
@@ -2563,6 +2563,10 @@
         function finishOnBoarding() {
             onBoardingPanel.classList.add('hide')
             focusIllu.classList.add('hide')
+            setTimeout(() => {
+                onBoardingPanel.setAttribute('style', 'transform: none')
+                focusIllu.setAttribute('style', 'transform: none')
+            }, 300);
             currentFeatureIndex = 0
         }
         function nextTutorial() {
@@ -2575,7 +2579,7 @@
             if (currentFeatureIndex === onBoarding.length - 1 && index > 0) {
                 finishOnBoarding()
             }
-            index = (nextTutButton.textContent === 'Got it') ? 0 : Math.min(Math.max(index + currentFeatureIndex, 0), onBoarding.length - 1)
+            index = (nextTutButton.textContent === 'Got it' && index > 0) ? 0 : Math.min(Math.max(index + currentFeatureIndex, 0), onBoarding.length - 1)
             if (index === 0){
                 prevTutButton.classList.add('hide')
                 focusIllu.classList.add('hide')

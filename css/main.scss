@@ -20,7 +20,7 @@ body {
     background-size: cover;
 }
 body[data-theme="dark"]{
-    --accent-color: #a293d0;
+    --accent-color: #8860ff;
     --text-color: 238, 238, 238;
     --text-color-light: 170, 170, 170;
     --foreground-color: 26, 26, 26;
@@ -204,8 +204,11 @@ span.ripple{
     pointer-events: none;
 }
 
-sm-button[variant="outlined"]{
-    --accent-color: rgba(var(--text-color), 1);
+sm-button{
+    color: rgba(var(--text-color), 1);
+    &[variant="outlined"]{
+        --accent-color: rgba(var(--text-color), 1);
+    }
 }
 
 .loader {
@@ -267,7 +270,7 @@ sm-button[variant="outlined"]{
     border-radius: 0.8rem;
     box-shadow: 0.1em 0.2em 1em rgba(var(--text-color), 0.16);
     padding: 1.5rem;
-    color: rgba(var(--foreground-color), 1);
+    color: white;
     background: var(--accent-color);
     z-index: 10;
     transition: transform 0.3s, opacity 0.3s;
@@ -295,14 +298,25 @@ sm-button[variant="outlined"]{
         transition: transform 0.3s;
     }
     .icon{
-        stroke: rgba(var(--foreground-color), 1);
+        stroke-width: 8;
+        stroke: white;
         padding: 0.2rem;
         cursor: pointer;
+    }
+    sm-button{
+        &[variant="no-outline"]::part(button){
+            background: rgba(var(--foreground-color), 1);
+            color: rgba(var(--text-color), 1);
+        }
+        &:not([variant="no-outline"])::part(button){
+            color: white;
+        }
     }
 }
 
 .action {
     position: relative;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     padding: 0;
@@ -821,6 +835,7 @@ details{
     .action{
         width: auto;
         justify-content: flex-end;
+        border-radius: 2rem;
         h4{
             border-radius: 2rem;
             background-color: rgba(var(--text-color), 0.1);
@@ -1723,6 +1738,8 @@ sm-panel{
     gap: 2rem 0.2rem;
 }
 #add_person_btn{
+    position: relative;
+    overflow: hidden;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -1732,9 +1749,7 @@ sm-panel{
     font-size: 0.85rem;
     opacity: 0.8;
     font-weight: 500;
-    &:active{
-        transform: scale(0.95);
-    }
+    -webkit-tap-highlight-color: transparent;
     .icon{
         height: 3rem;
         width: 3rem;
