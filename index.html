@@ -741,9 +741,9 @@
             <div class="user-panel">
                 <div class="flex align-center space-between">
                     <h4>My Balances</h4>
-                    <button onclick="refreshBalance(this)" class="refresh-balance action expand" type="submit">
+                    <button onclick="refreshBalance(this)" class="action expand" type="submit">
                         <h4 class="primary-btn expand">
-                            Refresh Balance
+                            Refresh
                         </h4>
                         <svg viewBox="0 0 73 73" class="loader">
                             <path
@@ -1000,9 +1000,9 @@
             <div class="user-panel">
                 <div class="flex align-center space-between">
                     <h4>My Balances</h4>
-                    <button onclick="refreshBalance(this)" class="refresh-balance action expand" type="submit">
+                    <button onclick="refreshBalance(this)" class="action expand" type="submit">
                         <h4 class="primary-btn expand">
-                            Refresh Balance
+                            Refresh
                         </h4>
                         <svg viewBox="0 0 73 73" class="loader">
                             <path
@@ -2027,8 +2027,7 @@
             if (option === 'start') {
                 btn.classList.add('start-loading')
                 btn.children[1].classList.add('animate-loader')
-                if (btn.classList.contains('refresh-balance')) return
-                btn.children[0].textContent = btn.children[0].textContent.trim() + 'ing'
+                    btn.children[0].textContent = btn.children[0].textContent.trim() + 'ing'
             } else {
                 if (btn.children[0].textContent.indexOf('ing'))
                     btn.children[0].textContent = btn.children[0].textContent.trim().replace('ing', '')
