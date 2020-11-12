@@ -2575,15 +2575,14 @@
             if (currentFeatureIndex === onBoarding.length - 1 && index > 0) {
                 finishOnBoarding()
             }
-            index = Math.min(Math.max(index + currentFeatureIndex, 0), onBoarding.length - 1)
+            index = (nextTutButton.textContent === 'Got it') ? 0 : Math.min(Math.max(index + currentFeatureIndex, 0), onBoarding.length - 1)
             if (index === 0){
                 prevTutButton.classList.add('hide')
                 focusIllu.classList.add('hide')
             }
             else{
                 prevTutButton.classList.remove('hide')
-                if(currentFeatureIndex)
-                    focusIllu.classList.remove('hide')
+                focusIllu.classList.remove('hide')
             }
             if (index === onBoarding.length - 1) {
                 nextTutButton.textContent = `Got it`
@@ -2631,30 +2630,18 @@
                     const targetOption = document.getElementById(onBoarding[index].id)
                     let targetPosition = targetOption.getBoundingClientRect()
                     if(window.innerWidth > 640){
-                        onBoardingPanel.setAttribute('style', `transform: translate(${targetPosition.left + targetPosition.width}px, ${targetPosition.top}px)`)
+                        onBoardingPanel.setAttribute('style', `transform: translate(${targetPosition.left + targetPosition.width}px, ${targetPosition.top + Math.abs(document.body.getBoundingClientRect().top)}px)`)
                     }
                     else{
                         if(targetPosition.bottom + onBoardingPanel.getBoundingClientRect().height < window.innerHeight)
-                            onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.bottom}px + 1.5rem))`)
+                            onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.bottom + Math.abs(document.body.getBoundingClientRect().top)}px + 1.5rem))`)
                         else{
-                            if(targetPosition.top + targetPosition.height > window.innerHeight)
-                                setTimeout(() => {
-                                    onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.top - onBoardingPanel.getBoundingClientRect().height}px - 1.5rem))`)
-                                }, 300);
-                            else
-                                onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.top - onBoardingPanel.getBoundingClientRect().height}px - 1.5rem))`)
+                            onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.top - onBoardingPanel.getBoundingClientRect().height + Math.abs(document.body.getBoundingClientRect().top)}px - 1.5rem))`)
                         }
                         if(targetPosition.top + targetPosition.height > window.innerHeight){
                             targetOption.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'start'})
-                            setTimeout(() => {
-                                targetPosition = targetOption.getBoundingClientRect()
-                                onBoardingPanel.setAttribute('style', `transform: translateY(calc(${targetPosition.top - onBoardingPanel.getBoundingClientRect().height}px - 1.5rem))`)
-                                focusIllu.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width/2}px - 1.5rem), ${targetPosition.top}px)`)
-                            }, 300);
                         }
-                        else{
-                            focusIllu.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width/2}px - 1.5rem), ${targetPosition.top}px)`)
-                        }
+                        focusIllu.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width/2}px - 1.5rem), ${targetPosition.top + Math.abs(document.body.getBoundingClientRect().top)}px)`)
                     }
                 }
                 if (currentFeatureIndex > index) {

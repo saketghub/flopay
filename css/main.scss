@@ -250,7 +250,7 @@ sm-button[variant="outlined"]{
     pointer-events: none;
     height: 3rem;
     width: 3rem;
-    position: fixed;
+    position: absolute;
     left: 0;
     top: 0;
     z-index: 10;
@@ -261,7 +261,7 @@ sm-button[variant="outlined"]{
     }
 }
 #on_boarding{
-    position: fixed;
+    position: absolute;
     left: 0;
     top: 0;
     border-radius: 0.8rem;
