@@ -36,8 +36,8 @@ body[data-theme=dark] {
 body[data-theme=dark] .flo-balance-card {
   color: rgba(var(--text-color), 1);
 }
-body[data-theme=dark] #focus_illu {
-  opacity: 0.6;
+body[data-theme=dark] #focus_illu:not(.hide) {
+  opacity: 0.7;
   fill: rgba(var(--text-color), 0.5);
 }
 
@@ -276,6 +276,7 @@ sm-button[variant=outlined] {
   background: var(--accent-color);
   z-index: 10;
   transition: transform 0.3s, opacity 0.3s;
+  width: 100%;
 }
 #on_boarding::after {
   content: "";
@@ -870,11 +871,13 @@ details p {
   padding: 1rem;
   justify-content: flex-end;
 }
+.balance span {
+  font-size: 0.7em;
+}
 .balance h4 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-family: "Roboto", sans-serif;
   font-weight: 500;
-  text-shadow: 1px 0.1rem 0.2rem #00000040;
   word-break: break-all;
   flex: 1;
 }
@@ -1894,7 +1897,7 @@ sm-panel {
   #on_boarding {
     width: 26rem;
   }
-  #on_boarding::before {
+  #on_boarding.indicating::before {
     content: "";
     position: absolute;
     transform: rotate(45deg);
