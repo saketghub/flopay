@@ -2591,6 +2591,7 @@
         function finishOnBoarding() {
             onBoardingPanel.classList.add('hide')
             focusIllu.classList.add('hide')
+
             currentFeatureIndex = 0
         }
         function nextTutorial() {
@@ -2686,7 +2687,6 @@
                 currentFeatureIndex = index
             }
         }
-        showTutorial(0)
 
         const transactionSuccessSection = document.getElementById('success_section'),
             transactionFailedSection = document.getElementById('failure_section'),
