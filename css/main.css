@@ -1525,6 +1525,17 @@ sm-panel {
   animation-delay: 0.7s;
 }
 
+.cashier-message {
+  display: flex;
+  flex-direction: column;
+  background: rgba(var(--text-color), 0.06);
+  border-radius: 0.6rem;
+  padding: 1rem 1.2rem;
+}
+.cashier-message .time {
+  margin-bottom: 0.5rem;
+}
+
 .back-arrow {
   stroke-width: 10;
   margin-right: 0.5rem;
@@ -2052,7 +2063,7 @@ sm-panel {
     padding-right: 0;
   }
 
-  .activity {
+  .activity, .cashier-message {
     width: 60ch;
   }
 

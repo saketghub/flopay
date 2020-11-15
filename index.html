@@ -1539,10 +1539,14 @@
                     </div>`
                 return card;
             },
-            cashierMessage(message) {
-                let card = document.createElement('div')
+            cashierMessage(obj) {
+                let card = document.createElement('div'),
+                    {message, sender, vectorClock} = obj
                 card.classList.add('cashier-message')
-                card.innerHTML = `<p>${message}</p>`;
+                card.innerHTML = `
+                    <h5 class="time">${formatedTime(vectorClock)}</h5>    
+                    <p>${message}</p>
+                    `;
                 return card;
             },
             depositComplaint(userData, cashierData, udc) {
@@ -2703,6 +2707,7 @@
                 if(isHapticOn)
                     window.navigator.vibrate(200)
                 transactionSuccessSection.classList.remove('hide-completely')
+                refreshBalance()
             }
             else {
                 if(isHapticOn)
@@ -10873,7 +10878,7 @@
                             console.log('Going to sleep state for 2 seconds')
                             await new Promise(r => setTimeout(r, 2000));
                             if (temp_counter % 3 === 0) {
-                                if (url_index != len(flosight_url) - 1) {
+                                if (url_index != flosight_url.length - 1) {
                                     url_index = url_index + 1
                                 }
                                 else {
@@ -13353,7 +13358,7 @@
                     return;
                 }
 
-                notify("Please transfer INR " + amount_to_transfer + " to " + input_data["withdrawer_upi"], '',
+                notify("Please transfer ₹ " + amount_to_transfer + " to " + input_data["withdrawer_upi"], '',
                     true, true);
 
                 let transfer_upi_txid = await askPrompt("Enter the UPI txid for transferred amount.", '');
@@ -13374,7 +13379,7 @@
                     receiverID: myFloID
                 });
 
-                floCloudAPI.sendGeneralData(`Your withdrawal request of INR ${amount_to_transfer} is approved. 
+                floCloudAPI.sendGeneralData(`Your withdrawal request of ₹ ${amount_to_transfer} is approved. 
                             Please check reference number ${transfer_upi_txid} in your UPI ${withdraw_upi}`,
                     token_app.master_configurations.TYPE_MSGES, {
                     receiverID: input_data['withdrawer_flo_id']
@@ -13457,7 +13462,6 @@
                         hidePopup()
                         showTransactionStatus('success', 'Rupee Sent', 'It may take upto 48 working hours for transaction to be completed.', flo_txid);
                         sentActivityContainer.prepend(render.activityCard({ type: 'sent', processed: false, amount: token_amount, timeStamp: `${Date.now()}_${myFloID}`, tokenTxId: flo_txid, receiver: token_receiver }))
-                        refreshBalance()
                         return true;
                     }
                 }
@@ -13566,7 +13570,7 @@
                         });
 
                         notify(`Transaction successful: ${flo_txid}. 
-                                INR ${amount_to_pay} sent to ${vendor_flo_id}`, 'success', '', true);
+                                ₹ ${amount_to_pay} sent to ${vendor_flo_id}`, 'success', '', true);
                         return true;
                     }
                 }
@@ -13888,7 +13892,6 @@
                     } = usr_deposits.message;
                     let deposit_request_processed = false;
                     if (processed_deposits_upis.includes(upi_txid)) deposit_request_processed = true;
-                    console.info(upi_txid, deposit_request_processed)
                     frag.append(render.activityCard({
                         type: 'deposit', amount: deposit_amount, timeStamp: usr_deposits.vectorClock,
                         upi_txid, receiver: cashier_upi, deposit_request_processed, processed: deposit_request_processed
@@ -13954,7 +13957,6 @@
                 payCashierActivityContainer.append(frag)
 
                 for (msg of user_msg) {
-                    console.log(msg)
                     frag.append(render.cashierMessage(msg))
                 }
 
