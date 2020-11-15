@@ -387,10 +387,7 @@
             </svg>
         </sm-input>
         <sm-input floId id="recvr_id" placeholder="Reciever's FLO address" required animate></sm-input>
-        <h5>Send from</h5>
-        <div class="upi-container"></div>
-        <sm-button class="add-upi empty-state" variant="no-outline" onclick="showPopup('add_upi_popup')">+ Add UPI
-            address</sm-button>
+        <sm-input id="pay_cashier_txid" placeholder="UPI Transaction ID" minlength="12" maxlength="12" required animate></sm-input>
     </sm-popup>
     <!-- Transaction result popup -->
     <sm-popup id="transaction_result">
@@ -1286,7 +1283,7 @@
                         <h4 class="breakable">${floId}</h4>
                     </div>                 
                     <div>
-                        <h5>Transaction ID</h5>
+                        <h5>UPI Transaction ID</h5>
                         <h4 class="breakable">${txid}</h4>
                     </div>                 
                     <div>
@@ -1294,7 +1291,7 @@
                         <h4 class="breakable amount">₹${amount}</h4>
                     </div>                 
                     <h5 class="time">${formatedTime(vectorClock, true)}</h5>
-                    <button id="" class="confirm-pay-btn">
+                    <button class="confirm-pay-btn">
                         Confirm
                     </button>`;
                 return card;
@@ -13786,11 +13783,6 @@
                 const cnf_cash_payment_btn = document.getElementById('cnf_cash_payment')
 
                 cnf_cash_payment_btn.onclick = async function () {
-                    let selectedUPI = payCashierPopup.querySelector('input[type="radio"]:checked');
-                    if (!selectedUPI) {
-                        notify('Add an UPI address to pay through cashier.', 'error')
-                        return
-                    }
                     if (typeof liveCashier.floId !== "string" || liveCashier.floId.length < 1) {
                         notify('No cashier is live currently. Please try later.', 'error');
                         return false;
@@ -13800,7 +13792,7 @@
                     const paying_amount_div = document.getElementById('recvr_amount_to_pay')
                     const recvr_id = document.getElementById('recvr_id').value;
                     let amount_to_pay = parseInt(paying_amount_div.value);
-                    let paid_cashier_upi = selectedUPI.value;
+                    let paid_cashier_upi = document.getElementById('pay_cashier_txid').value;
                     paid_cashier_upi = toAlphanumeric(paid_cashier_upi);
                     if (recvr_id.length < 1 ||
                         !floCrypto.validateAddr(recvr_id) ||
@@ -13962,6 +13954,7 @@
                 payCashierActivityContainer.append(frag)
 
                 for (msg of user_msg) {
+                    console.log(msg)
                     frag.append(render.cashierMessage(msg))
                 }
 
