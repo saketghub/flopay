@@ -5,6 +5,10 @@
   font-family: "Roboto", sans-serif;
 }
 
+:root {
+  font-size: 16px;
+}
+
 body {
   --accent-color: #4527A0;
   --text-color: 17, 17, 17;
@@ -17,7 +21,6 @@ body {
   --saturation: 61%;
   --lightness: 39%;
   color: rgba(var(--text-color), 1);
-  font-size: 16px;
   background-size: cover;
 }
 
@@ -68,7 +71,7 @@ h4 {
 }
 
 h5 {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 h1,
@@ -81,6 +84,7 @@ h5 {
 }
 
 p {
+  font-size: 0.95rem;
   line-height: 1.5;
   max-width: 60ch;
   color: rgba(var(--text-color), 0.9);
@@ -127,7 +131,7 @@ button:disabled ~ .loader {
 }
 
 .top-padding {
-  padding-top: 1em;
+  padding-top: 1rem;
 }
 
 .bottom-margin {
@@ -148,7 +152,7 @@ button:disabled ~ .loader {
 
 .grid-2 {
   grid-template-columns: auto auto;
-  gap: 1em;
+  gap: 1rem;
 }
 
 .align-center {
@@ -189,7 +193,7 @@ button:disabled ~ .loader {
 }
 
 .separator {
-  padding: 0.1em;
+  padding: 0.1rem;
 }
 
 .no-transformations {
@@ -269,8 +273,8 @@ sm-button[variant=outlined] {
   position: absolute;
   left: 0;
   top: 0;
-  border-radius: 0.8rem;
-  box-shadow: 0.1em 0.2em 1em rgba(var(--text-color), 0.16);
+  border-radius: 0.85rem;
+  box-shadow: 0.1rem 0.2rem 1rem rgba(var(--text-color), 0.16);
   padding: 1.5rem;
   color: white;
   background: var(--accent-color);
@@ -289,7 +293,7 @@ sm-button[variant=outlined] {
 }
 #on_boarding #total_tuts {
   opacity: 0.8;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 #on_boarding h4 {
   margin-bottom: 0.5rem;
@@ -385,7 +389,7 @@ sm-button[variant=outlined] {
 @keyframes faderight {
   from {
     opacity: 0;
-    transform: translateX(-1em);
+    transform: translateX(-1rem);
   }
   to {
     opacity: 1;
@@ -395,7 +399,7 @@ sm-button[variant=outlined] {
 @keyframes fadeleft {
   from {
     opacity: 0;
-    transform: translateX(1em);
+    transform: translateX(1rem);
   }
   to {
     opacity: 1;
@@ -428,7 +432,7 @@ textarea {
   resize: none;
   font-size: 1rem;
   line-height: 1.6;
-  padding: 0.8rem;
+  padding: 0.85rem;
 }
 
 *:empty + .empty-state {
@@ -441,8 +445,8 @@ textarea {
   width: 100%;
 }
 .empty-state svg {
-  height: 12em;
-  width: 12em;
+  height: 12rem;
+  width: 12rem;
 }
 .empty-state svg polyline,
 .empty-state svg path,
@@ -470,7 +474,7 @@ textarea {
 .btn {
   background: var(--accent-color);
   color: rgba(var(--foreground-color), 1);
-  padding: 0.4em 1em;
+  padding: 0.4rem 1rem;
 }
 
 .back-arrow {
@@ -484,7 +488,7 @@ textarea {
 
 .card {
   border-radius: 0.6rem;
-  padding: 1.5em;
+  padding: 1.5rem;
   background: rgba(var(--foreground-color), 1);
 }
 
@@ -503,7 +507,7 @@ textarea {
 }
 #confirmation .flex sm-button:first-of-type,
 #prompt .flex sm-button:first-of-type {
-  margin-right: 0.6em;
+  margin-right: 0.6rem;
   margin-left: auto;
 }
 
@@ -512,8 +516,8 @@ textarea {
 }
 
 .refresh {
-  margin-top: 0.6em;
-  margin-bottom: 1em;
+  margin-top: 0.6rem;
+  margin-bottom: 1rem;
 }
 
 sm-popup sm-input:not(:last-of-type) {
@@ -608,6 +612,7 @@ details, summary {
 }
 
 summary {
+  font-size: 1rem;
   cursor: pointer;
 }
 
@@ -617,7 +622,6 @@ details h5 {
   margin-top: 1.2rem !important;
 }
 details p {
-  font-size: 0.9rem;
   line-height: 1.4;
 }
 
@@ -640,7 +644,7 @@ details p {
   align-items: center;
 }
 #sign_in_page .info h1 {
-  line-height: 1.1em;
+  line-height: 1.1rem;
   font-weight: 800;
   font-size: clamp(1.5rem, 8vw, 4rem);
   margin-top: 1rem;
@@ -769,11 +773,11 @@ details p {
   text-align: center;
   cursor: pointer;
   padding: 0.3rem;
-  padding-top: 0.8rem;
-  border-radius: 0.4em;
+  padding-top: 0.85rem;
+  border-radius: 0.4rem;
   opacity: 0.6;
   color: rgba(var(--text-color), 1);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-transform: capitalize;
   width: 100%;
   font-weight: 600;
@@ -851,7 +855,7 @@ details p {
 .display-balance {
   grid-template-columns: 1fr 1fr;
   grid-template-areas: "rupee ." "flo flo";
-  gap: 0.8rem;
+  gap: 0.85rem;
   margin-top: 1rem;
 }
 .display-balance .icon {
@@ -930,10 +934,11 @@ details p {
   background: rgba(var(--foreground-color), 1);
   z-index: 1;
   transition: clip-path 0.4s ease-out;
-  clip-path: circle(0.8rem at calc(100% - 1.5rem) 1.4rem);
+  clip-path: circle(0.85rem at calc(100% - 1.5rem) 1.4rem);
   scrollbar-width: thin;
 }
 .tooltip .tt-icon {
+  font-size: 0.9rem;
   display: inline-flex;
   width: 3rem;
   height: 3rem;
@@ -985,7 +990,7 @@ details p {
   width: 3rem;
   background: rgba(var(--text-color), 0.06);
   border-radius: 2rem;
-  padding: 0.8rem;
+  padding: 0.85rem;
   margin-bottom: 0.6rem;
 }
 .option h4 {
@@ -1004,10 +1009,10 @@ details p {
   z-index: 1;
   top: 0;
   right: 0;
-  height: 0.6em;
-  width: 0.6em;
+  height: 0.6rem;
+  width: 0.6rem;
   background-color: #E53935;
-  border-radius: 0.4em;
+  border-radius: 0.4rem;
   transition: transform 0.3s;
 }
 
@@ -1045,7 +1050,7 @@ sm-panel {
 .request {
   display: grid;
   gap: 1rem;
-  padding: 1.5em;
+  padding: 1.5rem;
   border-radius: 0.6rem;
   background: rgba(var(--text-color), 0.06);
 }
@@ -1129,7 +1134,7 @@ sm-panel {
 
 .container {
   display: grid;
-  gap: 1em;
+  gap: 1rem;
   width: 100%;
 }
 
@@ -1160,14 +1165,14 @@ sm-panel {
   grid-area: search;
 }
 .page .container-header .search input {
-  padding: 1em;
+  padding: 1rem;
   border: none;
   width: 100%;
   background: var(--dark-shade);
   font-size: 1rem;
   font-weight: 500;
   color: rgba(var(--text-color), 1);
-  border-radius: 0.2em;
+  border-radius: 0.2rem;
 }
 .page .container-header .search input:focus {
   outline: none;
@@ -1262,10 +1267,10 @@ sm-panel {
 }
 .complaint-placeholder h4 {
   background: rgba(var(--text-color), 0.2);
-  padding: 0.8rem 0.8rem;
+  padding: 0.85rem 0.85rem;
 }
 .complaint-placeholder .demo-btn {
-  padding: 0.8rem 3rem;
+  padding: 0.85rem 3rem;
 }
 
 @keyframes pulse {
@@ -1305,7 +1310,7 @@ sm-panel {
 #main_loader h3 {
   width: 100%;
   font-weight: 400;
-  word-spacing: 0.16em;
+  word-spacing: 0.16rem;
 }
 
 #upi_txId_section .copy-row {
@@ -1451,7 +1456,7 @@ sm-panel {
   grid-area: icon;
   height: 3rem;
   width: 3rem;
-  padding: 0.8rem;
+  padding: 0.85rem;
   background: rgba(var(--text-color), 0.06);
   background-size: cover;
   border-radius: 2rem;
@@ -1460,7 +1465,7 @@ sm-panel {
   grid-area: type;
   text-transform: capitalize;
   font-weight: 400;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 .activity .activity-receiver {
   grid-area: receiver;
@@ -1564,7 +1569,7 @@ sm-panel {
   align-items: center;
   cursor: pointer;
   flex: 1;
-  padding: 0.8rem 1rem;
+  padding: 0.85rem 1rem;
 }
 .select input[type=radio] {
   display: none;
@@ -1780,7 +1785,7 @@ sm-panel {
 #person_popup > .flex:first-of-type .flex .icon {
   height: 2.6rem;
   width: 2.6rem;
-  padding: 0.8rem;
+  padding: 0.85rem;
   cursor: pointer;
   stroke-width: 8;
 }
@@ -1824,7 +1829,7 @@ sm-panel {
   color: rgba(var(--text-color), 0.7);
 }
 #settings_page sm-button {
-  margin-top: 0.8rem;
+  margin-top: 0.85rem;
 }
 #settings_page .flex {
   max-width: 60ch;
@@ -1917,7 +1922,7 @@ sm-panel {
     width: 1rem;
     height: 1rem;
     background: inherit;
-    box-shadow: -0.1em 0 1em rgba(var(--text-color), 0.16);
+    box-shadow: -0.1rem 0 1rem rgba(var(--text-color), 0.16);
   }
 
   #navbar {
@@ -1936,7 +1941,7 @@ sm-panel {
   #navbar .navbar-item {
     display: flex;
     width: auto;
-    padding: 0.8rem 1.2rem;
+    padding: 0.85rem 1.2rem;
   }
   #navbar .navbar-item .icon {
     height: 1.2rem;
@@ -1975,7 +1980,7 @@ sm-panel {
 
   .options-tab, #people_container {
     grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
-    gap: 2rem 0.8rem;
+    gap: 2rem 0.85rem;
   }
 
   .display-balance .balance {
@@ -2037,7 +2042,7 @@ sm-panel {
     display: block;
   }
   #navbar .icon {
-    margin-right: 0.8rem;
+    margin-right: 0.85rem;
   }
   #navbar .logo h4 {
     display: block;
@@ -2090,7 +2095,12 @@ sm-panel {
 }
 @media only screen and (min-width: 1900px) {
   :root {
-    font-size: 22px;
+    font-size: 24px;
+  }
+}
+@media only screen and (min-width: 2400px) {
+  :root {
+    font-size: 36px;
   }
 }
 @media only screen and (max-width: 320px) {

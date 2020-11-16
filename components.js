@@ -209,14 +209,14 @@ border: none;
 }
 .icon {
     fill: none;
-    height: 1.6em;
-    width: 1.6em;
-    padding: 0.5em;
+    height: 1.6rem;
+    width: 1.6rem;
+    padding: 0.5rem;
     stroke: rgba(var(--text-color), 0.7);
     stroke-width: 10;
     overflow: visible;
     stroke-linecap: round;
-    border-radius: 1em;
+    border-radius: 1rem;
     stroke-linejoin: round;
     cursor: pointer;
     min-width: 0;
@@ -234,9 +234,9 @@ border: none;
             align-items: center;
     text-align: left;
     position: relative;
-    gap: 1em;
-    padding: 0.7em 1em;
-    border-radius: 0.3em;
+    gap: 1rem;
+    padding: 0.7rem 1rem;
+    border-radius: 0.3rem;
     -webkit-transition: opacity 0.3s;
     -o-transition: opacity 0.3s;
     transition: opacity 0.3s;
@@ -247,7 +247,7 @@ border: none;
 }
 .input.readonly .clear{
     opacity: 0 !important;
-    margin-right: -2em;
+    margin-right: -2rem;
     pointer-events: none !important;
 }
 .readonly{
@@ -270,7 +270,7 @@ input:focus{
             user-select: none;
     opacity: .7;
     font-weight: 400;
-    font-size: 1em;
+    font-size: 1rem;
     position: absolute;
     top: 0;
     -webkit-transition: -webkit-transform 0.3s;
@@ -307,7 +307,7 @@ input:focus{
             flex: 1;
 }    
 input{
-    font-size: 1em;
+    font-size: 1rem;
     border: none;
     background: transparent;
     outline: none;
@@ -315,15 +315,15 @@ input{
     width: 100%;
 }
 .animate-label .container input {
-    -webkit-transform: translateY(0.6em);
-            -ms-transform: translateY(0.6em);
-        transform: translateY(0.6em);
+    -webkit-transform: translateY(0.6rem);
+            -ms-transform: translateY(0.6rem);
+        transform: translateY(0.6rem);
     }
   
 .animate-label .container .label {
-    -webkit-transform: translateY(-0.6em) scale(0.8);
-            -ms-transform: translateY(-0.6em) scale(0.8);
-        transform: translateY(-0.6em) scale(0.8);
+    -webkit-transform: translateY(-0.6rem) scale(0.8);
+            -ms-transform: translateY(-0.6rem) scale(0.8);
+        transform: translateY(-0.6rem) scale(0.8);
     opacity: 1;
     color: var(--accent-color)
 }
@@ -572,14 +572,14 @@ smTextarea.innerHTML = `
 }
 .icon {
     fill: none;
-    height: 1.6em;
-    width: 1.6em;
-    padding: 0.5em;
+    height: 1.6rem;
+    width: 1.6rem;
+    padding: 0.5rem;
     stroke: rgba(var(--text-color), 0.7);
     stroke-width: 10;
     overflow: visible;
     stroke-linecap: round;
-    border-radius: 1em;
+    border-radius: 1rem;
     stroke-linejoin: round;
     cursor: pointer;
     min-width: 0;
@@ -595,8 +595,8 @@ smTextarea.innerHTML = `
         -ms-flex-align: center;
             align-items: center;
     position: relative;
-    padding: 0.7em 1em;
-    border-radius: 0.3em;
+    padding: 0.7rem 1rem;
+    border-radius: 0.3rem;
     -webkit-transition: opacity 0.3s;
     -o-transition: opacity 0.3s;
     transition: opacity 0.3s;
@@ -622,9 +622,9 @@ textarea:focus{
             user-select: none;
     opacity: .7;
     font-weight: 400;
-    font-size: 1em;
+    font-size: 1rem;
     position: absolute;
-    top: 0.9em;
+    top: 0.9rem;
     -webkit-transition: -webkit-transform 0.3s;
     transition: -webkit-transform 0.3s;
     -o-transition: transform 0.3s;
@@ -642,7 +642,7 @@ textarea:focus{
     will-change: transform;
 }   
 textarea{
-    font-size: 1em;
+    font-size: 1rem;
     border: none;
     background: transparent;
     outline: none;
@@ -652,15 +652,15 @@ textarea{
     line-height: 1.6;
 }
 .animate-label textarea {
-    -webkit-transform: translateY(0.6em);
-            -ms-transform: translateY(0.6em);
-        transform: translateY(0.6em);
+    -webkit-transform: translateY(0.6rem);
+            -ms-transform: translateY(0.6rem);
+        transform: translateY(0.6rem);
 }
   
 .animate-label .label {
-    -webkit-transform: translateY(-0.6em) scale(0.8);
-            -ms-transform: translateY(-0.6em) scale(0.8);
-        transform: translateY(-0.6em) scale(0.8);
+    -webkit-transform: translateY(-0.6rem) scale(0.8);
+            -ms-transform: translateY(-0.6rem) scale(0.8);
+        transform: translateY(-0.6rem) scale(0.8);
     opacity: 1;
     color: var(--accent-color)
 }
@@ -813,7 +813,7 @@ smTab.innerHTML = `
         white-space: nowrap;
         padding: 0.4rem 0.8rem;
         font-weight: 500;
-        word-spacing: 0.1em;
+        word-spacing: 0.1rem;
         text-align: center;
         -webkit-transition: color 0.3s;
         -o-transition: color 0.3s;
