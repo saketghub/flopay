@@ -644,7 +644,7 @@ details p {
   align-items: center;
 }
 #sign_in_page .info h1 {
-  line-height: 1.1rem;
+  line-height: 1.1;
   font-weight: 800;
   font-size: clamp(1.5rem, 8vw, 4rem);
   margin-top: 1rem;
