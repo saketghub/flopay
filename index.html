@@ -5,6 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RanchiMall Pay</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-86RVPYPYDP"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-86RVPYPYDP');
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap"
         rel="stylesheet">
@@ -13989,7 +13997,7 @@
                                 receiver = flodata.match(/\b\w{34,34}\b/) ? flodata.match(/\b\w{34,34}\b/) : await getReceiver(vout),
                                 timeStamp = time * 1000,
                                 confirmations = await ajaxGet(`https://flosight.duckdns.org/api/tx/${txid}`),
-                                processed = confirmations.confirmations > 3 ? true : false
+                                processed = confirmations.confirmations > 0 ? true : false
 
                             if (receiver === '' || typeof receiver === 'undefined' || receiver === null) continue;
                             frag.append(render.activityCard({ type: 'sent', amount: tokenAmount, tokenTxId: txid, receiver, timeStamp, processed, toCashier: token_app.master_configurations.cashiers[receiver] }))
