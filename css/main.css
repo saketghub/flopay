@@ -773,14 +773,14 @@ details p {
   border-radius: 0.4em;
   opacity: 0.6;
   color: rgba(var(--text-color), 1);
-  font-size: 0.8em;
+  font-size: 0.8rem;
   text-transform: capitalize;
   width: 100%;
   font-weight: 600;
   -webkit-tap-highlight-color: transparent;
 }
 #navbar .navbar-item h5 {
-  margin-top: 0.4em;
+  margin-top: 0.4rem;
 }
 #navbar .navbar-item .icon {
   stroke: rgba(var(--text-color), 1);
@@ -2088,8 +2088,13 @@ sm-panel {
     flex-direction: column;
   }
 }
+@media only screen and (min-width: 1900px) {
+  :root {
+    font-size: 22px;
+  }
+}
 @media only screen and (max-width: 320px) {
-  body {
+  :root {
     font-size: 14px;
   }
 }
