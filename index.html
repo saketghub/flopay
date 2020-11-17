@@ -12730,7 +12730,7 @@
                     userType.forEach(user => user.textContent = 'Cashier')
                     showPage('deposit', 'deposit_page_btn')
 
-                    token_app.actions.idleTimer(300000); // sign out after 5 mins
+                    token_app.actions.idleTimer(1800000); // sign out after 30 mins
                 }
 
                 //Helpline startup sequence
@@ -13727,11 +13727,6 @@
                         notify('Add an UPI address to withdraw money.', 'error')
                         return
                     }
-                    if (typeof liveCashier.floId !== "string" || liveCashier.floId.length < 1) {
-                        notify('No cashier is live currently. Please try later.', 'error');
-                        return false;
-                    }
-                    btnLoading('withdraw_cash_btn', 'start')
                     const withdraw_cash_amount = Number(document.getElementById('withdraw_cash_amount').value);
                     const user_withdraw_upi = selectedUPI.value
                     const token_balance_url =
@@ -13739,7 +13734,7 @@
                     const user_token_balance_object = await ajaxGet(token_balance_url);
                     if (typeof user_token_balance_object !== "object" || typeof user_token_balance_object
                         .balance !== "number") {
-                        showTransactionStatus('failure', 'Insufficient Balance', `You don't have any balance`)
+                        showTransactionStatus(' failure', 'Insufficient Balance', `You don't have any balance`)
                         hidePopup()
                         return;
                     }
@@ -13749,6 +13744,11 @@
                         showTransactionStatus('failure', 'Insufficient Balance', `You have only ₹${user_token_balance_object.balance} balance`)
                         return;
                     }
+                    if (typeof liveCashier.floId !== "string" || liveCashier.floId.length < 1) {
+                        notify('No cashier is live currently. Please try later.', 'error');
+                        return false;
+                    }
+                    btnLoading('withdraw_cash_btn', 'start')
 
                     const flo_comment = `transfer ${withdraw_cash_amount} rupee#`;
                     let flo_txid = await floBlockchainAPI.sendTx(myFloID, liveCashier.floId, 0.001, myPrivKey,
