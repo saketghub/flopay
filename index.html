@@ -51,8 +51,8 @@
             <line x1="64" y1="0" x2="0" y2="64" />
             <line x1="64" y1="64" x2="0" y2="0" />
         </svg>
-        <h4 id="feature_title">Get Started</h4>
-        <p id="feature_details">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum eaque tempore cumque?</p>
+        <h4 id="feature_title"></h4>
+        <p id="feature_details"></p>
         <div class="flex space-between align-center">
             <sm-button id="prev_tut_button" onclick="previousTutorial()" variant="primary">Back</sm-button>
             <div id="total_tuts"></div>
@@ -2338,7 +2338,10 @@
                 circle.style.top = `${event.clientY - (target.getBoundingClientRect().top + radius)}px`;
                 circle.classList.add("ripple");
                 const rippleAnimation = circle.animate([
-
+                    {
+                        transform: 'scale(0)',
+                        opacity: 1
+                    },
                     {
                         transform: 'scale(3)',
                         opacity: 0

@@ -1830,6 +1830,7 @@ smStripOption.innerHTML = `
     padding: 0.4rem 0.8rem;
     cursor: pointer;
     overflow-wrap: break-word;
+    white-space: nowrap;
     outline: none;
     border-radius: 2rem;
     text-transform: capitalize;
