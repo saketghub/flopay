@@ -41,10 +41,6 @@
         </div>
     </sm-popup>
     <sm-notifications id="show_message"></sm-notifications>
-    <svg xmlns="http://www.w3.org/2000/svg" class="hide-on-desktop hide" id="focus_illu" viewBox="0 0 128 128">
-        <path d="M64,0a64,64,0,1,0,64,64A64,64,0,0,0,64,0Zm0,89A25,25,0,1,1,89,64,25,25,0,0,1,64,89Z"/>
-        <path d="M64,20a44,44,0,1,0,44,44A44,44,0,0,0,64,20Zm0,69A25,25,0,1,1,89,64,25,25,0,0,1,64,89Z"/>
-    </svg>
     <div id="on_boarding" class="flex direction-column hide">
         <svg class="icon justify-right" onclick="finishOnBoarding()" viewBox="0 0 64 64">
             <title>close</title>
@@ -117,6 +113,7 @@
                                 <path d="M.5,47.52V6.5a6,6,0,0,1,6-6h41" />
                             </svg>
                         </div>
+                        <sm-button id="sign_in_with" onclick="signIn()" variant="primary">Sign in with this private key</sm-button>
                     </section>
                 </sm-panel>
             </sm-tab-panels>
@@ -162,9 +159,11 @@
                 <h4 class="expand primary-btn">
                     Send
                 </h4>
-                <svg viewBox="0 0 73 73" class="loader">
-                    <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                </svg>
+                <div class="loader-container">
+                    <svg viewBox="0 0 73 73" class="loader">
+                        <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                    </svg>
+                </div>
             </button>
         </header>
         <p>
@@ -202,9 +201,11 @@
                 <h4 class="primary-btn expand">
                     Deposit
                 </h4>
-                <svg viewBox="0 0 73 73" class="loader">
-                    <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                </svg>
+                <div class="loader-container">
+                    <svg viewBox="0 0 73 73" class="loader">
+                        <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                    </svg>
+                </div>
             </button>
         </header>
         <p>
@@ -259,13 +260,15 @@
                 <h4 class="primary-btn expand">
                     withdraw
                 </h4>
-                <svg viewBox="0 0 73 73" class="loader">
-                    <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                </svg>
+                <div class="loader-container">
+                    <svg viewBox="0 0 73 73" class="loader">
+                        <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                    </svg>
+                </div>
             </button>
         </header>
         <p>
-            Withdraw or redeem money back to your specified UPI address.
+            Transfer wallet balance to your bank account using specified UPI address.
         </p>
         <details>
             <summary>
@@ -304,10 +307,12 @@
                     <h4 class="primary-btn expand">
                         request
                     </h4>
-                    <svg viewBox="0 0 73 73" class="loader">
-                        <path
-                            d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                    </svg>
+                    <div class="loader-container">
+                        <svg viewBox="0 0 73 73" class="loader">
+                            <path
+                                d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                        </svg>
+                    </div>
                 </button>
         </header>
         <p>
@@ -345,9 +350,11 @@
                 <h4 class="primary-btn expand">
                     pay
                 </h4>
-                <svg viewBox="0 0 73 73" class="loader">
-                    <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                </svg>
+                <div class="loader-container">
+                    <svg viewBox="0 0 73 73" class="loader">
+                        <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                    </svg>
+                </div>
             </button>
         </header>
         <details>
@@ -495,9 +502,11 @@
                 <h4 class="primary-btn expand">
                     Add address
                 </h4>
-                <svg viewBox="0 0 73 73" class="loader">
-                    <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                </svg>
+                <div class="loader-container">
+                    <svg viewBox="0 0 73 73" class="loader">
+                        <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                    </svg>
+                </div>
             </button>
         </header>
         <sm-input id="add_upi_input" placeholder="UPI address" pattern="^[a-zA-z0-9\-]+@[a-zA-z0-9]+" required animate>
@@ -517,9 +526,11 @@
                 <h4 class="primary-btn expand">
                     Add contact
                 </h4>
-                <svg viewBox="0 0 73 73" class="loader">
-                    <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                </svg>
+                <div class="loader-container">
+                    <svg viewBox="0 0 73 73" class="loader">
+                        <path d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                    </svg>
+                </div>
             </button>
         </header>
         <sm-input id="person_flo_id" placeholder="FLO address" floId animate required></sm-input>
@@ -594,7 +605,7 @@
     </sm-popup>
 
     <header id="main_header" class="flex hide-on-desktop space-between align-center">
-        <div class="logo">
+        <div class="logo" onclick="showPage('home_page', 'home_page_btn')">
             <svg class="main-logo" viewBox="0 0 27.25 32">
                 <title>RanchiMall</title>
                 <path
@@ -614,7 +625,7 @@
         </div>
     </header>
     <nav id="navbar" class="hide-completely">
-        <div class="logo hide-on-mobile">
+        <div class="logo hide-on-mobile" onclick="showPage('home_page', 'home_page_btn')">
             <svg class="main-logo" viewBox="0 0 27.25 32">
                 <title>RanchiMall</title>
                 <path
@@ -675,7 +686,7 @@
                 <path d="M25.4,33.4c-2.5,4.7-10.5,7.1-16.4,9.7c-2.4,1-4.4,14-1.6,14c7.7,4.4,16.4,6.6,25.2,6.4
                         c8.5,0.3,16.9-2,24.2-6.4c2.8,0,0.8-12.9-1.6-14c-5.9-2.6-13.9-5-16.4-9.7" />
             </svg>
-            <h5 class="user-type">Me</h5>
+            <h5 class="user-type">Profile</h5>
         </div>
     </nav>
     <main class="hide-completely">
@@ -750,14 +761,16 @@
                         <h4 class="primary-btn expand">
                             Refresh
                         </h4>
-                        <svg viewBox="0 0 73 73" class="loader">
-                            <path
-                                d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                        </svg>
+                        <div class="loader-container">
+                            <svg viewBox="0 0 73 73" class="loader">
+                                <path
+                                    d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                            </svg>
+                        </div>
                     </button>
                 </div>
                 <div class="display-balance grid">
-                    <div class="balance rupee-balance-card">
+                    <div id="wallet_balance" class="balance rupee-balance-card">
                         <div class="tooltip help">
                             <div class="tt-icon">?</div>
                             <p class="tooltip-text">Your wallet balance</p>
@@ -1009,10 +1022,12 @@
                         <h4 class="primary-btn expand">
                             Refresh
                         </h4>
-                        <svg viewBox="0 0 73 73" class="loader">
-                            <path
-                                d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
-                        </svg>
+                        <div class="loader-container">
+                            <svg viewBox="0 0 73 73" class="loader">
+                                <path
+                                    d="M72.5,36.5c0,19.88-16.12,36-36,36s-36-16.12-36-36s16.12-36,36-36S72.5,16.62,72.5,36.5" />
+                            </svg>
+                        </div>
                     </button>
                 </div>
                 <div class="display-balance grid">
@@ -1150,7 +1165,7 @@
                     <div class="user-option">
                         <h4 class="top-margin">My UPIs</h4>
                         <div class="upi-container"></div>
-                        <p class="empty-state">Add UPI address for easier access during various transactions.</p>
+                        <p class="empty-state">Add your UPI addresses for withdrawing money from wallet back to your bank account.</p>
                         <sm-button variant="no-outline" onclick="showPopup('add_upi_popup')">+ Add UPI address
                         </sm-button>
                     </div>
@@ -1207,7 +1222,7 @@
             console.log("Starting the app! Please Wait!")
             floDapps.launchStartUp().then(async result => {
                 console.log(`Welcome ${myFloID}`)
-                clearElements(['my_qr_code'])
+                clearElements(['#my_qr_code', '#people_container', '.upi-container'])
                 userFloIdContainers.forEach(container => container.textContent = myFloID)
 
                 await token_app.actions.doShreeGanesh();
@@ -1874,6 +1889,13 @@
             }
         })
 
+        window.addEventListener('popstate', e => {
+            if(!e.state) return
+            if(e.state.type === 'popup'){
+                hidePopup()
+            }
+        })
+
         // function required for popups or modals to appear
         class Stack {
             constructor() {
@@ -1932,6 +1954,10 @@
         document.addEventListener('popupopened', async e => {
             let thisPopup = e.detail.popup,
                 firstInput = thisPopup.querySelector('sm-input')
+            
+            //pushes popup as seprate entry in history
+            history.pushState({type: 'popup'}, null, null)
+            
             if (firstInput)
                 firstInput.focusIn()
             switch (e.detail.popup.id) {
@@ -2012,12 +2038,6 @@
             }, 400)
             zIndex--
             switch (e.detail.popup.id) {
-                case 'sign_in_popup':
-                    loader.classList.remove('animate-loader')
-                    document.querySelector('main').classList.remove('hide-completely')
-                    document.querySelector('#navbar').classList.remove('hide-completely')
-                    document.querySelector('#main_header').classList.remove('hide-completely')
-                    break;
                 case 'send_rupee_popup':
                     payingRequested = false;
                     tokenReceiver.readOnly = false
@@ -2063,13 +2083,11 @@
                 btn = document.getElementById(btn);
             if (option === 'start') {
                 btn.classList.add('start-loading')
-                btn.children[1].classList.add('animate-loader')
-                    btn.children[0].textContent = btn.children[0].textContent.trim() + 'ing'
+                btn.children[0].textContent = btn.children[0].textContent.trim() + 'ing'
             } else {
+                btn.classList.remove('start-loading')
                 if (btn.children[0].textContent.indexOf('ing'))
                     btn.children[0].textContent = btn.children[0].textContent.trim().replace('ing', '')
-                btn.classList.remove('start-loading')
-                btn.children[1].classList.remove('animate-loader')
             }
         }
 
@@ -2112,8 +2130,9 @@
         }
 
         function clearElements(array = []) {
+            console.log(array)
             array.forEach(item => {
-                document.getElementById(item).innerHTML = ``
+                document.querySelectorAll(item).forEach(elem => elem.innerHTML = ``)
             })
         }
 
@@ -2535,26 +2554,31 @@
             {
                 id: '',
                 title: 'Welcome',
-                details: 'We are glad that you chose our service.<br>RanchiMall Pay can be used throughout our <strong>ecosystem</strong> to pay/receive money.'
+                details: `We are glad that you chose our service.<br>RanchiMall Pay extends UPI's functionality into the blockchain.`
+            },
+            {
+                id: 'wallet_balance',
+                title: 'Wallet',
+                details: 'This is RanchiMall Pay wallet. You need to deposit money through UPI in-order to user app functionalities.'
             },
             {
                 id: 'send_rupee_option',
-                title: 'Send money',
-                details: 'Click to send money to any FLO address. This uses wallet balance to send money.'
+                title: 'Send',
+                details: 'Click to send wallet money to any FLO address.'
             },
             {
                 id: 'deposit_rupee_option',
-                title: 'Deposit money',
-                details: 'Add balance to your RanchiMall pay wallet.'
+                title: 'Deposit',
+                details: 'Add balance to your RanchiMall Pay wallet.'
             },
             {
                 id: 'withdraw_rupee_option',
-                title: 'Withdraw money',
-                details: `Transfer money from wallet, back to your specified UPI address.`
+                title: 'Withdraw',
+                details: `Transfer wallet balance to your bank account using specified UPI address.`
             },
             {
                 id: 'request_rupee_option',
-                title: 'Request money',
+                title: 'Request',
                 details: `Request money from others using their FLO address. Requested money will be stored in wallet balance.`
             },
             {
@@ -2569,18 +2593,18 @@
             },
             {
                 id: 'request_page_btn',
-                title: `Request page`,
+                title: `Requests`,
                 details: 'This will show all the payment requests you received from other users and shop keepers.'
             },
             {
                 id: 'activity_page_btn',
-                title: 'Activity page',
+                title: 'Activity',
                 details: 'This page displays all the transactions such as sent, received money etc.'
             },
             {
                 id: 'profile_page_btn',
-                title: 'Profile page',
-                details: 'This page contains all the personal data as well as app settings.'
+                title: 'Profile',
+                details: 'This page contains your FLO ID as well as app settings.'
             }
         ]
 
@@ -2589,11 +2613,11 @@
             featureDetails = document.getElementById('feature_details'),
             nextTutButton = document.getElementById('next_tut_button'),
             prevTutButton = document.getElementById('prev_tut_button'),
-            totalTuts = document.getElementById('total_tuts'),
-            focusIllu = document.getElementById('focus_illu')
+            totalTuts = document.getElementById('total_tuts')
 
 
-        let currentFeatureIndex = 0;
+        let currentFeatureIndex = 0,
+            lastTargetOption;
 
         function startOnBoarding() {
             onBoardingPanel.classList.remove('hide')
@@ -2602,8 +2626,7 @@
         }
         function finishOnBoarding() {
             onBoardingPanel.classList.add('hide')
-            focusIllu.classList.add('hide')
-
+            lastTargetOption.classList.remove('highlight')
             currentFeatureIndex = 0
         }
         function nextTutorial() {
@@ -2619,14 +2642,12 @@
             index = (nextTutButton.textContent === 'Got it' && index > 0) ? 0 : Math.min(Math.max(index + currentFeatureIndex, 0), onBoarding.length - 1)
             if (index === 0){
                 prevTutButton.classList.add('hide')
-                focusIllu.classList.add('hide')
                 onBoardingPanel.classList.remove('indicating')
                 onBoardingPanel.setAttribute('style', `transform: translate(calc(50vw - ${onBoardingPanel.getBoundingClientRect().width/2}px), calc(50vh - ${onBoardingPanel.getBoundingClientRect().height/2}px))`)
             }
             else{
                 onBoardingPanel.classList.add('indicating')
                 prevTutButton.classList.remove('hide')
-                focusIllu.classList.remove('hide')
             }
             if (index === onBoarding.length - 1) {
                 nextTutButton.textContent = `Got it`
@@ -2667,6 +2688,8 @@
                 featureDetails.animate(flyOut, options)
             }
             titleAnime.onfinish = () => {
+                if(lastTargetOption)
+                    lastTargetOption.classList.remove('highlight')
                 featureTitle.textContent = onBoarding[index].title
                 featureDetails.innerHTML = onBoarding[index].details
                 totalTuts.textContent = `${index + 1}/${onBoarding.length}`
@@ -2674,7 +2697,10 @@
                     const targetOption = document.getElementById(onBoarding[index].id)
                     let targetPosition = targetOption.getBoundingClientRect()
                     if(window.innerWidth > 640){
-                        onBoardingPanel.setAttribute('style', `transform: translate(${targetPosition.left + targetPosition.width}px, ${targetPosition.top + Math.abs(document.body.getBoundingClientRect().top)}px)`)
+                        if(targetPosition.left + targetPosition.width + onBoardingPanel.getBoundingClientRect().width < window.innerWidth)
+                            onBoardingPanel.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width}px + 1.5rem), ${targetPosition.top + Math.abs(document.body.getBoundingClientRect().top)}px)`)
+                        else
+                            onBoardingPanel.setAttribute('style', `transform: translate(calc(${targetPosition.left - onBoardingPanel.getBoundingClientRect().width}px - 1.5rem), ${targetPosition.top + Math.abs(document.body.getBoundingClientRect().top)}px)`)
                     }
                     else{
                         if(targetPosition.bottom + onBoardingPanel.getBoundingClientRect().height < window.innerHeight)
@@ -2685,8 +2711,10 @@
                         if(targetPosition.top + targetPosition.height > window.innerHeight){
                             targetOption.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'start'})
                         }
-                        focusIllu.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width/2}px - 1.5rem), ${targetPosition.top + Math.abs(document.body.getBoundingClientRect().top)}px)`)
+                        //focusIllu.setAttribute('style', `transform: translate(calc(${targetPosition.left + targetPosition.width/2}px - 1.5rem), ${targetPosition.top + Math.abs(document.body.getBoundingClientRect().top)}px)`)
                     }
+                    targetOption.classList.add('highlight')
+                    lastTargetOption = targetOption
                 }
                 if (currentFeatureIndex > index) {
                     featureTitle.animate(flyOut, options).reverse()
@@ -3020,7 +3048,10 @@
         const credentialsSection = document.getElementById('credentials_section'),
             generateFloId = document.getElementById('generate_flo_id'),
             generatedId = document.getElementById('generated_id'),
-            generatedKey = document.getElementById('generated_key')
+            generatedKey = document.getElementById('generated_key'),
+            signInBtn = document.getElementById('sign_in_btn'),
+            signInWithBtn = document.getElementById('sign_in_with'),
+            privateKeyInput = document.getElementById('get_priv_key_field')
 
         function generateId() {
             generateFloId.classList.add('hide-completely')
@@ -3028,15 +3059,19 @@
             let { floID, privKey } = floCrypto.generateNewID()
             generatedId.textContent = floID
             generatedKey.textContent = privKey
+            privateKeyInput.value = privKey
         }
 
         const signIn = () => {
             return new Promise((resolve, reject) => {
                 hideLoader()
                 showSignIn()
-                let signInBtn = document.getElementById('sign_in_btn'),
-                    privateKeyInput = document.getElementById('get_priv_key_field')
                 signInBtn.onclick = () => {
+                    resolve(privateKeyInput.value)
+                    hideSignIn()
+                    showLoader()
+                }
+                signInWithBtn.onclick = () => {
                     resolve(privateKeyInput.value)
                     hideSignIn()
                     showLoader()
@@ -3055,6 +3090,8 @@
         }
 
         async function signOutSequence() {
+            generateFloId.classList.remove('hide-completely')
+            credentialsSection.classList.add('hide-completely')
             delete token_app.master_configurations;
             await floDapps.clearCredentials()
             document.querySelector('main').classList.add('hide-completely')
@@ -12773,7 +12810,7 @@
                         option.classList.remove('hide-completely')
                     })
                     refreshBalance()
-                    userType.forEach(user => user.textContent = 'Me')
+                    userType.forEach(user => user.textContent = 'Profile')
                     defaultUPI = localStorage.getItem(`defaultUPI${myFloID}`)
                     if (mobileCheck())
                         document.getElementById('scanner_icon').classList.remove('hide-completely')
