@@ -5,7 +5,7 @@
     font-family: 'Roboto', sans-serif;
 }
 :root{
-    font-size: 16px;
+    font-size: clamp(16px, 1.2vmax, 40px);
 }
 body {
     --accent-color: #2752ca;
@@ -87,7 +87,7 @@ p {
     color: rgba(var(--text-color), 0.9);
 }
 strong{
-    font-weight: 500;
+    font-weight: 700;
 }
 button {
     position: relative;
@@ -647,8 +647,8 @@ details{
     background: url(sign-in-bg.svg) center, rgba(var(--foreground-color), 1);
     background-size: cover;
     z-index: 5;
-    padding: 0 6vw;
     .info{
+        padding: 1.5rem;
         align-items: center;
         h1{
             line-height: 1.1;
@@ -659,10 +659,11 @@ details{
     }
     .sign-in-box{
         width: 100%;
-        margin: 0 -2rem;
         z-index: 1;
+        margin-top: auto;
         justify-self: center;
         padding: 1.5rem;
+        padding-bottom: 3rem;
         border-radius: 0.5rem;
         background: rgba(var(--foreground-color), 1);
         sm-input{
@@ -729,7 +730,7 @@ details{
             animation: slide-down 0.3s forwards;
         }
         #sign_in_with{
-            margin-top: 1.5rem;
+            margin-top: 2rem;
         }
     }
 }
@@ -751,7 +752,7 @@ details{
 
 #main_header {
     align-items: center;
-    padding: clamp(1rem, 2vw, 2rem) 1rem;
+    padding: 1.5rem 1rem;
     justify-content: space-between;
 }
 
@@ -1202,7 +1203,7 @@ sm-panel{
     gap: 0.5rem;
     width: auto;
     h4 {
-        margin-bottom: 0;
+        margin-bottom: 0 !important;
         font-weight: 400;
     }
 
@@ -1795,7 +1796,7 @@ sm-panel{
     border-radius: 2rem;
     margin-bottom: 0.6rem !important;
     text-transform: uppercase;
-    color: rgba(var(--foreground-color), 1);
+    color: white;
 }
 .person-name{
     font-size: 0.85rem;
@@ -1915,11 +1916,16 @@ sm-panel{
         margin-left: 4rem;
     }
     #sign_in_page{
+        padding: 0 6vw;
         grid-auto-flow: column;
+        .info{
+            padding: 0;
+        }
         .sign-in-box{
             align-self: auto;
             width: 26rem;
             padding: 2rem;
+            margin-top: unset;
             min-height: 80vh;
             min-width: 26rem;
             box-shadow: 0 0 0.3rem #00000016, 0 6rem 2rem -2rem #00000016;
@@ -2112,16 +2118,6 @@ sm-panel{
         }
     }
 
-}
-@media only screen and (min-width: 1900px){
-    :root {
-        font-size: 24px;
-    }
-}
-@media only screen and (min-width: 2400px){
-    :root {
-        font-size: 36px;
-    }
 }
 
 @media only screen and (max-width: 320px) {

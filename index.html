@@ -5,14 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RanchiMall Pay</title>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-86RVPYPYDP"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-86RVPYPYDP');
-    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap"
         rel="stylesheet">
@@ -65,7 +57,7 @@
         <sm-button onclick="signOut()">Sign Out</sm-button>
     </section>
     <!-- Sign in page-->
-    <section id="sign_in_page" class="grid space-between hide-completely">
+    <section id="sign_in_page" class="grid hide-completely">
         <div class="info">
             <h4>RanchiMall Pay</h4>
             <h1>Send & request money <br> using <br> UPI on Blockchain</h1>
@@ -90,12 +82,12 @@
                 </sm-panel>
                 <sm-panel>
                     <h3>Get started</h3>
-                    <p>Create your FLO public and private key pair. <Strong>Don't forget to store them
-                            securely!</Strong></p>
+                    <p>Create your FLO public and private key pair. <strong>Don't forget to store them
+                            securely.<br>Once lost, private key can't be recovered.</strong></p>
                     <sm-button id="generate_flo_id" onclick="generateId()" variant="primary">Get FLO credentials
                     </sm-button>
                     <section id="credentials_section" class="hide-completely">
-                        <h5>FLO ID</h5>
+                        <h5>FLO ID (User ID)</h5>
                         <div class="copy-row">
                             <h4 id="generated_id" class="copy"></h4>
                             <svg class="icon" onclick="copyToClipboard(this.parentNode)" viewBox="0 0 64 64">
@@ -104,7 +96,7 @@
                                 <path d="M.5,47.52V6.5a6,6,0,0,1,6-6h41" />
                             </svg>
                         </div>
-                        <h5>Private key</h5>
+                        <h5>Private key (Password)</h5>
                         <div class="copy-row">
                             <h4 id="generated_key" class="copy"></h4>
                             <svg class="icon" onclick="copyToClipboard(this.parentNode)" viewBox="0 0 64 64">
@@ -154,7 +146,7 @@
                 <line x1="64" y1="0" x2="0" y2="64" />
                 <line x1="64" y1="64" x2="0" y2="0" />
             </svg>
-            <h4>Send Rupee</h4>
+            <h4>Send</h4>
             <button id="send_tokens_btn" class="action expand" type="submit" disabled>
                 <h4 class="expand primary-btn">
                     Send
@@ -255,7 +247,7 @@
                 <line x1="64" y1="0" x2="0" y2="64" />
                 <line x1="64" y1="64" x2="0" y2="0" />
             </svg>
-            <h4>Withdraw rupee</h4>
+            <h4>Withdraw</h4>
             <button id="withdraw_cash_btn" class="action expand" type="submit" disabled>
                 <h4 class="primary-btn expand">
                     withdraw
@@ -302,7 +294,7 @@
                 <line x1="64" y1="0" x2="0" y2="64" />
                 <line x1="64" y1="64" x2="0" y2="0" />
             </svg>
-            <h4>Request rupee</h3>
+            <h4>Request</h3>
                 <button id="request_rupee_btn" class="action expand" type="submit" disabled>
                     <h4 class="primary-btn expand">
                         request
@@ -1163,7 +1155,7 @@
                         <sm-switch id="haptic_feedback_switcher" class="justify-right" checked></sm-switch>
                     </div>
                     <div class="user-option">
-                        <h4 class="top-margin">My UPIs</h4>
+                        <h4 class="top-margin">My UPI ID</h4>
                         <div class="upi-container"></div>
                         <p class="empty-state">Add your UPI addresses for withdrawing money from wallet back to your bank account.</p>
                         <sm-button variant="no-outline" onclick="showPopup('add_upi_popup')">+ Add UPI address
@@ -13443,7 +13435,6 @@
             try {
                 const send_tokens_btn = document.getElementById('send_tokens_btn');
                 send_tokens_btn.onclick = async function () {
-                    btnLoading('send_tokens_btn', 'start')
                     const token_sender = myFloID;
                     const token_receiver = document.getElementById('token_receiver').value.trim();
                     const token_amount = parseInt(document.getElementById('token_amount').value);
@@ -13462,7 +13453,7 @@
                     }
 
                     if (typeof sender_token_balance !== "object") {
-                        err_msg = `Failed to load Sender balance.`;
+                        err_msg = `Failed to load balance.`;
                         notify(err_msg, 'error');
                         return false;
                     }
@@ -13474,6 +13465,8 @@
                         hidePopup()
                         return false;
                     }
+
+                    btnLoading('send_tokens_btn', 'start')
 
                     let flo_txid = await floBlockchainAPI.sendTx(myFloID, token_receiver, 0.001, myPrivKey,
                         flo_comment)
