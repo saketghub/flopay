@@ -208,7 +208,7 @@ span.ripple{
 }
 
 .highlight{
-    box-shadow: 0 0 0 0.2rem var(--accent-color);
+    box-shadow: 0 0 0 0.2rem var(--accent-color) inset;
     transition: box-shadow 0.3s;
 }
 
@@ -1009,10 +1009,6 @@ details{
         opacity: 0.8;
         font-weight: 500;
     }
-}
-
-.request-icon{
-    transform: rotate(180deg);
 }
 
 .notification-dot::after {
