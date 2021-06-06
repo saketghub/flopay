@@ -10510,9 +10510,11 @@
             util: {
                 serverList: floGlobals.apiURL[floGlobals.blockchain].slice(0),
                 curPos: floCrypto.randInt(0, floGlobals.apiURL[floGlobals.blockchain].length - 1),
-                fetch_retry: function (apicall) {
+                fetch_retry: function (apicall, rm_flosight) {
                     return new Promise((resolve, reject) => {
-                        this.serverList.splice(this.curPos, 1);
+                        let i = this.serverList.indexOf(rm_flosight)
+                        if(i != -1)
+                            this.serverList.splice(i, 1);
                         this.curPos = floCrypto.randInt(0, this.serverList.length - 1)
                         this.fetch_api(apicall)
                             .then(result => resolve(result))
@@ -10524,16 +10526,17 @@
                         if (this.serverList.length === 0)
                             reject("No floSight server working")
                         else {
-                            fetch(this.serverList[this.curPos] + apicall).then(response => {
+                            let flosight = this.serverList[this.curPos];
+                            fetch(flosight + apicall).then(response => {
                                 if (response.ok)
                                     response.json().then(data => resolve(data));
                                 else {
-                                    this.fetch_retry(apicall)
+                                    this.fetch_retry(apicall, flosight)
                                         .then(result => resolve(result))
                                         .catch(error => reject(error));
                                 }
                             }).catch(error => {
-                                this.fetch_retry(apicall)
+                                this.fetch_retry(apicall, flosight)
                                     .then(result => resolve(result))
                                     .catch(error => reject(error));
                             })
