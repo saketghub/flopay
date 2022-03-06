@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>RanchiMall Pay</title>
+    <script id="floGlobals">
+        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        const floGlobals = {
+
+            //Required for all
+            blockchain: "FLO",
+
+            //Required for blockchain API operators
+            apiURL: {
+                FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+                FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
+            },
+            adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
+            sendAmt: 0.001,
+            fee: 0.0005,
+
+            //Required for token API operations
+            tokenURL: "https://ranchimallflo.duckdns.org/",
+            currency: "rupee",
+
+            //Required for Supernode operations
+            SNStorageID: "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
+            supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
+
+            //for cloud apps
+            subAdmins: [],
+            application: "TEST_MODE",
+            appObjects: {},
+            generalData: {},
+            lastVC: {}
+        }
+    </script>
+    <script src="std_op.js"></script>
+    <script src="fn_pay.js"></script>
+    <script src="fn_ui.js"></script>
+    <script id="onLoadStartUp">
+        function onLoadStartUp() {
+            console.log("Starting the app! Please Wait!")
+            floDapps.launchStartUp().then(result => {
+                console.log(`Welcome ${myFloID}`);
+                if (floGlobals.subAdmins.includes(myFloID)) {
+                    document.getElementById('cashier-id').textContent = myFloID;
+                    cashierUI.renderRequests(Cashier.Requests);
+                    Cashier.init().then(result => {
+                        console.log(result);
+                        document.getElementById('cashier').hidden = false;
+                    }).catch(error => console.error(error))
+                } else {
+                    document.getElementById('user-id').textContent = myFloID;
+                    userUI.renderCashierRequests(User.cashierRequests);
+                    userUI.renderMoneyRequests(User.moneyRequests);
+                    User.init().then(result => {
+                        console.log(result);
+                        document.getElementById('user').hidden = false;
+                    }).catch(error => console.error(error))
+                }
+            }).catch(error => console.error(error))
+        }
+    </script>
+</head>
+
+<body onload="onLoadStartUp()">
+    <section id="user" hidden>
+        <div id="user-id"></div>
+        <div>
+            <form id="request-cashier">
+                Amount: <input type="number" name="amount" /><br />
+                <input type="button" value="request-token" onclick="userUI.requestTokenFromCashier()" />
+                <input type="button" value="withdraw-cash" onclick="userUI.withdrawCashFromCashier()" />
+            </form>
+        </div>
+        <div>
+            <form id="user-money">
+                FLO-ID<input type="text" name="flo-id" /><br />
+                Amount<input type="number" name="amount" /><br />
+                Remark<input type="text" name="remark" /><br />
+                <input type="button" value="send-money" onclick="userUI.sendMoneyToUser()" />
+                <input type="button" value="request-money" onclick="userUI.requestMoneyFromUser()" />
+            </form>
+        </div>
+        <div>
+            <table id="user-cashier-requests">
+                <thead>
+                    <tr>
+                        <td>Date-Time</td>
+                        <td>Cashier</td>
+                        <td>Mode</td>
+                        <td>Status</td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div>
+            <table id="user-money-requests">
+                <thead>
+                    <tr>
+                        <td>Date-Time</td>
+                        <td>Requestor</td>
+                        <td>Amount</td>
+                        <td>Remark</td>
+                        <td>Status</td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+    </section>
+
+    <section id="cashier" hidden>
+        <div id="cashier-id"></div>
+        <div>
+            <table id="cashier-request-list">
+                <thead>
+                    <tr>
+                        <td>Requestor</td>
+                        <td>Date-Time</td>
+                        <td>Mode</td>
+                        <td>Status</td>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+</body>
+
+</html>
