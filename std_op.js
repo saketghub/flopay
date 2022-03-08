@@ -7453,6 +7453,7 @@
                 for (let vout of tx.transactionDetails.vout)
                     if (vout.scriptPubKey.addresses[0] !== result.sender)
                         result.receiver = vout.scriptPubKey.addresses[0];
+                result.time = tx.transactionDetails.time;
                 return result;
             }
         },
@@ -7501,6 +7502,13 @@
                         .catch(error => reject(error))
                 }).catch(error => reject(error))
             });
+        },
+        getAllTxs: function(floID, token = floGlobals.currency) {
+            return new Promise((resolve, reject) => {
+                this.fetch_api(`api/v1.0/getFloAddressTransactions?token=${token}&floAddress=${floID}`)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            })
         }
     }
 })(typeof global !== "undefined" ? global : window);

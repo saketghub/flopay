@@ -67,6 +67,7 @@
                         document.getElementById('user').hidden = false;
                     }).catch(error => console.error(error))
                 }
+                renderAllTokenTransactions();
             }).catch(error => console.error(error))
         }
     </script>
@@ -88,7 +89,7 @@
         <div>
             <form id="user-money">
                 <fieldset>
-                    <legend>Request Users</legend>
+                    <legend>Token transfer</legend>
                     FLO-ID: <input type="text" name="flo-id" /><br />
                     Amount: <input type="number" name="amount" /><br />
                     Remark: <input type="text" name="remark" /><br />
@@ -98,31 +99,37 @@
             </form>
         </div>
         <div>
-            <table id="user-cashier-requests">
-                <thead>
-                    <tr>
-                        <td>Date-Time</td>
-                        <td>Cashier</td>
-                        <td>Mode</td>
-                        <td>Status</td>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <fieldset>
+                <legend>Cashier Requests</legend>
+                <table id="user-cashier-requests">
+                    <thead>
+                        <tr>
+                            <td>Date-Time</td>
+                            <td>Cashier</td>
+                            <td>Mode</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </fieldset>
         </div>
         <div>
-            <table id="user-money-requests">
-                <thead>
-                    <tr>
-                        <td>Date-Time</td>
-                        <td>Requestor</td>
-                        <td>Amount</td>
-                        <td>Remark</td>
-                        <td>Status</td>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <fieldset>
+                <legend>Money Request</legend>
+                <table id="user-money-requests">
+                    <thead>
+                        <tr>
+                            <td>Date-Time</td>
+                            <td>Requestor</td>
+                            <td>Amount</td>
+                            <td>Remark</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </fieldset>
         </div>
 
     </section>
@@ -130,20 +137,38 @@
     <section id="cashier" hidden>
         <div id="cashier-id"></div>
         <div>
-            <table id="cashier-request-list">
+            <fieldset>
+                <legend>Requests</legend>
+                <table id="cashier-request-list">
+                    <thead>
+                        <tr>
+                            <td>Requestor</td>
+                            <td>Date-Time</td>
+                            <td>Mode</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </fieldset>
+        </div>
+    </section>
+    <div>
+        <fieldset>
+            <legend>Transactions</legend>
+            <table id="token-transactions">
                 <thead>
                     <tr>
-                        <td>Requestor</td>
-                        <td>Date-Time</td>
-                        <td>Mode</td>
-                        <td>Status</td>
+                        <td>Time</td>
+                        <td></td>
+                        <td>FLO ID</td>
+                        <td>Amount</td>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-        </div>
-    </section>
-
+        </fieldset>
+    </div>
 </body>
 
 </html>

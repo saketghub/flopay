@@ -41,7 +41,7 @@ userUI.sendMoneyToUser = function() {
     let confirmation = confirm(`Do you want to SEND ${amount} to ${floID}?`);
     if (!confirmation)
         return alert("Cancelled");
-    User.sendToken(floID, amount, remark).then(txid => {
+    User.sendToken(floID, amount, "|" + remark).then(txid => {
         console.warn(`Sent ${amount} to ${floID}`, txid);
         alert(`Sent ${amount} to ${floID}. It may take a few mins to reflect in their wallet`);
     }).catch(error => console.error(error));
@@ -118,7 +118,7 @@ userUI.payRequest = function(reqID) {
     let confirmation = confirm(`Do you want to SEND ${request.message.amount} to ${request.senderID}?`);
     if (!confirmation)
         return alert("Cancelled");
-    User.sendToken(request.senderID, request.message.amount, request.message.remark).then(txid => {
+    User.sendToken(request.senderID, request.message.amount, "|" + request.message.remark).then(txid => {
         console.warn(`Sent ${request.message.amount} to ${request.senderID}`, txid);
         alert(`Sent ${request.message.amount} to ${request.senderID}. It may take a few mins to reflect in their wallet`);
         User.decideRequest(request, 'PAID: ' + txid)
@@ -215,4 +215,30 @@ function completeTokenToCashRequest(request) {
                 console.info('Rejected token-to-cash request:', request.vectorClock);
             }).catch(error => console.error(error))
     })
+}
+
+function renderAllTokenTransactions() {
+    let table = document.getElementById('token-transactions').getElementsByTagName('tbody')[0];
+    tokenAPI.getAllTxs(myFloID).then(result => {
+        for (let txid in result.transactions) {
+            let row = table.insertRow();
+            renderTransactionCard(row, txid, tokenAPI.util.parseTxData(result.transactions[txid]));
+        }
+    }).catch(error => console.error(error))
+}
+
+function renderTransactionCard(row, txid, tx) {
+    row.setAttribute('title', txid);
+    row.insertCell().textContent = tx.time;
+    if (tx.sender === myFloID) {
+        row.insertCell().textContent = 'Sent';
+        row.insertCell().textContent = tx.receiver || 'Myself';
+    } else if (tx.receiver === myFloID) {
+        row.insertCell().textContent = 'Recieved';
+        row.insertCell().textContent = tx.sender;
+    } else { //This should not happen unless API returns transaction that doesnot involve myFloID
+        row.insertCell().textContent = tx.sender;
+        row.insertCell().textContent = tx.receiver;
+    }
+    row.insertCell().textContent = tx.tokenAmount;
 }

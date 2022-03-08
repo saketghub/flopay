@@ -4,7 +4,6 @@ const TYPE_MONEY_REQUEST = "MoneyRequests",
 
 const cashierUPI = {};
 
-//https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressTransactions?token=rupee&floAddress=FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf
 //For regular users
 const User = {};
 const cashierStatus = {};
