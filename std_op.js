@@ -7451,7 +7451,7 @@
                     result[p] = tx.parsedFloData[p];
                 result.sender = tx.transactionDetails.vin[0].addr;
                 for (let vout of tx.transactionDetails.vout)
-                    if (vout.scriptPubKey.addresses[0] !== sender)
+                    if (vout.scriptPubKey.addresses[0] !== result.sender)
                         result.receiver = vout.scriptPubKey.addresses[0];
                 return result;
             }

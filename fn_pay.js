@@ -1,5 +1,6 @@
 const TYPE_MONEY_REQUEST = "MoneyRequests",
-    TYPE_CASHIER_REQUEST = "CashierRequests";
+    TYPE_CASHIER_REQUEST = "CashierRequests",
+    TYPE_CASHIER_UPI = "CashierUPI";
 
 const cashierUPI = {};
 
@@ -37,24 +38,38 @@ User.init = function() {
             callback: UI_RENDER_FN
         }));
         */
+        promises.push(User.getCashierUPI());
         Promise.all(promises)
             .then(result => resolve(result))
             .catch(error => reject(error))
     })
 }
 
-Object.defineProperty(Cashier, 'cashierRequests', {
+User.getCashierUPI = function() {
+    return new Promise((resolve) => {
+        Promise.allSettled(floGlobals.subAdmins.map(cashierID => floCloudAPI.requestApplicationData(TYPE_CASHIER_UPI, {
+            senderID: cashierID,
+            mostRecent: true
+        }))).then(result => {
+            for (let r of result)
+                if (r.status === "fulfilled" && r.value.length)
+                    cashierUPI[r.value[0].senderID] = floCloudAPI.util.decodeMessage(r.value[0].message).upi;
+            resolve(cashierUPI);
+        })
+    })
+}
+
+Object.defineProperty(User, 'cashierRequests', {
     get: function() {
         let fk = floCloudAPI.util.filterKey(TYPE_CASHIER_REQUEST, {
             senderID: myFloID,
-            receiverID: cashierID,
             group: "Cashiers",
         });
         return floGlobals.generalData[fk];
     }
 });
 
-Object.defineProperty(Cashier, 'moneyRequests', {
+Object.defineProperty(User, 'moneyRequests', {
     get: function() {
         let fk = floCloudAPI.util.filterKey(TYPE_MONEY_REQUEST, {
             receiverID: myFloID,
@@ -66,7 +81,7 @@ Object.defineProperty(Cashier, 'moneyRequests', {
 User.findCashier = function() {
     let online = [];
     for (let c in cashierStatus)
-        if (cashierStatus[c])
+        if (cashierStatus[c] && cashierUPI[c])
             online.push(c);
     if (!online.length)
         return null;
@@ -76,7 +91,7 @@ User.findCashier = function() {
 
 User.cashToToken = function(cashier, amount, upiTxID) {
     return new Promise((resolve, reject) => {
-        if (!floCloudAPI.subAdmins.includes(cashier))
+        if (!floGlobals.subAdmins.includes(cashier))
             return reject("Invalid cashier");
         floCloudAPI.sendGeneralData({
                 mode: "cash-to-token",
@@ -91,7 +106,7 @@ User.cashToToken = function(cashier, amount, upiTxID) {
 
 User.tokenToCash = function(cashier, amount, blkTxID, upiID) {
     return new Promise((resolve, reject) => {
-        if (!floCloudAPI.subAdmins.includes(cashier))
+        if (!floGlobals.subAdmins.includes(cashier))
             return reject("Invalid cashier");
         floCloudAPI.sendGeneralData({
                 mode: "token-to-cash",
@@ -138,7 +153,7 @@ const Cashier = {};
 
 Cashier.init = function() {
     return new Promise((resolve, reject) => {
-        let promises;
+        let promises = [];
         //Requests from user to cashier(self) for token-cash exchange
         promises.push(floCloudAPI.requestGeneralData(TYPE_CASHIER_REQUEST, {
             receiverID: myFloID,
@@ -157,11 +172,22 @@ Cashier.init = function() {
     })
 }
 
+Cashier.updateUPI = function(upi_id) {
+    return new Promise((resolve, reject) => {
+        floCloudAPI.sendApplicationData({
+                upi: upi_id
+            }, TYPE_CASHIER_UPI)
+            .then(result => resolve(result))
+            .catch(error => reject(error))
+    })
+}
+
 Object.defineProperty(Cashier, 'Requests', {
     get: function() {
         let fk = floCloudAPI.util.filterKey(TYPE_CASHIER_REQUEST, {
-            receiver: myFloID
+            receiverID: myFloID
         });
+        console.debug(fk, floGlobals.generalData[fk]);
         return floGlobals.generalData[fk];
     }
 });
@@ -192,8 +218,8 @@ Cashier.checkIfUpiTxIsValid = function(upiTxID) {
     return new Promise((resolve, reject) => {
         let requests = Cashier.Requests;
         for (let r in requests)
-            if (requests[r].message.mode === "cash-to-token")
-                if (requests[r].note === upiTxID)
+            if (requests[r].message.mode === "cash-to-token" && requests[r].note)
+                if (requests[r].message.upi_txid === upiTxID)
                     return reject([true, "UPI transaction is already used for another request"]);
         return resolve(true);
     })
@@ -203,8 +229,8 @@ Cashier.checkIfTokenTxIsValid = function(tokenTxID, sender, amount) {
     return new Promise((resolve, reject) => {
         let requests = Cashier.Requests;
         for (let r in requests)
-            if (requests[r].message.mode === "token-to-cash")
-                if (requests[r].note === tokenTxID)
+            if (requests[r].message.mode === "token-to-cash" && requests[r].note)
+                if (requests[r].message.token_txid === tokenTxID)
                     return reject([true, "Token transaction is already used for another request"]);
         tokenAPI.getTx(tokenTxID).then(tx => {
             let parsedTxData = tokenAPI.util.parseTxData(tx);

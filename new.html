@@ -3,6 +3,13 @@
 
 <head>
     <title>RanchiMall Pay</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+    </style>
     <script id="floGlobals">
         /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
         const floGlobals = {
@@ -56,6 +63,7 @@
                     userUI.renderMoneyRequests(User.moneyRequests);
                     User.init().then(result => {
                         console.log(result);
+                        console.log("Cashiers:", cashierUPI);
                         document.getElementById('user').hidden = false;
                     }).catch(error => console.error(error))
                 }
@@ -69,18 +77,24 @@
         <div id="user-id"></div>
         <div>
             <form id="request-cashier">
-                Amount: <input type="number" name="amount" /><br />
-                <input type="button" value="request-token" onclick="userUI.requestTokenFromCashier()" />
-                <input type="button" value="withdraw-cash" onclick="userUI.withdrawCashFromCashier()" />
+                <fieldset>
+                    <legend>Request Cashier</legend>
+                    Amount: <input type="number" name="amount" /><br />
+                    <input type="button" value="request-token" onclick="userUI.requestTokenFromCashier()" />
+                    <input type="button" value="withdraw-cash" onclick="userUI.withdrawCashFromCashier()" />
+                </fieldset>
             </form>
         </div>
         <div>
             <form id="user-money">
-                FLO-ID<input type="text" name="flo-id" /><br />
-                Amount<input type="number" name="amount" /><br />
-                Remark<input type="text" name="remark" /><br />
-                <input type="button" value="send-money" onclick="userUI.sendMoneyToUser()" />
-                <input type="button" value="request-money" onclick="userUI.requestMoneyFromUser()" />
+                <fieldset>
+                    <legend>Request Users</legend>
+                    FLO-ID: <input type="text" name="flo-id" /><br />
+                    Amount: <input type="number" name="amount" /><br />
+                    Remark: <input type="text" name="remark" /><br />
+                    <input type="button" value="send-money" onclick="userUI.sendMoneyToUser()" />
+                    <input type="button" value="request-money" onclick="userUI.requestMoneyFromUser()" />
+                </fieldset>
             </form>
         </div>
         <div>
@@ -93,6 +107,7 @@
                         <td>Status</td>
                     </tr>
                 </thead>
+                <tbody></tbody>
             </table>
         </div>
         <div>
@@ -106,6 +121,7 @@
                         <td>Status</td>
                     </tr>
                 </thead>
+                <tbody></tbody>
             </table>
         </div>
 
