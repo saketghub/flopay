@@ -6927,6 +6927,7 @@
 })(typeof global !== "undefined" ? global : window);
 
 /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
+//floBlockchainAPI v2.2.1a
 (function(GLOBAL) {
     const floBlockchainAPI = GLOBAL.floBlockchainAPI = {
 
@@ -7357,8 +7358,15 @@
                         if (options.limit <= 0)
                             options.limit = response.items.length;
                         var filteredData = [];
-                        for (let i = 0; i < (response.totalItems - options.ignoreOld) &&
-                            filteredData.length < options.limit; i++) {
+                        let numToRead = response.totalItems - options.ignoreOld,
+                            unconfirmedCount = 0;
+                        for (let i = 0; i < numToRead && filteredData.length < options.limit; i++) {
+                            if (!response.items[i].confirmations) { //unconfirmed transactions
+                                unconfirmedCount++;
+                                if (numToRead < response.items[i].length)
+                                    numToRead++;
+                                continue;
+                            }
                             if (options.pattern) {
                                 try {
                                     let jsonContent = JSON.parse(response.items[i].floData);
@@ -7418,7 +7426,7 @@
                                 filteredData.push(response.items[i].floData);
                         }
                         resolve({
-                            totalTxs: response.totalItems,
+                            totalTxs: response.totalItems - unconfirmedCount,
                             data: filteredData
                         });
                     }).catch(error => {
@@ -7749,6 +7757,7 @@ const compactIDB = {
 }
 
 /* FLO Cloud operations to send/request application data*/
+//floCloudAPI v2.1.3
 const floCloudAPI = {
 
     util: {
@@ -7939,7 +7948,7 @@ const floCloudAPI = {
                 else if (typeof data === "object" && data.method === "POST")
                     fetcher = fetch(sn_url, data);
                 fetcher.then(response => {
-                    if (response.ok)
+                    if (response.ok || response.status === 400 || response.status === 500)
                         resolve(response);
                     else
                         reject(response);
@@ -7979,49 +7988,68 @@ const floCloudAPI = {
                 else
                     data = new URLSearchParams(JSON.parse(JSON.stringify(data_obj))).toString();
                 this.fetch_ActiveAPI(floID, data).then(response => {
-                    response.json()
-                        .then(result => resolve(this.objectifier(result)))
-                        .catch(error => {
-                            response.text()
-                                .then(result => reject(result)) //Error Message from Node
-                                .catch(error => reject(error))
-                        })
+                    if (response.ok)
+                        response.json()
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                    else response.text()
+                        .then(result => reject(response.status + ": " + result)) //Error Message from Node
+                        .catch(error => reject(error))
                 }).catch(error => reject(error))
             })
         },
 
         liveRequest: function(floID, request, callback) {
-            const checkFilter = (v, d, r) =>
-                (!r.atVectorClock || r.atVectorClock == v) &&
-                (r.atVectorClock || !r.lowerVectorClock || r.lowerVectorClock <= v) &&
-                (r.atVectorClock || !r.upperVectorClock || r.upperVectorClock >= v) &&
-                r.application == d.application &&
-                r.receiverID == d.receiverID &&
-                (!r.comment || r.comment == d.comment) &&
-                (!r.type || r.type == d.type) &&
-                (!r.senderIDs || r.senderIDs.includes(d.senderID));
+            let self = this;
+            const filterData = typeof request.status !== 'undefined' ?
+                data => {
+                    if (request.status)
+                        return data;
+                    else {
+                        let filtered = {};
+                        for (let i in data)
+                            if (request.trackList.includes(i))
+                                filtered[i] = data[i];
+                        return filtered;
+                    }
+                } :
+                data => {
+                    data = self.objectifier(data);
+                    let filtered = {},
+                        r = request;
+                    for (let v in data) {
+                        let d = data[v];
+                        if ((!r.atVectorClock || r.atVectorClock == v) &&
+                            (r.atVectorClock || !r.lowerVectorClock || r.lowerVectorClock <= v) &&
+                            (r.atVectorClock || !r.upperVectorClock || r.upperVectorClock >= v) &&
+                            (!r.afterTime || r.afterTime < d.log_time) &&
+                            r.application == d.application &&
+                            r.receiverID == d.receiverID &&
+                            (!r.comment || r.comment == d.comment) &&
+                            (!r.type || r.type == d.type) &&
+                            (!r.senderID || r.senderID.includes(d.senderID)))
+                            filtered[v] = data[v];
+                    }
+                    return filtered;
+                };
+
             return new Promise((resolve, reject) => {
-                this.ws_activeConnect(floID).then(node => {
+                self.ws_activeConnect(floID).then(node => {
                     let randID = floCrypto.randString(5);
                     node.send(JSON.stringify(request));
                     node.onmessage = (evt) => {
                         let d = e = null;
                         try {
-                            let data = this.objectifier(JSON.parse(evt.data)),
-                                filter = {};
-                            for (let v in data)
-                                if (checkFilter(v, data[v], request))
-                                    filter[v] = data[v];
-                            d = filter;
+                            d = filterData(JSON.parse(evt.data));
                         } catch (error) {
                             e = evt.data
                         } finally {
                             callback(d, e)
                         }
                     }
-                    this.liveRequest[randID] = node;
-                    this.liveRequest[randID].request = request;
-                    resolve(randID)
+                    self.liveRequest[randID] = node;
+                    self.liveRequest[randID].request = request;
+                    resolve(randID);
                 }).catch(error => reject(error));
             });
         },
@@ -8036,7 +8064,7 @@ const floCloudAPI = {
 
         filterKey: function(type, options) {
             return type + (options.comment ? ':' + options.comment : '') +
-                '|' + (options.receiverID || floGlobals.adminID) +
+                '|' + (options.group || options.receiverID || floGlobals.adminID) +
                 '|' + (options.application || floGlobals.application);
         },
 
@@ -8049,27 +8077,26 @@ const floCloudAPI = {
             }
         },
 
-        updateObject: function(dataSet) {
+        updateObject: function(objectName, dataSet) {
             try {
                 console.log(dataSet)
-                let updatedObjects = new Set()
-                for (vc in dataSet) {
+                let vcList = Object.keys(dataSet).sort();
+                for (let vc of vcList) {
+                    if (vc < floGlobals.lastVC[objectName] || dataSet[vc].type !== objectName)
+                        continue;
                     switch (dataSet[vc].comment) {
                         case "RESET":
                             if (dataSet[vc].message.reset)
-                                floGlobals.appObjects[dataSet[vc].type] = dataSet[vc].message.reset;
+                                floGlobals.appObjects[objectName] = dataSet[vc].message.reset;
                             break;
                         case "UPDATE":
                             if (dataSet[vc].message.diff)
-                                floGlobals.appObjects[dataSet[vc].type] = mergeDiff(floGlobals.appObjects[dataSet[vc].type], dataSet[vc].message.diff)
+                                floGlobals.appObjects[objectName] = mergeDiff(floGlobals.appObjects[objectName], dataSet[vc].message.diff);
                     }
-                    floGlobals.lastVC[dataSet[vc].type] = vc;
-                    updatedObjects.add(dataSet[vc].type)
+                    floGlobals.lastVC[objectName] = vc;
                 }
-                updatedObjects.forEach(o => {
-                    compactIDB.writeData("appObjects", floGlobals.appObjects[o], o)
-                    compactIDB.writeData("lastVC", floGlobals.lastVC[o], o)
-                });
+                compactIDB.writeData("appObjects", floGlobals.appObjects[objectName], objectName);
+                compactIDB.writeData("lastVC", floGlobals.lastVC[objectName], objectName);
             } catch (error) {
                 console.error(error)
             }
@@ -8080,9 +8107,11 @@ const floCloudAPI = {
                 console.log(dataSet)
                 if (typeof floGlobals.generalData[fk] !== "object")
                     floGlobals.generalData[fk] = {}
-                for (let vc in dataSet)
+                for (let vc in dataSet) {
                     floGlobals.generalData[fk][vc] = dataSet[vc];
-                floGlobals.lastVC[fk] = Object.keys(floGlobals.generalData[fk]).sort().pop()
+                    if (dataSet[vc].log_time > floGlobals.lastVC[fk])
+                        floGlobals.lastVC[fk] = dataSet[vc].log_time;
+                }
                 compactIDB.writeData("lastVC", floGlobals.lastVC[fk], fk)
                 compactIDB.writeData("generalData", floGlobals.generalData[fk], fk)
             } catch (error) {
@@ -8100,7 +8129,43 @@ const floCloudAPI = {
         }
     },
 
-    //send Any message to supernode cloud storage
+    //set status as online for myFloID
+    setStatus: function(options = {}) {
+        return new Promise((resolve, reject) => {
+            let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
+            var request = {
+                floID: myFloID,
+                application: options.application || floGlobals.application,
+                time: Date.now(),
+                status: true,
+                pubKey: myPubKey
+            }
+            let hashcontent = ["time", "application", "floID"].map(d => request[d]).join("|");
+            request.sign = floCrypto.signData(hashcontent, myPrivKey);
+            this.util.liveRequest(options.refID || floGlobals.adminID, request, callback)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
+        })
+    },
+
+    //request status of floID(s) in trackList
+    requestStatus: function(trackList, options = {}) {
+        return new Promise((resolve, reject) => {
+            if (!Array.isArray(trackList))
+                trackList = [trackList];
+            let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
+            let request = {
+                status: false,
+                application: options.application || floGlobals.application,
+                trackList: trackList
+            }
+            this.util.liveRequest(options.refID || floGlobals.adminID, request, callback)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
+        })
+    },
+
+    //send any message to supernode cloud storage
     sendApplicationData: function(message, type, options = {}) {
         return new Promise((resolve, reject) => {
             var data = {
@@ -8115,7 +8180,7 @@ const floCloudAPI = {
             }
             let hashcontent = ["receiverID", "time", "application", "type", "message", "comment"]
                 .map(d => data[d]).join("|")
-            data.sign = floCrypto.signData(hashcontent, myPrivKey)
+            data.sign = floCrypto.signData(hashcontent, myPrivKey);
             this.util.singleRequest(data.receiverID, data)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
@@ -8127,13 +8192,14 @@ const floCloudAPI = {
         return new Promise((resolve, reject) => {
             var request = {
                 receiverID: options.receiverID || floGlobals.adminID,
-                senderIDs: options.senderIDs || undefined,
+                senderID: options.senderID || undefined,
                 application: options.application || floGlobals.application,
                 type: type,
                 comment: options.comment || undefined,
                 lowerVectorClock: options.lowerVectorClock || undefined,
                 upperVectorClock: options.upperVectorClock || undefined,
                 atVectorClock: options.atVectorClock || undefined,
+                afterTime: options.afterTime || undefined,
                 mostRecent: options.mostRecent || undefined,
             }
 
@@ -8221,45 +8287,47 @@ const floCloudAPI = {
         })
     },
 
-    //mark data in supernode cloud (subAdmin access only)
-    markApplicationData: function(mark, options = {}) {
+    //tag data in supernode cloud (subAdmin access only)
+    tagApplicationData: function(vectorClock, tag, options = {}) {
         return new Promise((resolve, reject) => {
             if (!floGlobals.subAdmins.includes(myFloID))
-                return reject("Only subAdmins can mark data")
-            if (Array.isArray(mark))
-                mark = Object.fromEntries(mark.map(vc => [vc, true]));
-            /*
-            if (typeof mark !== "object") {
-                if (!Array.isArray(mark)) mark = [mark];
-                let tmp = {}
-                mark.forEach(vc => tmp[vc] = true)
-                mark = tmp;
-            }*/
-            var markreq = {
+                return reject("Only subAdmins can tag data")
+            var request = {
                 receiverID: options.receiverID || floGlobals.adminID,
                 requestorID: myFloID,
                 pubKey: myPubKey,
                 time: Date.now(),
-                mark: mark,
-                application: options.application || floGlobals.application
+                vectorClock: vectorClock,
+                tag: tag,
             }
-            let hashcontent = ["time", "application"]
-                .map(d => markreq[d]).join("|") + JSON.stringify(markreq.mark)
-            markreq.sign = floCrypto.signData(hashcontent, myPrivKey)
-            this.util.singleRequest(markreq.receiverID, markreq).then(result => {
-                let success = [],
-                    failed = [];
-                result.forEach(r => r.status === 'fulfilled' ?
-                    success.push(r.value) : failed.push(r.reason));
-                resolve({
-                    success,
-                    failed
-                })
-            }).catch(error => reject(error))
+            let hashcontent = ["time", "vectorClock", 'tag'].map(d => request[d]).join("|");
+            request.sign = floCrypto.signData(hashcontent, myPrivKey);
+            this.util.singleRequest(request.receiverID, request)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
         })
     },
 
-    //send General Data
+    //note data in supernode cloud (receiver only or subAdmin allowed if receiver is adminID)
+    noteApplicationData: function(vectorClock, note, options = {}) {
+        return new Promise((resolve, reject) => {
+            var request = {
+                receiverID: options.receiverID || floGlobals.adminID,
+                requestorID: myFloID,
+                pubKey: myPubKey,
+                time: Date.now(),
+                vectorClock: vectorClock,
+                note: note,
+            }
+            let hashcontent = ["time", "vectorClock", 'note'].map(d => request[d]).join("|");
+            request.sign = floCrypto.signData(hashcontent, myPrivKey);
+            this.util.singleRequest(request.receiverID, request)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
+        })
+    },
+
+    //send general data
     sendGeneralData: function(message, type, options = {}) {
         return new Promise((resolve, reject) => {
             if (options.encrypt) {
@@ -8276,11 +8344,12 @@ const floCloudAPI = {
         })
     },
 
-    //request General Data
+    //request general data
     requestGeneralData: function(type, options = {}) {
         return new Promise((resolve, reject) => {
             var fk = this.util.filterKey(type, options)
-            options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[fk] + 1;
+            floGlobals.lastVC[fk] = parseInt(floGlobals.lastVC[fk]) || 0;
+            options.afterTime = options.afterTime || floGlobals.lastVC[fk];
             if (options.callback instanceof Function) {
                 let new_options = Object.create(options)
                 new_options.callback = (d, e) => {
@@ -8292,7 +8361,7 @@ const floCloudAPI = {
                     .catch(error => reject(error))
             } else {
                 this.requestApplicationData(type, options).then(dataSet => {
-                    this.util.storeGeneral(fk, dataSet)
+                    this.util.storeGeneral(fk, this.util.objectifier(dataSet))
                     resolve(dataSet)
                 }).catch(error => reject(error))
             }
@@ -8302,34 +8371,33 @@ const floCloudAPI = {
     //request an object data from supernode cloud
     requestObjectData: function(objectName, options = {}) {
         return new Promise((resolve, reject) => {
-            options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] +
-                1;
-            options.senderIDs = [false, null].includes(options.senderIDs) ? null :
-                options.senderIDs || floGlobals.subAdmins;
+            options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] + 1;
+            options.senderID = [false, null].includes(options.senderID) ? null :
+                options.senderID || floGlobals.subAdmins;
             options.mostRecent = true;
             options.comment = 'RESET';
             let callback = null;
             if (options.callback instanceof Function) {
                 callback = (d, e) => {
-                    this.util.updateObject(d);
+                    this.util.updateObject(objectName, d);
                     options.callback(d, e);
                 }
                 delete options.callback;
             }
             this.requestApplicationData(objectName, options).then(dataSet => {
-                this.util.updateObject(dataSet)
+                this.util.updateObject(objectName, this.util.objectifier(dataSet));
                 delete options.comment;
-                options.lowerVectorClock = floGlobals.lastVC[objectName] + 1
+                options.lowerVectorClock = floGlobals.lastVC[objectName] + 1;
                 delete options.mostRecent;
                 if (callback) {
-                    let new_options = Object.create(options)
+                    let new_options = Object.create(options);
                     new_options.callback = callback;
                     this.requestApplicationData(objectName, new_options)
                         .then(result => resolve(result))
                         .catch(error => reject(error))
                 } else {
                     this.requestApplicationData(objectName, options).then(dataSet => {
-                        this.util.updateObject(dataSet)
+                        this.util.updateObject(objectName, this.util.objectifier(dataSet))
                         this.util.lastCommit("SET", objectName)
                         resolve(floGlobals.appObjects[objectName])
                     }).catch(error => reject(error))
