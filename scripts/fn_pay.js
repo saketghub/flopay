@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 const TYPE_MONEY_REQUEST = "MoneyRequests",
     TYPE_CASHIER_REQUEST = "CashierRequests",
     TYPE_CASHIER_UPI = "CashierUPI";
@@ -8,7 +9,7 @@ const cashierUPI = {};
 const User = {};
 const cashierStatus = {};
 
-User.init = function() {
+User.init = function () {
     return new Promise((resolve, reject) => {
         let promises;
         //Request cashier for token-cash exchange
@@ -44,7 +45,7 @@ User.init = function() {
     })
 }
 
-User.getCashierUPI = function() {
+User.getCashierUPI = function () {
     return new Promise((resolve) => {
         Promise.allSettled(floGlobals.subAdmins.map(cashierID => floCloudAPI.requestApplicationData(TYPE_CASHIER_UPI, {
             senderID: cashierID,
@@ -59,7 +60,7 @@ User.getCashierUPI = function() {
 }
 
 Object.defineProperty(User, 'cashierRequests', {
-    get: function() {
+    get: function () {
         let fk = floCloudAPI.util.filterKey(TYPE_CASHIER_REQUEST, {
             senderID: myFloID,
             group: "Cashiers",
@@ -69,7 +70,7 @@ Object.defineProperty(User, 'cashierRequests', {
 });
 
 Object.defineProperty(User, 'moneyRequests', {
-    get: function() {
+    get: function () {
         let fk = floCloudAPI.util.filterKey(TYPE_MONEY_REQUEST, {
             receiverID: myFloID,
         });
@@ -77,7 +78,7 @@ Object.defineProperty(User, 'moneyRequests', {
     }
 });
 
-User.findCashier = function() {
+User.findCashier = function () {
     let online = [];
     for (let c in cashierStatus)
         if (cashierStatus[c] && cashierUPI[c])
@@ -88,38 +89,38 @@ User.findCashier = function() {
         return online[floCrypto.randInt(0, online.length)];
 }
 
-User.cashToToken = function(cashier, amount, upiTxID) {
+User.cashToToken = function (cashier, amount, upiTxID) {
     return new Promise((resolve, reject) => {
         if (!floGlobals.subAdmins.includes(cashier))
             return reject("Invalid cashier");
         floCloudAPI.sendGeneralData({
-                mode: "cash-to-token",
-                amount: amount,
-                upi_txid: upiTxID
-            }, TYPE_CASHIER_REQUEST, {
-                receiverID: cashier
-            }).then(result => resolve(result))
+            mode: "cash-to-token",
+            amount: amount,
+            upi_txid: upiTxID
+        }, TYPE_CASHIER_REQUEST, {
+            receiverID: cashier
+        }).then(result => resolve(result))
             .catch(error => reject(error))
     })
 }
 
-User.tokenToCash = function(cashier, amount, blkTxID, upiID) {
+User.tokenToCash = function (cashier, amount, blkTxID, upiID) {
     return new Promise((resolve, reject) => {
         if (!floGlobals.subAdmins.includes(cashier))
             return reject("Invalid cashier");
         floCloudAPI.sendGeneralData({
-                mode: "token-to-cash",
-                amount: amount,
-                token_txid: blkTxID,
-                upi_id: upiID
-            }, TYPE_CASHIER_REQUEST, {
-                receiverID: cashier
-            }).then(result => resolve(result))
+            mode: "token-to-cash",
+            amount: amount,
+            token_txid: blkTxID,
+            upi_id: upiID
+        }, TYPE_CASHIER_REQUEST, {
+            receiverID: cashier
+        }).then(result => resolve(result))
             .catch(error => reject(error))
     })
 }
 
-User.sendToken = function(receiverID, amount, remark = '') {
+User.sendToken = function (receiverID, amount, remark = '') {
     return new Promise((resolve, reject) => {
         tokenAPI.sendToken(myPrivKey, amount, receiverID, remark)
             .then(result => resolve(result))
@@ -127,30 +128,30 @@ User.sendToken = function(receiverID, amount, remark = '') {
     })
 }
 
-User.requestToken = function(floID, amount, remark = '') {
+User.requestToken = function (floID, amount, remark = '') {
     return new Promise((resolve, reject) => {
         floCloudAPI.sendGeneralData({
-                amount: amount,
-                remark: remark
-            }, TYPE_MONEY_REQUEST, {
-                receiverID: floID
-            }).then(result => resolve(result))
+            amount: amount,
+            remark: remark
+        }, TYPE_MONEY_REQUEST, {
+            receiverID: floID
+        }).then(result => resolve(result))
             .catch(error => reject(error))
     })
 }
 
-User.decideRequest = function(request, note) {
+User.decideRequest = function (request, note) {
     return new Promise((resolve, reject) => {
         floCloudAPI.noteApplicationData(request.vectorClock, note, {
-                receiverID: myFloID
-            }).then(result => resolve(result))
+            receiverID: myFloID
+        }).then(result => resolve(result))
             .catch(error => reject(error))
     })
 }
 
 const Cashier = {};
 
-Cashier.init = function() {
+Cashier.init = function () {
     return new Promise((resolve, reject) => {
         let promises = [];
         //Requests from user to cashier(self) for token-cash exchange
@@ -171,18 +172,18 @@ Cashier.init = function() {
     })
 }
 
-Cashier.updateUPI = function(upi_id) {
+Cashier.updateUPI = function (upi_id) {
     return new Promise((resolve, reject) => {
         floCloudAPI.sendApplicationData({
-                upi: upi_id
-            }, TYPE_CASHIER_UPI)
+            upi: upi_id
+        }, TYPE_CASHIER_UPI)
             .then(result => resolve(result))
             .catch(error => reject(error))
     })
 }
 
 Object.defineProperty(Cashier, 'Requests', {
-    get: function() {
+    get: function () {
         let fk = floCloudAPI.util.filterKey(TYPE_CASHIER_REQUEST, {
             receiverID: myFloID
         });
@@ -191,29 +192,29 @@ Object.defineProperty(Cashier, 'Requests', {
     }
 });
 
-Cashier.finishRequest = function(request, txid) {
+Cashier.finishRequest = function (request, txid) {
     return new Promise((resolve, reject) => {
         floCloudAPI.tagApplicationData(request.vectorClock, 'COMPLETED', {
             receiverID: myFloID
         }).then(result => {
             floCloudAPI.noteApplicationData(request.vectorClock, txid, {
-                    receiverID: myFloID
-                }).then(result => resolve(result))
+                receiverID: myFloID
+            }).then(result => resolve(result))
                 .catch(error => reject(error))
         }).catch(error => reject(error))
     })
 }
 
-Cashier.rejectRequest = function(request, reason) {
+Cashier.rejectRequest = function (request, reason) {
     return new Promise((resolve, reject) => {
         floCloudAPI.noteApplicationData(request.vectorClock, "REJECTED:" + reason, {
-                receiverID: myFloID
-            }).then(result => resolve(result))
+            receiverID: myFloID
+        }).then(result => resolve(result))
             .catch(error => reject(error))
     })
 }
 
-Cashier.checkIfUpiTxIsValid = function(upiTxID) {
+Cashier.checkIfUpiTxIsValid = function (upiTxID) {
     return new Promise((resolve, reject) => {
         let requests = Cashier.Requests;
         for (let r in requests)
@@ -224,7 +225,7 @@ Cashier.checkIfUpiTxIsValid = function(upiTxID) {
     })
 }
 
-Cashier.checkIfTokenTxIsValid = function(tokenTxID, sender, amount) {
+Cashier.checkIfTokenTxIsValid = function (tokenTxID, sender, amount) {
     return new Promise((resolve, reject) => {
         let requests = Cashier.Requests;
         for (let r in requests)
