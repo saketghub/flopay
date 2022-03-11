@@ -20,7 +20,7 @@
 
             //Required for blockchain API operators
             apiURL: {
-                FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+                FLO: ['https://flosight.duckdns.org/', 'https://livenet.flocha.in/'],
                 FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
             },
             adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
@@ -203,7 +203,7 @@
                     </section>
                 </tab-panels>
             </section>
-            <section id="settings" class="page hide gap-1-5">
+            <section id="settings" class="page hide gap-2">
                 <h4>Settings</h4>
                 <section class="grid gap-1">
                     <div class="grid">
@@ -211,6 +211,17 @@
                         <sm-copy id="logged_in_user_id" style="font-size: 0.9rem;"></sm-copy>
                     </div>
                     <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
+                </section>
+                <section class="admin-element grid gap-1">
+                    <h4>Change UPI ID</h4>
+                    <sm-form style="width: min(100%,24rem);">
+                        <sm-input id="upi_id" placeholder="UPI ID" pattern="[a-zA-Z0-9_]{3,}@[a-zA-Z]{3,}"
+                            error-text="Invalid UPI ID" animate required></sm-input>
+                        <button class="button button--primary cta justify-self-start" type="submit"
+                            onclick="changeUpi()">
+                            Change
+                        </button>
+                    </sm-form>
                 </section>
             </section>
         </section>
