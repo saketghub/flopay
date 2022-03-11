@@ -55,7 +55,11 @@
             <sm-button variant="no-outline" class="submit-btn">OK</sm-button>
         </div>
     </sm-popup>
-    <div id="main_card">
+    <div id="loader" class="grid gap-1 text-center">
+        <sm-spinner></sm-spinner>
+        <h4>Loading RanchiMall Pay</h4>
+    </div>
+    <div id="main_card" class="hide">
         <header id="main_header" class="flex align-center space-between">
             <div class="flex align-center">
                 <svg class="icon" style="margin-right:0.3rem" viewBox="0 0 96 108"
@@ -162,7 +166,7 @@
                         </div>
                     </section>
                 </div>
-                <section id="cashier" class="hide admin-element">
+                <section id="cashier" class=" grid gap-1 hide admin-element">
                     <h4>Requests</h4>
                     <ul id="cashier_request_list" class="observe-empty-state"></ul>
                     <div class="empty-state">
@@ -368,6 +372,8 @@
                         console.log(result);
                         document.querySelectorAll('.admin-element').forEach(elem => elem.classList.remove('hide'))
                         document.querySelectorAll('.user-element').forEach(elem => elem.classList.add('hide'))
+                        getRef('loader').classList.add('hide')
+                        getRef('main_card').classList.remove('hide')
                     }).catch(error => console.error(error))
                 } else {
                     userUI.renderCashierRequests(User.cashierRequests);
@@ -377,6 +383,8 @@
                         console.log("Cashiers:", cashierUPI);
                         document.querySelectorAll('.admin-element').forEach(elem => elem.classList.add('hide'))
                         document.querySelectorAll('.user-element').forEach(elem => elem.classList.remove('hide'))
+                        getRef('loader').classList.add('hide')
+                        getRef('main_card').classList.remove('hide')
                     }).catch(error => console.error(error))
                 }
                 renderAllTokenTransactions();
