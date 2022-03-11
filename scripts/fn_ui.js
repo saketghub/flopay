@@ -285,6 +285,15 @@ function executeUserAction() {
     }
 }
 
+function changeUpi() {
+    const upiID = getRef('upi_id').value.trim()
+    Cashier.updateUPI(upiID).then(() => {
+        notify('UPI ID updated successfully', 'success')
+    }).catch(err => {
+        notify(err, 'error')
+    })
+}
+
 function signOut() {
     getConfirmation('Sign out?', 'You are about to sign out of the app, continue?', 'Stay', 'Leave')
         .then(async (res) => {
