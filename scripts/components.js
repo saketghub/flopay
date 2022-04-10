@@ -718,6 +718,7 @@ smNotifications.innerHTML = `
         overflow: hidden auto;
         -ms-scroll-chaining: none;
             overscroll-behavior: contain;
+        touch-action: none;
     }
     .notification-panel:empty{
         display:none;
@@ -741,6 +742,7 @@ smNotifications.innerHTML = `
         max-width: 100%;
         padding: 1rem;
         align-items: center;
+        touch-action: none;
     }
     .icon-container:not(:empty){
         margin-right: 0.5rem;
@@ -849,7 +851,19 @@ customElements.define('sm-notifications', class extends HTMLElement {
         this.createNotification = this.createNotification.bind(this)
         this.removeNotification = this.removeNotification.bind(this)
         this.clearAll = this.clearAll.bind(this)
+        this.handlePointerMove = this.handlePointerMove.bind(this)
 
+
+        this.startX = 0;
+        this.currentX = 0;
+        this.endX = 0;
+        this.swipeDistance = 0;
+        this.swipeDirection = '';
+        this.swipeThreshold = 0;
+        this.startTime = 0;
+        this.swipeTime = 0;
+        this.swipeTimeThreshold = 200;
+        this.currentTarget = null;
     }
 
     randString(length) {
@@ -904,18 +918,22 @@ customElements.define('sm-notifications', class extends HTMLElement {
                 transform: `none`,
                 opacity: '1'
             },
-        ], this.animationOptions);
+        ], this.animationOptions).onfinish = (e) => {
+            e.target.commitStyles()
+            e.target.cancel()
+        }
         return notification.id;
     }
 
-    removeNotification(notification) {
+    removeNotification(notification, direction = 'left') {
+        const sign = direction === 'left' ? '-' : '+';
         notification.animate([
             {
-                transform: `none`,
+                transform: this.currentX ? `translateX(${this.currentX}px)` : `none`,
                 opacity: '1'
             },
             {
-                transform: `translateX(-1rem)`,
+                transform: `translateX(calc(${sign}${this.currentX}px ${sign} 1rem))`,
                 opacity: '0'
             }
         ], this.animationOptions).onfinish = () => {
@@ -929,7 +947,56 @@ customElements.define('sm-notifications', class extends HTMLElement {
         });
     }
 
+    handlePointerMove(e) {
+        this.currentX = e.clientX - this.startX;
+        this.currentTarget.style.transform = `translateX(${this.currentX}px)`;
+    }
+
     connectedCallback() {
+        this.notificationPanel.addEventListener('pointerdown', e => {
+            if (e.target.closest('.notification')) {
+                this.swipeThreshold = this.clientWidth / 2;
+                this.currentTarget = e.target.closest('.notification');
+                this.currentTarget.setPointerCapture(e.pointerId);
+                this.startTime = Date.now();
+                this.startX = e.clientX;
+                this.startY = e.clientY;
+                this.notificationPanel.addEventListener('pointermove', this.handlePointerMove);
+            }
+        });
+        this.notificationPanel.addEventListener('pointerup', e => {
+            this.endX = e.clientX;
+            this.endY = e.clientY;
+            this.swipeDistance = Math.abs(this.endX - this.startX);
+            this.swipeTime = Date.now() - this.startTime;
+            if (this.endX > this.startX) {
+                this.swipeDirection = 'right';
+            } else {
+                this.swipeDirection = 'left';
+            }
+            if (this.swipeTime < this.swipeTimeThreshold) {
+                this.removeNotification(this.currentTarget, this.swipeDirection);
+            } else {
+                if (this.swipeDistance > this.swipeThreshold) {
+                    this.removeNotification(this.currentTarget, this.swipeDirection);
+                } else {
+                    this.currentTarget.animate([
+                        {
+                            transform: `translateX(${this.currentX}px)`,
+                        },
+                        {
+                            transform: `none`,
+                        },
+                    ], this.animationOptions).onfinish = (e) => {
+                        e.target.commitStyles()
+                        e.target.cancel()
+                    }
+                }
+            }
+            this.notificationPanel.removeEventListener('pointermove', this.handlePointerMove)
+            this.notificationPanel.releasePointerCapture(e.pointerId);
+            this.currentX = 0;
+        });
         this.notificationPanel.addEventListener('click', e => {
             if (e.target.closest('.close')) {
                 this.removeNotification(e.target.closest('.notification'));
