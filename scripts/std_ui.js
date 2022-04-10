@@ -256,14 +256,17 @@ const pagesData = {
     params: {}
 }
 
-let tempData
 async function showPage(targetPage, options = {}) {
-    const { firstLoad, hashChange, isPreview } = options
+    const { firstLoad, hashChange } = options
     let pageId
     let params = {}
     let searchParams
     if (targetPage === '') {
-        pageId = 'home'
+        if (typeof myFloID === "undefined") {
+            pageId = 'sign_in'
+        } else {
+            pageId = 'home'
+        }
     } else {
         if (targetPage.includes('/')) {
             if (targetPage.includes('?')) {
@@ -281,6 +284,7 @@ async function showPage(targetPage, options = {}) {
             pageId = targetPage
         }
     }
+    if (typeof myFloID === "undefined" && !(['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) return
     if (searchParams) {
         const urlSearchParams = new URLSearchParams('?' + searchParams);
         params = Object.fromEntries(urlSearchParams.entries());
@@ -291,125 +295,27 @@ async function showPage(targetPage, options = {}) {
     if (params)
         pagesData.params = params
     switch (pageId) {
+        case 'sign_in':
+            setTimeout(() => {
+                getRef('private_key_field').focusIn()
+            }, 0);
+            targetPage = 'sign_in'
+            break;
+        case 'sign_up':
+            const { floID, privKey } = floCrypto.generateNewID()
+            getRef('generated_flo_id').value = floID
+            getRef('generated_private_key').value = privKey
+            targetPage = 'sign_up'
+            break;
         case 'transactions':
             break;
         default:
 
     }
-    const animOptions = {
-        duration: 100,
-        fill: 'forwards',
-    }
-    let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
-    const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
-    if (currentActiveElement) {
-        if (getRef('main_navbar').classList.contains('hide')) {
-            getRef('main_navbar').classList.remove('hide-away')
-            getRef('main_navbar').classList.remove('hide')
-            getRef('main_navbar').animate([
-                {
-                    transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
-                    opacity: 0,
-                },
-                {
-                    transform: `none`,
-                    opacity: 1,
-                },
-            ], {
-                duration: 100,
-                fill: 'forwards',
-                easing: 'ease'
-            })
-        }
-        getRef('main_header').classList.remove('hide')
-        const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement)
-        const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement)
-        const isOnTop = previousActiveElementIndex < currentActiveElementIndex
-        const currentIndicator = createElement('div', { className: 'nav-item__indicator' });
-        let previousIndicator = getRef('main_navbar').querySelector('.nav-item__indicator')
-        if (!previousIndicator) {
-            previousIndicator = currentIndicator.cloneNode(true)
-            previousActiveElement = currentActiveElement
-            previousActiveElement.append(previousIndicator)
-        } else if (currentActiveElementIndex !== previousActiveElementIndex) {
-            const indicatorDimensions = previousIndicator.getBoundingClientRect()
-            const currentActiveElementDimensions = currentActiveElement.getBoundingClientRect()
-            let moveBy
-            if (isMobileView) {
-                moveBy = ((currentActiveElementDimensions.width - indicatorDimensions.width) / 2) + indicatorDimensions.width
-            } else {
-                moveBy = ((currentActiveElementDimensions.height - indicatorDimensions.height) / 2) + indicatorDimensions.height
-            }
-            indicatorObserver.observe(previousIndicator)
-            previousIndicator.animate([
-                {
-                    transform: 'none',
-                    opacity: 1,
-                },
-                {
-                    transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `${moveBy}px` : `-${moveBy}px`})`,
-                    opacity: 0,
-                },
-            ], { ...animOptions, easing: 'ease-in' }).onfinish = () => {
-                previousIndicator.remove()
-            }
-            tempData = {
-                currentActiveElement,
-                currentIndicator,
-                isOnTop,
-                animOptions,
-                moveBy
-            }
-        }
-        previousActiveElement.classList.remove('nav-item--active');
-        currentActiveElement.classList.add('nav-item--active')
-    } else {
-        if (!getRef('main_navbar').classList.contains('hide')) {
-            getRef('main_navbar').classList.add('hide-away')
-            getRef('main_navbar').animate([
-                {
-                    transform: `none`,
-                    opacity: 1,
-                },
-                {
-                    transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
-                    opacity: 0,
-                },
-            ], {
-                duration: 200,
-                fill: 'forwards',
-                easing: 'ease'
-            }).onfinish = () => {
-                getRef('main_navbar').classList.add('hide')
-            }
-            getRef('main_header').classList.add('hide')
-        }
-    }
     document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
     getRef(pageId).classList.remove('hide')
     getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
 }
-
-const indicatorObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-        if (!entry.isIntersecting) {
-            const { currentActiveElement, currentIndicator, isOnTop, animOptions, moveBy } = tempData
-            currentActiveElement.append(currentIndicator)
-            currentIndicator.animate([
-                {
-                    transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `-${moveBy}px` : `${moveBy}px`})`,
-                    opacity: 0,
-                },
-                {
-                    transform: 'none',
-                    opacity: 1
-                },
-            ], { ...animOptions, easing: 'ease-out' })
-        }
-    })
-}, {
-    threshold: 1
-})
 
 // class based lazy loading
 class LazyLoader {

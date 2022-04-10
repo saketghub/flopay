@@ -885,9 +885,19 @@ customElements.define('sm-notifications', class extends HTMLElement {
     push(message, options = {}) {
         const notification = this.createNotification(message, options);
         this.notificationPanel.append(notification);
+        this.notificationPanel.animate(
+            [
+                {
+                    transform: `translateY(${notification.clientHeight}px)`,
+                },
+                {
+                    transform: `none`,
+                },
+            ], this.animationOptions
+        )
         notification.animate([
             {
-                transform: `translateY(1rem)`,
+                transform: `translateX(-1rem)`,
                 opacity: '0'
             },
             {
@@ -905,7 +915,7 @@ customElements.define('sm-notifications', class extends HTMLElement {
                 opacity: '1'
             },
             {
-                transform: `translateY(0.5rem)`,
+                transform: `translateX(-1rem)`,
                 opacity: '0'
             }
         ], this.animationOptions).onfinish = () => {

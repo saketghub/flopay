@@ -1,10 +1,10 @@
-/*jshint esversion: 6 */
+/*jshint esversion: 8 */
 const userUI = {};
 
 userUI.requestTokenFromCashier = function () {
     let cashier = User.findCashier();
     if (!cashier)
-        return alert("No cashier online");
+        return notify("No cashier online", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
     //get UPI txid from user
     let upiTxID = prompt(`Send Rs. ${amount} to ${cashierUPI[cashier]} and enter UPI txid`);
@@ -19,7 +19,7 @@ userUI.requestTokenFromCashier = function () {
 userUI.withdrawCashFromCashier = function () {
     let cashier = User.findCashier();
     if (!cashier)
-        return alert("No cashier online");
+        return notify("No cashier online", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
     //get confirmation from user
     let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
@@ -84,6 +84,50 @@ userUI.renderMoneyRequests = function (requests, error = null) {
         frag.append(render.paymentRequestCard(requests[r]))
     }
     getRef('user-money-requests').append(frag)
+}
+
+userUI.renderSavedIds = async function () {
+    floGlobals.savedIds = {}
+    const frag = document.createDocumentFragment()
+    const savedIds = await floCloudAPI.requestApplicationData('savedIds', { mostRecent: true, senderIDs: [myFloID], receiverID: myFloID });
+    if (savedIds.length && await compactIDB.readData('savedIds', 'lastSyncTime') !== savedIds[0].time) {
+        await compactIDB.clearData('savedIds');
+        const dataToDecrypt = floCloudAPI.util.decodeMessage(savedIds[0].message)
+        const data = JSON.parse(floCrypto.decryptData(dataToDecrypt, myPrivKey));
+        console.log(data)
+        for (let key in data) {
+            floGlobals.savedIds[key] = data[key];
+            compactIDB.addData('savedIds', data[key], key);
+        }
+        compactIDB.addData('savedIds', savedIds[0].time, 'lastSyncTime');
+    } else {
+        const idsToRender = await compactIDB.readAllData('savedIds');
+        for (const key in idsToRender) {
+            if (key !== 'lastSyncTime')
+                floGlobals.savedIds[key] = idsToRender[key];
+        }
+    }
+    console.log(floGlobals.savedIds)
+    for (const key in floGlobals.savedIds) {
+        frag.append(render.savedId(key, floGlobals.savedIds[key]));
+    }
+    getRef('saved_ids_list').append(frag);
+}
+
+userUI.saveId = async function () {
+    const floID = getRef('flo_id_to_save').value.trim();
+    const title = getRef('flo_id_title_to_save').value.trim();
+    const dataToSend = floCrypto.encryptData(JSON.stringify({ ...floGlobals.savedIds, [floID]: { title } }), myPubKey)
+    floCloudAPI.sendApplicationData(dataToSend, 'savedIds', { receiverID: myFloID }).then(result => {
+        console.log(result);
+        floGlobals.savedIds[floID] = { title }
+        notify(`Saved ${floID}`, 'success');
+        getRef('saved_ids_list').append(render.savedId(floID, { title }));
+        hidePopup();
+    }).catch(error => {
+        console.error(error);
+        notify(error, 'error');
+    })
 }
 
 userUI.payRequest = function (reqID) {
@@ -188,66 +232,79 @@ function renderAllTokenTransactions() {
         getRef('token_transactions').innerHTML = ''
         const frag = document.createDocumentFragment();
         for (let txid in result.transactions) {
-            frag.append(render.transactionCard(txid, tokenAPI.util.parseTxData(result.transactions[txid])))
+            frag.append(render.transactionCard(txid, tokenAPI.util.parseTxData(result.transactions[txid])));
         }
-        getRef('token_transactions').append(frag)
-    }).catch(error => console.error(error))
+        getRef('token_transactions').append(frag);
+    }).catch(error => console.error(error));
+}
+
+function getFloIdName(floID) {
+    return floGlobals.savedIds[floID] ? floGlobals.savedIds[floID].title : floID;
 }
 
 const render = {
+    savedId(floID, details) {
+        const { title } = details.hasOwnProperty('title') ? details : { title: details };
+        const clone = getRef('saved_id_template').content.cloneNode(true).firstElementChild;
+        clone.dataset.floId = floID;
+        clone.querySelector('a').href = `#/saved&id=${floID}`;
+        clone.querySelector('.saved-id__initials').textContent = title.charAt(0);
+        clone.querySelector('.saved-id__title').textContent = title;
+        return clone;
+    },
     transactionCard(txid, transactionDetails) {
-        const { time, sender, receiver, tokenAmount } = transactionDetails
+        const { time, sender, receiver, tokenAmount } = transactionDetails;
         const clone = getRef('transaction_template').content.cloneNode(true).firstElementChild;
-        clone.dataset.txid = txid
-        clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000)
-        clone.querySelector('.transaction__amount').textContent = tokenAmount
+        clone.dataset.txid = txid;
+        clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000);
+        clone.querySelector('.transaction__amount').textContent = tokenAmount;
         if (sender === myFloID) {
-            clone.querySelector('.transaction__amount').classList.add('sent')
-            clone.querySelector('.transaction__receiver').textContent = `Sent to ${receiver || 'Myself'}`
-            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>`
+            clone.querySelector('.transaction__amount').classList.add('sent');
+            clone.querySelector('.transaction__receiver').textContent = `Sent to ${getFloIdName(receiver) || 'Myself'}`;
+            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>`;
         } else if (receiver === myFloID) {
-            clone.querySelector('.transaction__amount').classList.add('received')
-            clone.querySelector('.transaction__receiver').textContent = `Received from ${sender}`
-            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 5.41L18.59 4 7 15.59V9H5v10h10v-2H8.41z"/></svg>`
+            clone.querySelector('.transaction__amount').classList.add('received');
+            clone.querySelector('.transaction__receiver').textContent = `Received from ${getFloIdName(sender)}`;
+            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 5.41L18.59 4 7 15.59V9H5v10h10v-2H8.41z"/></svg>`;
         } else { //This should not happen unless API returns transaction that does not involve myFloID
             row.insertCell().textContent = tx.sender;
             row.insertCell().textContent = tx.receiver;
         }
-        return clone
+        return clone;
     },
     cashierRequestCard(details) {
         const { time, senderID, message: { mode }, note, tag, vectorClock } = details;
         const clone = getRef('cashier_request_template').content.cloneNode(true).firstElementChild;
-        clone.id = vectorClock
+        clone.id = vectorClock;
         const status = tag || note; //status tag for completed, note for rejected
-        clone.querySelector('.cashier-request__requestor').textContent = senderID
-        clone.querySelector('.cashier-request__time').textContent = getFormattedTime(time)
-        clone.querySelector('.cashier-request__mode').textContent = mode
+        clone.querySelector('.cashier-request__requestor').textContent = senderID;
+        clone.querySelector('.cashier-request__time').textContent = getFormattedTime(time);
+        clone.querySelector('.cashier-request__mode').textContent = mode;
         if (status)
-            clone.querySelector('.cashier-request__status').textContent = status
+            clone.querySelector('.cashier-request__status').textContent = status;
         else
-            clone.querySelector('.cashier-request__status').innerHTML = `<button class="button" onclick="cashierUI.completeRequest('${vectorClock}')">Process</button>`
-        return clone
+            clone.querySelector('.cashier-request__status').innerHTML = `<button class="button" onclick="cashierUI.completeRequest('${vectorClock}')">Process</button>`;
+        return clone;
     },
     walletRequestCard(details) {
         const { time, receiverID, message: { mode }, note, tag, vectorClock } = details;
         const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild;
-        clone.id = vectorClock
-        clone.querySelector('.wallet-request__requestor').textContent = receiverID
-        clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time)
-        clone.querySelector('.wallet-request__mode').textContent = mode === 'cash-to-token' ? 'Deposit' : 'Withdraw'
+        clone.id = vectorClock;
+        clone.querySelector('.wallet-request__requestor').textContent = receiverID;
+        clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time);
+        clone.querySelector('.wallet-request__mode').textContent = mode === 'cash-to-token' ? 'Deposit' : 'Withdraw';
         let status = tag ? (tag + ":" + note) : (note || "PENDING");
-        clone.querySelector('.wallet-request__status').textContent = status
-        return clone
+        clone.querySelector('.wallet-request__status').textContent = status;
+        return clone;
     },
     paymentRequestCard(details) {
         const { time, senderID, message: { amount, remark }, note, vectorClock } = details;
         const clone = getRef('payment_request_template').content.cloneNode(true).firstElementChild;
-        clone.id = vectorClock
-        clone.querySelector('.payment-request__requestor').textContent = senderID
-        clone.querySelector('.payment-request__time').textContent = getFormattedTime(time)
-        clone.querySelector('.payment-request__amount').textContent = amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' })
-        clone.querySelector('.payment-request__remark').textContent = remark
+        clone.id = vectorClock;
+        clone.querySelector('.payment-request__requestor').textContent = senderID;
+        clone.querySelector('.payment-request__time').textContent = getFormattedTime(time);
+        clone.querySelector('.payment-request__amount').textContent = amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' });
+        clone.querySelector('.payment-request__remark').textContent = remark;
 
         let status = note;
         if (status)
@@ -257,20 +314,20 @@ const render = {
                 `<button class="button" onclick="userUI.payRequest('${vectorClock}')">Pay</button>
                 <button class="button" onclick="userUI.declineRequest('${vectorClock}')">Decline</button>`;
 
-        return clone
+        return clone;
     },
-}
+};
 
-let currentUserAction
+let currentUserAction;
 function showTokenTransfer(type) {
     getRef('tt_button').textContent = type;
-    currentUserAction = type
+    currentUserAction = type;
     if (type === 'send') {
         getRef('token_transfer__title').textContent = 'Send money to FLO ID';
     } else {
         getRef('token_transfer__title').textContent = 'Request money from FLO ID';
     }
-    showPopup('token_transfer_popup')
+    showPopup('token_transfer_popup');
 }
 
 function executeUserAction() {
@@ -278,28 +335,46 @@ function executeUserAction() {
         amount = parseFloat(getRef('tt_amount').value),
         remark = getRef('tt_remark').value.trim();
     if (currentUserAction === 'send') {
-        userUI.sendMoneyToUser(floID, amount, remark)
+        userUI.sendMoneyToUser(floID, amount, remark);
 
     } else {
-        userUI.requestMoneyFromUser(floID, amount, remark)
+        userUI.requestMoneyFromUser(floID, amount, remark);
     }
 }
 
 function changeUpi() {
-    const upiID = getRef('upi_id').value.trim()
+    const upiID = getRef('upi_id').value.trim();
     Cashier.updateUPI(upiID).then(() => {
-        notify('UPI ID updated successfully', 'success')
+        notify('UPI ID updated successfully', 'success');
     }).catch(err => {
-        notify(err, 'error')
-    })
+        notify(err, 'error');
+    });
 }
-
+function getSignedIn() {
+    return new Promise((resolve, reject) => {
+        if (window.location.hash.includes('sign_in') || window.location.hash.includes('sign_up')) {
+            showPage(window.location.hash);
+        } else {
+            location.hash = `#/sign_in`;
+        }
+        getRef('sign_in_button').onclick = () => {
+            resolve(getRef('private_key_field').value.trim());
+            getRef('private_key_field').value = '';
+            showPage('loading');
+        };
+        getRef('sign_up_button').onclick = () => {
+            resolve(getRef('generated_private_key').value.trim());
+            getRef('generated_private_key').value = '';
+            showPage('loading');
+        };
+    });
+}
 function signOut() {
     getConfirmation('Sign out?', 'You are about to sign out of the app, continue?', 'Stay', 'Leave')
         .then(async (res) => {
             if (res) {
-                await floDapps.clearCredentials()
-                location.reload()
+                await floDapps.clearCredentials();
+                location.reload();
             }
-        })
+        });
 }
