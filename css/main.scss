@@ -26,8 +26,19 @@ body {
   color: rgba(var(--text-color), 1);
   background-color: rgba(var(--background-color), 1);
   transition: background-color 0.3s;
+  position: relative;
   display: flex;
   flex-direction: column;
+  &::before {
+    content: "";
+    position: absolute;
+    height: max(12rem, 16vmax);
+    background-color: #256eff;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: -1;
+  }
 }
 
 body[data-theme="dark"] {
@@ -160,7 +171,7 @@ sm-textarea {
   }
 }
 sm-button {
-  --padding: 0.6rem 0.8rem;
+  --padding: 0.8rem;
   &[variant="primary"] {
     .icon {
       fill: rgba(var(--background-color), 1);
@@ -519,7 +530,8 @@ h3 {
   }
 }
 #main_header {
-  padding: 1rem 1.5rem;
+  --text-color: 220, 220, 220;
+  padding: 1rem max(4vw, 1.5rem);
   a {
     color: rgba(var(--text-color), 1);
   }
@@ -554,6 +566,15 @@ h3 {
 .clip {
   clip-path: circle(0);
 }
+#user {
+  gap: 0.5rem;
+  padding: 0 1.5rem;
+}
+#quick_actions_container {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
+}
 .primary-action {
   display: flex;
   flex-direction: column;
@@ -565,16 +586,40 @@ h3 {
   border-radius: 0.5rem;
   // background-color: rgba(var(--text-color), 0.06);
   background-color: transparent;
-  min-width: 5rem;
-  max-width: 6rem;
   text-align: center;
   .icon {
     fill: var(--accent-color);
   }
 }
-#user {
-  padding: 1rem 1.5rem;
+#rupee_balance {
+  span:first-of-type {
+    font-size: 1.5rem;
+  }
+  span:last-of-type {
+    font-size: 0.8rem;
+  }
 }
+.wallet-action {
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+  font-size: 0.85rem;
+  padding: 0.8rem 0.5rem;
+  color: rgba(var(--text-color), 1);
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--text-color), 0.03);
+  flex: 1;
+  &:nth-of-type(2) {
+    margin: 0 0.5rem;
+  }
+  .icon {
+    margin-bottom: 0.8rem;
+    fill: var(--accent-color);
+  }
+}
+
 #saved_ids_list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
@@ -602,6 +647,7 @@ h3 {
   }
   &__title {
     font-size: 0.9rem;
+    color: rgba(var(--text-color), 1);
   }
 }
 
@@ -610,15 +656,20 @@ h3 {
   border-radius: 0.5rem;
   padding: 1.5rem;
 }
-#history,
-#wallet_history {
-  & > * {
-    width: min(60ch, 100%);
-    justify-self: center;
-  }
+#history {
+  height: 100%;
+  align-content: flex-start;
+  background-color: rgba(var(--foreground-color), 1);
+  width: min(60ch, 100%);
+  justify-self: center;
+  margin: 0 auto;
+  padding: 1.5rem;
+  overflow-y: auto;
+  border-radius: 0.5rem;
+  grid-template-columns: minmax(0, 1fr);
 }
-#token_transactions {
-  flex-direction: column;
+#payments_history_wrapper,
+#wallet_history_wrapper {
   padding-bottom: 4rem;
 }
 .transaction {
@@ -785,6 +836,7 @@ h3 {
     padding: 1rem 1.5rem 0 1.5rem;
   }
   #user {
+    gap: 1rem;
     padding: 1.5rem 8vmax;
     grid-template-columns: 1fr 20rem;
     align-content: flex-start;
@@ -821,6 +873,7 @@ h3 {
       background-color: rgba(var(--text-color), 0.06);
     }
   }
+  button,
   .button:not([disabled]) {
     transition: background-color 0.3s, filter 0.3s;
     &:hover {

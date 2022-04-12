@@ -1,5 +1,7 @@
 /*jshint esversion: 8 */
 const userUI = {};
+let paymentsHistoryLoader
+let walletHistoryLoader
 
 userUI.requestTokenFromCashier = function () {
     let cashier = User.findCashier();
@@ -63,13 +65,15 @@ userUI.renderCashierRequests = function (requests, error = null) {
         return console.error(error);
     else if (typeof requests !== "object" || requests === null)
         return;
-    const frag = document.createDocumentFragment()
-    for (let r in requests) {
-        let oldCard = document.getElementById(r);
-        if (oldCard) oldCard.remove();
-        frag.append(render.walletRequestCard(requests[r]))
+    if (pagesData.lastPage === 'history' && pagesData.params.type === 'wallet') {
+        const frag = document.createDocumentFragment()
+        for (let transactionID in requests) {
+            let oldCard = getRef('wallet_history').querySelector(`#${transactionID}`);
+            if (oldCard) oldCard.remove();
+            frag.append(render.walletRequestCard(transactionID, requests[transactionID]))
+        }
+        getRef('wallet_history').prepend(frag)
     }
-    getRef('user-cashier-requests').append(frag)
 }
 
 userUI.renderMoneyRequests = function (requests, error = null) {
@@ -227,17 +231,6 @@ function completeTokenToCashRequest(request) {
     })
 }
 
-function renderAllTokenTransactions() {
-    tokenAPI.getAllTxs(myFloID).then(result => {
-        getRef('token_transactions').innerHTML = ''
-        const frag = document.createDocumentFragment();
-        for (let txid in result.transactions) {
-            frag.append(render.transactionCard(txid, tokenAPI.util.parseTxData(result.transactions[txid])));
-        }
-        getRef('token_transactions').append(frag);
-    }).catch(error => console.error(error));
-}
-
 function getFloIdName(floID) {
     return floGlobals.savedIds[floID] ? floGlobals.savedIds[floID].title : floID;
 }
@@ -252,8 +245,8 @@ const render = {
         clone.querySelector('.saved-id__title').textContent = title;
         return clone;
     },
-    transactionCard(txid, transactionDetails) {
-        const { time, sender, receiver, tokenAmount } = transactionDetails;
+    transactionCard(transactionDetails) {
+        const { txid, time, sender, receiver, tokenAmount } = transactionDetails;
         const clone = getRef('transaction_template').content.cloneNode(true).firstElementChild;
         clone.dataset.txid = txid;
         clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000);
@@ -315,8 +308,12 @@ const render = {
                 <button class="button" onclick="userUI.declineRequest('${vectorClock}')">Decline</button>`;
 
         return clone;
-    },
+    }
 };
+
+getRef('history_type_selector').addEventListener('change', (e) => {
+    location.hash = `#/history?type=${e.target.value}`;
+})
 
 let currentUserAction;
 function showTokenTransfer(type) {

@@ -253,7 +253,8 @@ function createRipple(event, target) {
 }
 
 const pagesData = {
-    params: {}
+    params: {},
+    openedPages: new Set(),
 }
 
 async function showPage(targetPage, options = {}) {
@@ -285,15 +286,14 @@ async function showPage(targetPage, options = {}) {
         }
     }
     if (typeof myFloID === "undefined" && !(['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) return
+    else if (typeof myFloID !== "undefined" && (['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) {
+        history.replaceState(null, null, '#/home');
+        pageId = 'home'
+    }
     if (searchParams) {
         const urlSearchParams = new URLSearchParams('?' + searchParams);
         params = Object.fromEntries(urlSearchParams.entries());
     }
-    if (pagesData.lastPage !== pageId) {
-        pagesData.lastPage = pageId
-    }
-    if (params)
-        pagesData.params = params
     switch (pageId) {
         case 'sign_in':
             setTimeout(() => {
@@ -307,14 +307,71 @@ async function showPage(targetPage, options = {}) {
             getRef('generated_private_key').value = privKey
             targetPage = 'sign_up'
             break;
-        case 'transactions':
+        case 'history':
+            let transactionsList = []
+            if (!params.hasOwnProperty('type')) {
+                history.replaceState(null, null, '#/history?type=payments');
+                params.type = 'payments'
+            }
+            switch (params.type) {
+                case 'payments':
+                    if (paymentsHistoryLoader)
+                        paymentsHistoryLoader.clear()
+                    getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>'
+                    getRef('payments_history_wrapper').classList.remove('hide')
+                    getRef('wallet_history_wrapper').classList.add('hide')
+                    tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
+                        for (const transactionId in transactions) {
+                            transactionsList.push({
+                                ...tokenAPI.util.parseTxData(transactions[transactionId]),
+                                txid: transactionId
+                            })
+                        }
+                        if (paymentsHistoryLoader) {
+                            paymentsHistoryLoader.update(transactionsList)
+                        } else {
+                            paymentsHistoryLoader = new LazyLoader('#payments_history', transactionsList, render.transactionCard);
+                        }
+                        paymentsHistoryLoader.init()
+                    }).catch(e => {
+                        console.error(e)
+                    })
+                    break;
+                case 'wallet':
+                    if (walletHistoryLoader)
+                        walletHistoryLoader.clear()
+                    getRef('wallet_history').innerHTML = '<sm-spinner></sm-spinner>'
+                    getRef('payments_history_wrapper').classList.add('hide')
+                    getRef('wallet_history_wrapper').classList.remove('hide')
+                    const requests = User.cashierRequests;
+                    for (const transactionId in requests) {
+                        transactionsList.push(User.cashierRequests[transactionId])
+                    }
+                    if (walletHistoryLoader) {
+                        walletHistoryLoader.update(transactionsList)
+                    } else {
+                        walletHistoryLoader = new LazyLoader('#wallet_history', transactionsList, render.walletRequestCard);
+                        // to-do: set value of history type selector
+                    }
+                    walletHistoryLoader.init()
+                default:
+                    break;
+            }
             break;
         default:
-
+            break;
     }
-    document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
-    getRef(pageId).classList.remove('hide')
-    getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
+
+    if (pagesData.lastPage !== pageId) {
+        document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
+        getRef(pageId).classList.remove('hide')
+        getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
+        pagesData.lastPage = pageId
+    }
+    if (params)
+        pagesData.params = params
+    pagesData.openedPages.add(pageId)
+
 }
 
 // class based lazy loading
@@ -364,7 +421,6 @@ class LazyLoader {
     }
     update(elementsToRender) {
         this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
-        this.render()
     }
     render(options = {}) {
         let { lazyLoad = false } = options
