@@ -186,7 +186,7 @@ function getFormattedTime(time, format) {
                 return `${month} ${date}, ${year}`;
                 break;
             default:
-                return `${month} ${date} ${year}, ${finalHours}`;
+                return `${month} ${date}, ${year} at ${finalHours}`;
         }
     } catch (e) {
         console.error(e);
@@ -307,6 +307,9 @@ async function showPage(targetPage, options = {}) {
             getRef('generated_private_key').value = privKey
             targetPage = 'sign_up'
             break;
+        case 'contact':
+            getRef('contact__title').textContent = getFloIdTitle(params.floId)
+            break;
         case 'history':
             let transactionsList = []
             if (!params.hasOwnProperty('type')) {
@@ -351,12 +354,13 @@ async function showPage(targetPage, options = {}) {
                         walletHistoryLoader.update(transactionsList)
                     } else {
                         walletHistoryLoader = new LazyLoader('#wallet_history', transactionsList, render.walletRequestCard);
-                        // to-do: set value of history type selector
                     }
                     walletHistoryLoader.init()
+                    break;
                 default:
                     break;
             }
+            getRef('history_type_selector').value = params.type
             break;
         default:
             break;
@@ -365,7 +369,23 @@ async function showPage(targetPage, options = {}) {
     if (pagesData.lastPage !== pageId) {
         document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
         getRef(pageId).classList.remove('hide')
-        getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
+        getRef('pages_container').style.overflowY = "hidden";
+        getRef(pageId).animate([
+            {
+                opacity: 0,
+                transform: 'translateY(1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+        ],
+            {
+                duration: 300,
+                easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            }).onfinish = () => {
+                getRef('pages_container').style.overflowY = "";
+            }
         pagesData.lastPage = pageId
     }
     if (params)

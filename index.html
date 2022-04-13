@@ -147,57 +147,52 @@
         </div>
         <section id="home" class="page hide">
             <div id="user" class="hide grid user-element">
-                <div class="card grid gap-1-5">
-                    <div class="flex align-center space-between">
-                        <h4>Quick actions </h4>
-                    </div>
-                    <div id="quick_actions_container">
-                        <button class="primary-action" onclick="showTokenTransfer('send')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                            </svg>
-                            Send rupee
-                        </button>
-                        <button class="primary-action" onclick="showTokenTransfer('request')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                <div id="quick_actions_container" class="card">
+                    <button class="primary-action" onclick="showTokenTransfer('send')">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                        Send rupee
+                    </button>
+                    <button class="primary-action" onclick="showTokenTransfer('request')">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <g>
+                                <rect fill="none" height="24" width="24" />
+                            </g>
+                            <g>
+                                <path
+                                    d="M20,2H4.01c-1.1,0-2,0.9-2,2L2,22l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M12,6c1.1,0,2,0.9,2,2s-0.9,2-2,2 s-2-0.9-2-2S10.9,6,12,6z M16,14H8v-0.57c0-0.81,0.48-1.53,1.22-1.85C10.07,11.21,11.01,11,12,11c0.99,0,1.93,0.21,2.78,0.58 C15.52,11.9,16,12.62,16,13.43V14z" />
+                            </g>
+                        </svg>
+                        Request rupee
+                    </button>
+                    <button class="primary-action" onclick="">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <g>
+                                <rect fill="none" height="24" width="24" />
+                            </g>
+                            <g>
                                 <g>
-                                    <rect fill="none" height="24" width="24" />
+                                    <path d="M3,11h8V3H3V11z M5,5h4v4H5V5z" />
+                                    <path d="M3,21h8v-8H3V21z M5,15h4v4H5V15z" />
+                                    <path d="M13,3v8h8V3H13z M19,9h-4V5h4V9z" />
+                                    <rect height="2" width="2" x="19" y="19" />
+                                    <rect height="2" width="2" x="13" y="13" />
+                                    <rect height="2" width="2" x="15" y="15" />
+                                    <rect height="2" width="2" x="13" y="17" />
+                                    <rect height="2" width="2" x="15" y="19" />
+                                    <rect height="2" width="2" x="17" y="17" />
+                                    <rect height="2" width="2" x="17" y="13" />
+                                    <rect height="2" width="2" x="19" y="15" />
                                 </g>
-                                <g>
-                                    <path
-                                        d="M20,2H4.01c-1.1,0-2,0.9-2,2L2,22l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M12,6c1.1,0,2,0.9,2,2s-0.9,2-2,2 s-2-0.9-2-2S10.9,6,12,6z M16,14H8v-0.57c0-0.81,0.48-1.53,1.22-1.85C10.07,11.21,11.01,11,12,11c0.99,0,1.93,0.21,2.78,0.58 C15.52,11.9,16,12.62,16,13.43V14z" />
-                                </g>
-                            </svg>
-                            Request rupee
-                        </button>
-                        <button class="primary-action" onclick="">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <g>
-                                    <rect fill="none" height="24" width="24" />
-                                </g>
-                                <g>
-                                    <g>
-                                        <path d="M3,11h8V3H3V11z M5,5h4v4H5V5z" />
-                                        <path d="M3,21h8v-8H3V21z M5,15h4v4H5V15z" />
-                                        <path d="M13,3v8h8V3H13z M19,9h-4V5h4V9z" />
-                                        <rect height="2" width="2" x="19" y="19" />
-                                        <rect height="2" width="2" x="13" y="13" />
-                                        <rect height="2" width="2" x="15" y="15" />
-                                        <rect height="2" width="2" x="13" y="17" />
-                                        <rect height="2" width="2" x="15" y="19" />
-                                        <rect height="2" width="2" x="17" y="17" />
-                                        <rect height="2" width="2" x="17" y="13" />
-                                        <rect height="2" width="2" x="19" y="15" />
-                                    </g>
-                                </g>
-                            </svg>
-                            Scan FLO QR
-                        </button>
-                    </div>
+                            </g>
+                        </svg>
+                        Scan FLO QR
+                    </button>
                 </div>
                 <section id="wallet_section" class="card grid gap-1-5">
                     <div class="flex align-center space-between">
@@ -220,10 +215,10 @@
                         <h5>Balance</h5>
                         <h1 class="h1" id="rupee_balance"></h1>
                     </div>
-                    <div class="grid gap-1">
+                    <!-- <div class="grid gap-1">
                         <sm-input id="request_cashier_amount" type="number" name="amount" placeholder="Amount" animate>
                         </sm-input>
-                    </div>
+                    </div> -->
                     <div class="grid gap-0-5">
                         <div class="flex">
                             <button class="wallet-action" onclick="userUI.requestTokenFromCashier()">
@@ -320,6 +315,23 @@
                     <h4>No transactions</h4>
                 </div>
         </section>
+        <section id="contact" class="page hide">
+            <div class="flex align-center">
+                <a href="#/home" class="button icon-only margin-right-0-5">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    </svg>
+                </a>
+                <h4 id="contact__title"></h4>
+            </div>
+            <div id="contact__transactions"></div>
+            <div class="flex">
+                <button class="button flex-1">Pay</button>
+                <button class="button flex-1">Request</button>
+            </div>
+        </section>
         <section id="activity" class="page page-layout hide">
             <h4>Activity</h4>
             <ul id="user-money-requests" class="observe-empty-state"></ul>
@@ -327,7 +339,7 @@
                 <h4>No requests</h4>
             </div>
         </section>
-        <section id="settings" class="page page-layout hide">
+        <section id="settings" class="page hide">
             <h4>Settings</h4>
             <section class="grid gap-1">
                 <div class="grid">
@@ -366,8 +378,42 @@
                 autofocus>
             </sm-input>
             <sm-input id="flo_id_title_to_save" placeholder="Title" animate required></sm-input>
-            <button class="button button--primary cta" onclick="userUI.saveId()" type="submit">Save</button>
+            <button class="button button--primary cta" onclick="saveId()" type="submit">Save</button>
         </sm-form>
+    </sm-popup>
+    <sm-popup id="edit_saved_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="hidePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+                <h3>Edit</h3>
+            </div>
+        </header>
+        <section class="grid gap-1-5">
+            <div class="grid gap-0-5">
+                <h5>FLO ID</h5>
+                <sm-copy id="edit_saved_id"></sm-copy>
+            </div>
+            <sm-form>
+                <sm-input id="newAddrLabel" placeholder="Name" autofocus animate required></sm-input>
+                <div class="flex align-center space-between">
+                    <button class="button icon-only" title="Delete this FLO ID?" onclick="deleteSaved()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                        </svg>
+                    </button>
+                    <button class="button button--primary cta" type="submit" onclick="saveChanges()">Save</button>
+                </div>
+            </sm-form>
+        </section>
     </sm-popup>
     <sm-popup id="token_transfer_popup">
         <header slot="header" class="popup__header">
@@ -409,12 +455,17 @@
 
     <!-- templates -->
     <template id="saved_id_template">
-        <li>
-            <a class="saved-id interact" href="">
+        <li class="saved-id grid interact" tabindex="0">
+            <button class="interact edit-saved" title="Edit saved ID">
                 <div class="saved-id__initials"></div>
-                <span class="saved-id__title"></span>
-                <!-- <sm-copy class="saved-id__flo-id"></sm-copy> -->
-            </a>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                </svg>
+            </button>
+            <h4 class="saved-id__title"></h4>
         </li>
     </template>
     <template id="transaction_template">

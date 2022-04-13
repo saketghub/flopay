@@ -669,34 +669,53 @@ h3 {
 
 #saved_ids_list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   margin-top: 1.5rem;
 }
 
 .saved-id {
-  display: grid;
-  gap: 1rem;
   grid-template-columns: auto 1fr;
+  gap: 0 0.8rem;
+  border-radius: 0.3rem;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   align-items: center;
-  color: inherit;
-  padding: 0.5rem 0;
+}
+.saved-id.highlight {
+  box-shadow: 0 0 0.1rem 0.1rem var(--accent-color) inset;
+}
+.saved-id .edit-saved {
+  padding: 0.3rem;
+  position: relative;
+  justify-self: center;
+}
+.saved-id .edit-saved .icon {
+  position: absolute;
+  height: 1.2rem;
+  width: 1.2rem;
+  right: 0;
+  bottom: 0;
+  border-radius: 0.5rem;
+  padding: 0.2rem;
+  background-color: rgba(var(--background-color), 1);
 }
 .saved-id__initials {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2.5rem;
-  width: 2.5rem;
-  color: rgba(var(--background-color), 1);
-  background-color: var(--accent-color);
-  border-radius: 1rem;
+  height: 2.4rem;
+  width: 2.4rem;
+  font-size: 1.2rem;
   text-transform: uppercase;
+  color: rgba(var(--background-color), 1);
   font-weight: 700;
-}
-.saved-id__title {
-  font-size: 0.9rem;
-  color: rgba(var(--text-color), 1);
+  line-height: 1;
+  background-color: var(--accent-color);
+  justify-self: flex-start;
+  border-radius: 2rem;
 }
 
 .card {
@@ -705,7 +724,10 @@ h3 {
   padding: 1rem;
 }
 
-#history {
+#cashier,
+#contact,
+#history,
+#settings {
   height: 100%;
   align-content: flex-start;
   background-color: rgba(var(--foreground-color), 1);
@@ -716,6 +738,15 @@ h3 {
   overflow-y: auto;
   border-radius: 0.5rem;
   grid-template-columns: minmax(0, 1fr);
+}
+
+#contact {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+#contact__transactions {
+  overflow-y: auto;
 }
 
 #payments_history_wrapper,
@@ -741,7 +772,7 @@ h3 {
   color: rgba(var(--text-color), 0.8);
 }
 .transaction.sent .transaction__amount::before {
-  content: "-";
+  content: "- ";
 }
 .transaction.received .icon {
   fill: var(--green);
@@ -750,7 +781,7 @@ h3 {
   color: var(--green);
 }
 .transaction.received .transaction__amount::before {
-  content: "-";
+  content: "+ ";
 }
 .transaction__icon {
   display: flex;
@@ -950,10 +981,14 @@ h3 {
 
   #user {
     gap: 1rem;
-    padding: 1.5rem 8vmax;
+    padding: 0 8vmax;
     grid-template-columns: 1fr 22rem;
     align-content: flex-start;
     align-items: flex-start;
+  }
+
+  #saved_ids_list {
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
   }
 
   .saved-id {
@@ -961,6 +996,9 @@ h3 {
     border-radius: 0.5rem;
     background-color: rgba(var(--text-color), 0.03);
     grid-template-columns: minmax(0, 1fr);
+    justify-content: center;
+    text-align: center;
+    gap: 0.5rem;
   }
 
   #wallet_section {

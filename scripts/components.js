@@ -2368,13 +2368,18 @@ customElements.define('strip-select', class extends HTMLElement {
         this.slottedOptions = undefined;
         this._value = undefined;
         this.scrollDistance = 0;
+        this.assignedElements = [];
 
         this.scrollLeft = this.scrollLeft.bind(this);
         this.scrollRight = this.scrollRight.bind(this);
         this.fireEvent = this.fireEvent.bind(this);
+        this.setSelectedOption = this.setSelectedOption.bind(this);
     }
     get value() {
         return this._value;
+    }
+    set value(val) {
+        this.setSelectedOption(val);
     }
     scrollLeft() {
         this.stripSelect.scrollBy({
@@ -2389,6 +2394,19 @@ customElements.define('strip-select', class extends HTMLElement {
             behavior: 'smooth'
         });
     }
+    setSelectedOption(value) {
+        if (this._value === value) return
+        this._value = value;
+        this.assignedElements.forEach(elem => {
+            if (elem.value === value) {
+                elem.setAttribute('active', '');
+                elem.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+            }
+            else
+                elem.removeAttribute('active')
+        });
+    }
+
     fireEvent() {
         this.dispatchEvent(
             new CustomEvent("change", {
@@ -2409,17 +2427,17 @@ customElements.define('strip-select', class extends HTMLElement {
         const navButtonLeft = this.shadowRoot.querySelector('.nav-button--left');
         const navButtonRight = this.shadowRoot.querySelector('.nav-button--right');
         slot.addEventListener('slotchange', e => {
-            const assignedElements = slot.assignedElements();
-            assignedElements.forEach(elem => {
+            this.assignedElements = slot.assignedElements();
+            this.assignedElements.forEach(elem => {
                 if (elem.hasAttribute('selected')) {
                     elem.setAttribute('active', '');
                     this._value = elem.value;
                 }
             });
             if (!this.hasAttribute('multiline')) {
-                if (assignedElements.length > 0) {
-                    firstOptionObserver.observe(slot.assignedElements()[0]);
-                    lastOptionObserver.observe(slot.assignedElements()[slot.assignedElements().length - 1]);
+                if (this.assignedElements.length > 0) {
+                    firstOptionObserver.observe(this.assignedElements[0]);
+                    lastOptionObserver.observe(this.assignedElements[this.assignedElements.length - 1]);
                 }
                 else {
                     navButtonLeft.classList.add('hide');
@@ -2446,10 +2464,7 @@ customElements.define('strip-select', class extends HTMLElement {
         resObs.observe(this);
         this.stripSelect.addEventListener('option-clicked', e => {
             if (this._value !== e.target.value) {
-                this._value = e.target.value;
-                slot.assignedElements().forEach(elem => elem.removeAttribute('active'));
-                e.target.setAttribute('active', '');
-                e.target.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+                this.setSelectedOption(e.target.value);
                 this.fireEvent();
             }
         });

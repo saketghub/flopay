@@ -97,8 +97,7 @@ userUI.renderSavedIds = async function () {
     if (savedIds.length && await compactIDB.readData('savedIds', 'lastSyncTime') !== savedIds[0].time) {
         await compactIDB.clearData('savedIds');
         const dataToDecrypt = floCloudAPI.util.decodeMessage(savedIds[0].message)
-        const data = JSON.parse(floCrypto.decryptData(dataToDecrypt, myPrivKey));
-        console.log(data)
+        const data = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, myPrivKey));
         for (let key in data) {
             floGlobals.savedIds[key] = data[key];
             compactIDB.addData('savedIds', data[key], key);
@@ -111,27 +110,10 @@ userUI.renderSavedIds = async function () {
                 floGlobals.savedIds[key] = idsToRender[key];
         }
     }
-    console.log(floGlobals.savedIds)
     for (const key in floGlobals.savedIds) {
         frag.append(render.savedId(key, floGlobals.savedIds[key]));
     }
     getRef('saved_ids_list').append(frag);
-}
-
-userUI.saveId = async function () {
-    const floID = getRef('flo_id_to_save').value.trim();
-    const title = getRef('flo_id_title_to_save').value.trim();
-    const dataToSend = floCrypto.encryptData(JSON.stringify({ ...floGlobals.savedIds, [floID]: { title } }), myPubKey)
-    floCloudAPI.sendApplicationData(dataToSend, 'savedIds', { receiverID: myFloID }).then(result => {
-        console.log(result);
-        floGlobals.savedIds[floID] = { title }
-        notify(`Saved ${floID}`, 'success');
-        getRef('saved_ids_list').append(render.savedId(floID, { title }));
-        hidePopup();
-    }).catch(error => {
-        console.error(error);
-        notify(error, 'error');
-    })
 }
 
 userUI.payRequest = function (reqID) {
@@ -231,7 +213,7 @@ function completeTokenToCashRequest(request) {
     })
 }
 
-function getFloIdName(floID) {
+function getFloIdTitle(floID) {
     return floGlobals.savedIds[floID] ? floGlobals.savedIds[floID].title : floID;
 }
 
@@ -257,7 +239,6 @@ const render = {
         const { title } = details.hasOwnProperty('title') ? details : { title: details };
         const clone = getRef('saved_id_template').content.cloneNode(true).firstElementChild;
         clone.dataset.floId = floID;
-        clone.querySelector('a').href = `#/saved&id=${floID}`;
         clone.querySelector('.saved-id__initials').textContent = title.charAt(0);
         clone.querySelector('.saved-id__title').textContent = title;
         return clone;
@@ -270,11 +251,11 @@ const render = {
         clone.querySelector('.transaction__amount').textContent = formatAmount(tokenAmount);
         if (sender === myFloID) {
             clone.classList.add('sent');
-            clone.querySelector('.transaction__receiver').textContent = `Sent to ${getFloIdName(receiver) || 'Myself'}`;
+            clone.querySelector('.transaction__receiver').textContent = `Sent to ${getFloIdTitle(receiver) || 'Myself'}`;
             clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
         } else if (receiver === myFloID) {
             clone.classList.add('received');
-            clone.querySelector('.transaction__receiver').textContent = `Received from ${getFloIdName(sender)}`;
+            clone.querySelector('.transaction__receiver').textContent = `Received from ${getFloIdTitle(sender)}`;
             clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
         } else { //This should not happen unless API returns transaction that does not involve myFloID
             row.insertCell().textContent = tx.sender;
@@ -297,8 +278,7 @@ const render = {
         return clone;
     },
     walletRequestCard(details) {
-        const { time, receiverID, message: { mode, amount }, note, tag, vectorClock } = details;
-        console.log(details);
+        const { time, message: { mode, amount }, note, tag, vectorClock } = details;
         const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild;
         clone.id = vectorClock;
         clone.querySelector('.wallet-request__details').textContent = `${mode === 'cash-to-token' ? 'Deposit' : 'Withdraw'} ${formatAmount(amount)}`;
@@ -309,11 +289,8 @@ const render = {
             case 'COMPLETED':
                 clone.children[1].append(
                     createElement('div', {
-                        className: 'grid',
-                        innerHTML: `
-                        <h5 style="margin-bottom: 0.3rem;">Transaction ID</h5>
-                        <sm-copy class="wallet-request__note" value="${note}"></sm-copy>
-                        `
+                        className: 'flex flex-wrap align-center wallet-request__note',
+                        innerHTML: `<b>Transaction ID:</b><sm-copy value="${note}"></sm-copy>`
                     })
                 );
                 icon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>`
@@ -373,6 +350,52 @@ function showTokenTransfer(type) {
         getRef('token_transfer__title').textContent = 'Request money from FLO ID';
     }
     showPopup('token_transfer_popup');
+}
+
+saveId = async function () {
+    const floID = getRef('flo_id_to_save').value.trim();
+    const title = getRef('flo_id_title_to_save').value.trim();
+    floGlobals.savedIds[floID] = { title }
+    getRef('saved_ids_list').append(render.savedId(floID, { title }));
+    syncSavedIds().then(() => {
+        notify(`Saved ${floID}`, 'success');
+        hidePopup();
+    }).catch(error => {
+        notify(error, 'error');
+    })
+}
+function syncSavedIds() {
+    const dataToSend = Crypto.AES.encrypt(JSON.stringify(floGlobals.savedIds), myPrivKey);
+    return floCloudAPI.sendApplicationData(dataToSend, 'savedIds', { receiverID: myFloID });
+}
+delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
+    if (e.target.closest('.edit-saved')) {
+        const target = e.target.closest('.saved-id');
+        getRef('edit_saved_id').setAttribute('value', target.dataset.floId);
+        getRef('newAddrLabel').value = getFloIdTitle(target.dataset.floId);
+        showPopup('edit_saved_popup');
+    } else {
+        const target = e.target.closest('.saved-id');
+        window.location.hash = `#/contact?floId=${target.dataset.floId}`;
+    }
+});
+function deleteSaved() {
+    getConfirmation('Do you want delete this FLO ID?', {
+        confirmText: 'Delete',
+    }).then(res => {
+        if (res) {
+            const toDelete = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${getRef('edit_saved_id').value}"]`);
+            if (toDelete)
+                toDelete.remove();
+            delete floGlobals.savedIds[getRef('edit_saved_id').value];
+            hidePopup();
+            syncSavedIds().then(() => {
+                notify(`Deleted saved ID`, 'success');
+            }).catch(error => {
+                notify(error, 'error');
+            });
+        }
+    });
 }
 
 function executeUserAction() {
