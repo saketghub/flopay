@@ -21,6 +21,7 @@ body {
   --background-color: 241, 243, 248;
   --danger-color: rgb(255, 75, 75);
   --green: #1cad59;
+  --yellow: rgb(220, 165, 0);
   scrollbar-width: thin;
   scrollbar-gutter: stable;
   color: rgba(var(--text-color), 1);
@@ -48,6 +49,7 @@ body[data-theme="dark"] {
   --background-color: 21, 22, 22;
   --danger-color: rgb(255, 106, 106);
   --green: #00e676;
+  --yellow: rgb(255, 213, 5);
   sm-popup::part(popup) {
     background-color: rgba(var(--foreground-color), 1);
   }
@@ -579,11 +581,12 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.8rem 1rem;
+  padding: 0.8rem;
   gap: 0.5rem;
   white-space: normal;
   font-size: 0.8rem;
   border-radius: 0.5rem;
+  font-weight: 400;
   // background-color: rgba(var(--text-color), 0.06);
   background-color: transparent;
   text-align: center;
@@ -601,21 +604,20 @@ h3 {
 }
 .wallet-action {
   display: flex;
-  flex-direction: column;
   white-space: normal;
   font-size: 0.85rem;
-  padding: 0.8rem 0.5rem;
+  padding: 0.8rem 0.6rem !important;
   color: rgba(var(--text-color), 1);
   text-align: center;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background-color: rgba(var(--text-color), 0.03);
   flex: 1;
   &:nth-of-type(2) {
-    margin: 0 0.5rem;
+    margin-left: 0.5rem;
   }
   .icon {
-    margin-bottom: 0.8rem;
+    margin-right: 0.5rem;
     fill: var(--accent-color);
   }
 }
@@ -654,13 +656,13 @@ h3 {
 .card {
   background-color: rgba(var(--foreground-color), 1);
   border-radius: 0.5rem;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 #history {
   height: 100%;
   align-content: flex-start;
   background-color: rgba(var(--foreground-color), 1);
-  width: min(60ch, 100%);
+  width: min(42rem, 100%);
   justify-self: center;
   margin: 0 auto;
   padding: 1.5rem;
@@ -672,15 +674,36 @@ h3 {
 #wallet_history_wrapper {
   padding-bottom: 4rem;
 }
+#payments_history {
+  display: grid;
+  gap: 2rem;
+}
 .transaction {
   grid-template-columns: auto 1fr auto;
   gap: 0.5rem 1rem;
-  padding: 0.8rem;
   align-items: center;
-  background-color: rgba(var(--text-color), 0.03);
   border-radius: 0.3rem;
-  &:not(:last-of-type) {
-    margin-bottom: 0.5rem;
+  &.sent {
+    .icon {
+      fill: rgba(var(--text-color), 0.8);
+    }
+    .transaction__amount {
+      color: rgba(var(--text-color), 0.8);
+      &::before {
+        content: "-";
+      }
+    }
+  }
+  &.received {
+    .icon {
+      fill: var(--green);
+    }
+    .transaction__amount {
+      color: var(--green);
+      &::before {
+        content: "-";
+      }
+    }
   }
   &__icon {
     display: flex;
@@ -690,10 +713,7 @@ h3 {
     width: 2.5rem;
     height: 2.5rem;
     background-color: rgba(var(--text-color), 0.03);
-    border-radius: 0.5rem;
-    .icon {
-      fill: var(--accent-color);
-    }
+    border-radius: 2rem;
   }
   &__receiver {
     font-size: 0.9rem;
@@ -708,17 +728,6 @@ h3 {
     font-size: 1rem;
     font-weight: 700;
     grid-area: 1/3/3/4;
-    &.sent {
-      &::before {
-        content: "-";
-      }
-    }
-    &.received {
-      color: var(--green);
-      &::before {
-        content: "+";
-      }
-    }
   }
 }
 .fab {
@@ -797,9 +806,6 @@ h3 {
   }
 }
 
-#settings {
-}
-
 .cashier-request,
 .wallet-request,
 .payment-request {
@@ -824,6 +830,40 @@ h3 {
     text-align: right;
   }
 }
+.wallet-request {
+  align-items: initial;
+  flex-direction: column;
+  &__details {
+    font-weight: 700;
+  }
+  &__status {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 500;
+    .icon {
+      margin-right: 0.3rem;
+    }
+    &.pending {
+      .icon {
+        fill: var(--yellow);
+      }
+    }
+    &.completed {
+      .icon {
+        fill: var(--green);
+      }
+    }
+    &.rejected {
+      .icon {
+        fill: var(--danger-color);
+      }
+    }
+  }
+  &__note {
+    font-size: 0.8rem;
+  }
+}
 @media screen and (min-width: 40rem) {
   sm-popup {
     --width: 24rem;
@@ -835,10 +875,13 @@ h3 {
     grid-column: 1/-1;
     padding: 1rem 1.5rem 0 1.5rem;
   }
+  .card {
+    padding: 1.5rem;
+  }
   #user {
     gap: 1rem;
     padding: 1.5rem 8vmax;
-    grid-template-columns: 1fr 20rem;
+    grid-template-columns: 1fr 22rem;
     align-content: flex-start;
     align-items: flex-start;
   }

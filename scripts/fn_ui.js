@@ -235,6 +235,23 @@ function getFloIdName(floID) {
     return floGlobals.savedIds[floID] ? floGlobals.savedIds[floID].title : floID;
 }
 
+function formatAmount(amount) {
+    return amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' })
+}
+
+function getStatusIcon(status) {
+    switch (status) {
+        case 'PENDING':
+            return '<i class="fas fa-clock"></i>';
+        case 'COMPLETED':
+            return '<i class="fas fa-check"></i>';
+        case 'REJECTED':
+            return '<i class="fas fa-times"></i>';
+        default:
+            break;
+    }
+}
+
 const render = {
     savedId(floID, details) {
         const { title } = details.hasOwnProperty('title') ? details : { title: details };
@@ -250,15 +267,15 @@ const render = {
         const clone = getRef('transaction_template').content.cloneNode(true).firstElementChild;
         clone.dataset.txid = txid;
         clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000);
-        clone.querySelector('.transaction__amount').textContent = tokenAmount;
+        clone.querySelector('.transaction__amount').textContent = formatAmount(tokenAmount);
         if (sender === myFloID) {
-            clone.querySelector('.transaction__amount').classList.add('sent');
+            clone.classList.add('sent');
             clone.querySelector('.transaction__receiver').textContent = `Sent to ${getFloIdName(receiver) || 'Myself'}`;
-            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>`;
+            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
         } else if (receiver === myFloID) {
-            clone.querySelector('.transaction__amount').classList.add('received');
+            clone.classList.add('received');
             clone.querySelector('.transaction__receiver').textContent = `Received from ${getFloIdName(sender)}`;
-            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 5.41L18.59 4 7 15.59V9H5v10h10v-2H8.41z"/></svg>`;
+            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
         } else { //This should not happen unless API returns transaction that does not involve myFloID
             row.insertCell().textContent = tx.sender;
             row.insertCell().textContent = tx.receiver;
@@ -280,14 +297,45 @@ const render = {
         return clone;
     },
     walletRequestCard(details) {
-        const { time, receiverID, message: { mode }, note, tag, vectorClock } = details;
+        const { time, receiverID, message: { mode, amount }, note, tag, vectorClock } = details;
+        console.log(details);
         const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild;
         clone.id = vectorClock;
-        clone.querySelector('.wallet-request__requestor').textContent = receiverID;
+        clone.querySelector('.wallet-request__details').textContent = `${mode === 'cash-to-token' ? 'Deposit' : 'Withdraw'} ${formatAmount(amount)}`;
         clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time);
-        clone.querySelector('.wallet-request__mode').textContent = mode === 'cash-to-token' ? 'Deposit' : 'Withdraw';
-        let status = tag ? (tag + ":" + note) : (note || "PENDING");
-        clone.querySelector('.wallet-request__status').textContent = status;
+        let status = tag ? tag : (note ? 'REJECTED' : "PENDING");
+        let icon = '';
+        switch (status) {
+            case 'COMPLETED':
+                clone.children[1].append(
+                    createElement('div', {
+                        className: 'grid',
+                        innerHTML: `
+                        <h5 style="margin-bottom: 0.3rem;">Transaction ID</h5>
+                        <sm-copy class="wallet-request__note" value="${note}"></sm-copy>
+                        `
+                    })
+                );
+                icon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>`
+                break;
+            case 'REJECTED':
+                clone.children[1].append(
+                    createElement('div', {
+                        className: 'wallet-request__note',
+                        innerHTML: note.split(':')[1]
+                    })
+                );
+                icon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>`
+                break;
+            case 'PENDING':
+                icon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><g><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M16.2,16.2L11,13V7h1.5v5.2l4.5,2.7L16.2,16.2z"/></g></g></g></svg>`
+                break;
+
+            default:
+                break;
+        }
+        clone.querySelector('.wallet-request__status').innerHTML = `${icon}${status}`;
+        clone.querySelector('.wallet-request__status').classList.add(status.toLowerCase());
         return clone;
     },
     paymentRequestCard(details) {
