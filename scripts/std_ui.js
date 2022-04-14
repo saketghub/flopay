@@ -2,6 +2,9 @@
 // Global variables
 const domRefs = {};
 const currentYear = new Date().getFullYear();
+let paymentsHistoryLoader = null;
+let walletHistoryLoader = null;
+let contactHistoryLoader = null;
 
 //Checks for internet connection status
 if (!navigator.onLine)
@@ -309,67 +312,169 @@ async function showPage(targetPage, options = {}) {
             break;
         case 'contact':
             getRef('contact__title').textContent = getFloIdTitle(params.floId)
+            Promise.all([
+                tokenAPI.fetch_api(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${myFloID}&destFloAddress=${params.floId}`),
+                tokenAPI.fetch_api(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${params.floId}&destFloAddress=${myFloID}`)])
+                .then(([sentTransactions, receivedTransactions]) => {
+                    const allTransactions = Object.values({ ...sentTransactions.transactions, ...receivedTransactions.transactions }).sort((a, b) => b.transactionDetails.time - a.transactionDetails.time)
+                    if (contactHistoryLoader) {
+                        contactHistoryLoader.update(allTransactions)
+                    } else {
+                        contactHistoryLoader = new LazyLoader('#contact__transactions', allTransactions, render.transactionMessage, { bottomFirst: true });
+                    }
+                    contactHistoryLoader.init()
+                }).catch(err => {
+                    console.error(err)
+                })
             break;
         case 'history':
-            let transactionsList = []
-            if (!params.hasOwnProperty('type')) {
-                history.replaceState(null, null, '#/history?type=payments');
-                params.type = 'payments'
-            }
-            switch (params.type) {
-                case 'payments':
-                    if (paymentsHistoryLoader)
-                        paymentsHistoryLoader.clear()
-                    getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>'
-                    getRef('payments_history_wrapper').classList.remove('hide')
-                    getRef('wallet_history_wrapper').classList.add('hide')
-                    tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
-                        for (const transactionId in transactions) {
-                            transactionsList.push({
-                                ...tokenAPI.util.parseTxData(transactions[transactionId]),
-                                txid: transactionId
-                            })
-                        }
-                        if (paymentsHistoryLoader) {
-                            paymentsHistoryLoader.update(transactionsList)
-                        } else {
-                            paymentsHistoryLoader = new LazyLoader('#payments_history', transactionsList, render.transactionCard);
-                        }
-                        paymentsHistoryLoader.init()
-                    }).catch(e => {
-                        console.error(e)
+            const paymentTransactions = []
+            if (paymentsHistoryLoader)
+                paymentsHistoryLoader.clear()
+            getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>'
+            tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
+                for (const transactionId in transactions) {
+                    paymentTransactions.push({
+                        ...tokenAPI.util.parseTxData(transactions[transactionId]),
+                        txid: transactionId
                     })
-                    break;
-                case 'wallet':
-                    if (walletHistoryLoader)
-                        walletHistoryLoader.clear()
-                    getRef('wallet_history').innerHTML = '<sm-spinner></sm-spinner>'
-                    getRef('payments_history_wrapper').classList.add('hide')
-                    getRef('wallet_history_wrapper').classList.remove('hide')
-                    const requests = User.cashierRequests;
-                    for (const transactionId in requests) {
-                        transactionsList.push(User.cashierRequests[transactionId])
-                    }
-                    if (walletHistoryLoader) {
-                        walletHistoryLoader.update(transactionsList)
-                    } else {
-                        walletHistoryLoader = new LazyLoader('#wallet_history', transactionsList, render.walletRequestCard);
-                    }
-                    walletHistoryLoader.init()
-                    break;
-                default:
-                    break;
+                }
+                if (paymentsHistoryLoader) {
+                    paymentsHistoryLoader.update(paymentTransactions)
+                } else {
+                    paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
+                }
+                paymentsHistoryLoader.init()
+            }).catch(e => {
+                console.error(e)
+            })
+            break;
+        case 'wallet':
+            const walletTransactions = []
+            if (walletHistoryLoader)
+                walletHistoryLoader.clear()
+            getRef('wallet_history').innerHTML = '<sm-spinner></sm-spinner>'
+            const requests = User.cashierRequests;
+            for (const transactionId in requests) {
+                walletTransactions.push(User.cashierRequests[transactionId])
             }
-            getRef('history_type_selector').value = params.type
+            if (walletHistoryLoader) {
+                walletHistoryLoader.update(walletTransactions)
+            } else {
+                walletHistoryLoader = new LazyLoader('#wallet_history', walletTransactions, render.walletRequestCard);
+            }
+            walletHistoryLoader.init()
             break;
         default:
             break;
     }
+    if (pageId !== 'history') {
+        if (paymentsHistoryLoader)
+            paymentsHistoryLoader.clear()
+    }
+    if (pageId !== 'contact') {
+        if (contactHistoryLoader)
+            contactHistoryLoader.clear()
+    }
+    if (pageId !== 'wallet') {
+        if (walletHistoryLoader)
+            walletHistoryLoader.clear()
+    }
 
     if (pagesData.lastPage !== pageId) {
+        const animOptions = {
+            duration: 100,
+            fill: 'forwards',
+            easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+        }
+        let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
+        const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
+        if (currentActiveElement) {
+            if (getRef('main_navbar').classList.contains('hide')) {
+                getRef('main_card').classList.remove('nav-hidden')
+                getRef('main_navbar').classList.remove('hide-away')
+                getRef('main_navbar').classList.remove('hide')
+                getRef('main_navbar').animate([
+                    {
+                        transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                        opacity: 0,
+                    },
+                    {
+                        transform: `none`,
+                        opacity: 1,
+                    },
+                ], { ...animOptions, easing: 'ease-in' })
+            }
+            getRef('main_header').classList.remove('hide')
+            const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement)
+            const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement)
+            const isOnTop = previousActiveElementIndex < currentActiveElementIndex
+            const currentIndicator = createElement('div', { className: 'nav-item__indicator' });
+            let previousIndicator = getRef('main_navbar').querySelector('.nav-item__indicator')
+            if (!previousIndicator) {
+                previousIndicator = currentIndicator.cloneNode(true)
+                previousActiveElement = currentActiveElement
+                previousActiveElement.append(previousIndicator)
+            } else if (currentActiveElementIndex !== previousActiveElementIndex) {
+                const indicatorDimensions = previousIndicator.getBoundingClientRect()
+                const currentActiveElementDimensions = currentActiveElement.getBoundingClientRect()
+                let moveBy
+                if (isMobileView) {
+                    moveBy = ((currentActiveElementDimensions.width - indicatorDimensions.width) / 2) + indicatorDimensions.width
+                } else {
+                    moveBy = ((currentActiveElementDimensions.height - indicatorDimensions.height) / 2) + indicatorDimensions.height
+                }
+                indicatorObserver.observe(previousIndicator)
+                previousIndicator.animate([
+                    {
+                        transform: 'none',
+                        opacity: 1,
+                    },
+                    {
+                        transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `${moveBy}px` : `-${moveBy}px`})`,
+                        opacity: 0,
+                    },
+                ], { ...animOptions, easing: 'ease-in' }).onfinish = () => {
+                    previousIndicator.remove()
+                }
+                tempData = {
+                    currentActiveElement,
+                    currentIndicator,
+                    isOnTop,
+                    animOptions,
+                    moveBy
+                }
+            }
+            previousActiveElement.classList.remove('nav-item--active');
+            currentActiveElement.classList.add('nav-item--active')
+        } else {
+            if (!getRef('main_navbar').classList.contains('hide')) {
+                getRef('main_card').classList.add('nav-hidden')
+                getRef('main_navbar').classList.add('hide-away')
+                getRef('main_navbar').animate([
+                    {
+                        transform: `none`,
+                        opacity: 1,
+                    },
+                    {
+                        transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                        opacity: 0,
+                    },
+                ], {
+                    duration: 200,
+                    fill: 'forwards',
+                    easing: 'ease'
+                }).onfinish = () => {
+                    getRef('main_navbar').classList.add('hide')
+                }
+                getRef('main_header').classList.add('hide')
+            }
+        }
         document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
+        getRef(pageId).closest('.page').classList.remove('hide')
+        document.querySelectorAll('.inner-page').forEach(page => page.classList.add('hide'))
         getRef(pageId).classList.remove('hide')
-        getRef('pages_container').style.overflowY = "hidden";
+        getRef('main_card').style.overflowY = "hidden";
         getRef(pageId).animate([
             {
                 opacity: 0,
@@ -384,7 +489,7 @@ async function showPage(targetPage, options = {}) {
                 duration: 300,
                 easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
             }).onfinish = () => {
-                getRef('pages_container').style.overflowY = "";
+                getRef('main_card').style.overflowY = "";
             }
         pagesData.lastPage = pageId
     }
@@ -393,11 +498,31 @@ async function showPage(targetPage, options = {}) {
     pagesData.openedPages.add(pageId)
 
 }
+const indicatorObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+            const { currentActiveElement, currentIndicator, isOnTop, animOptions, moveBy } = tempData
+            currentActiveElement.append(currentIndicator)
+            currentIndicator.animate([
+                {
+                    transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `-${moveBy}px` : `${moveBy}px`})`,
+                    opacity: 0,
+                },
+                {
+                    transform: 'none',
+                    opacity: 1
+                },
+            ], { ...animOptions, easing: 'ease-out' })
+        }
+    })
+}, {
+    threshold: 1
+})
 
 // class based lazy loading
 class LazyLoader {
     constructor(container, elementsToRender, renderFn, options = {}) {
-        const { batchSize = 10, freshRender } = options
+        const { batchSize = 10, freshRender, bottomFirst = false } = options
 
         this.elementsToRender = elementsToRender
         this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
@@ -406,6 +531,7 @@ class LazyLoader {
 
         this.batchSize = batchSize
         this.freshRender = freshRender
+        this.bottomFirst = bottomFirst
 
         this.lazyContainer = document.querySelector(container)
 
@@ -429,7 +555,11 @@ class LazyLoader {
             mutationList.forEach(mutation => {
                 if (mutation.type === 'childList') {
                     if (mutation.addedNodes.length) {
-                        this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+                        if (this.bottomFirst)
+                            this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
+                        else
+                            this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+
                     }
                 }
             })
@@ -454,10 +584,21 @@ class LazyLoader {
             this.updateStartIndex = 0
             this.updateEndIndex = this.arrayOfElements.length > this.batchSize ? this.batchSize : this.arrayOfElements.length
         }
-        for (let index = this.updateStartIndex; index < this.updateEndIndex; index++) {
-            frag.append(this.renderFn(this.arrayOfElements[index]))
+        if (this.bottomFirst) {
+            for (let index = this.updateStartIndex; index < this.updateEndIndex; index++) {
+                frag.prepend(this.renderFn(this.arrayOfElements[index]))
+            }
+            this.lazyContainer.prepend(frag)
+        } else {
+            for (let index = this.updateStartIndex; index < this.updateEndIndex; index++) {
+                frag.append(this.renderFn(this.arrayOfElements[index]))
+            }
+            this.lazyContainer.append(frag)
         }
-        this.lazyContainer.append(frag)
+        if (!lazyLoad && this.bottomFirst)
+            this.lazyContainer.scrollTo({
+                top: this.lazyContainer.scrollHeight,
+            })
         // Callback to be called if elements are updated or rendered for first time
         if (!lazyLoad && this.freshRender)
             this.freshRender()

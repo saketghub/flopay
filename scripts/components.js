@@ -940,7 +940,7 @@ customElements.define('sm-notifications', class extends HTMLElement {
                 opacity: '1'
             },
             {
-                transform: `translateX(calc(${sign}${this.currentX}px ${sign} 1rem))`,
+                transform: `translateX(calc(${sign}${Math.abs(this.currentX)}px ${sign} 1rem))`,
                 opacity: '0'
             }
         ], this.animationOptions).onfinish = () => {

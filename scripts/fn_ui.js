@@ -1,39 +1,46 @@
 /*jshint esversion: 8 */
+/**
+  * @yaireo/relative-time - javascript function to transform timestamp or date to local relative-time
+  *
+  * @version v1.0.0
+  * @homepage https://github.com/yairEO/relative-time
+  */
+
+!function (e, t) { var o = o || {}; "function" == typeof o && o.amd ? o([], t) : "object" == typeof exports && "object" == typeof module ? module.exports = t() : "object" == typeof exports ? exports.RelativeTime = t() : e.RelativeTime = t() }(this, (function () { const e = { year: 31536e6, month: 2628e6, day: 864e5, hour: 36e5, minute: 6e4, second: 1e3 }, t = "en", o = { numeric: "auto" }; function n(e) { e = { locale: (e = e || {}).locale || t, options: { ...o, ...e.options } }, this.rtf = new Intl.RelativeTimeFormat(e.locale, e.options) } return n.prototype = { from(t, o) { const n = t - (o || new Date); for (let t in e) if (Math.abs(n) > e[t] || "second" == t) return this.rtf.format(Math.round(n / e[t]), t) } }, n }));
+
+const relativeTime = new RelativeTime({ style: 'narrow' });
 const userUI = {};
-let paymentsHistoryLoader
-let walletHistoryLoader
 
-userUI.requestTokenFromCashier = function () {
-    let cashier = User.findCashier();
-    if (!cashier)
-        return notify("No cashier online", 'error');
+getRef('wallet_popup__cta').addEventListener('click', function () {
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    //get UPI txid from user
-    let upiTxID = prompt(`Send Rs. ${amount} to ${cashierUPI[cashier]} and enter UPI txid`);
-    if (!upiTxID)
-        return alert("Cancelled");
-    User.cashToToken(cashier, amount, upiTxID).then(result => {
-        console.log(result);
-        alert("Requested cashier. please wait!");
-    }).catch(error => console.error(error))
-}
-
-userUI.withdrawCashFromCashier = function () {
-    let cashier = User.findCashier();
-    if (!cashier)
-        return notify("No cashier online", 'error');
-    let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    //get confirmation from user
-    let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
-    if (!upiID)
-        return alert("Cancelled");
-    User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
-        console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
-        User.tokenToCash(cashier, amount, txid, upiID).then(result => {
+    if (walletAction === 'deposit') {
+        //get UPI txid from user
+        let upiTxID = prompt(`Send Rs. ${amount} to ${cashierUPI[cashier]} and enter UPI txid`);
+        if (!upiTxID)
+            return alert("Cancelled");
+        User.cashToToken(cashier, amount, upiTxID).then(result => {
             console.log(result);
             alert("Requested cashier. please wait!");
         }).catch(error => console.error(error))
-    }).catch(error => console.error(error))
+    } else {
+        //get confirmation from user
+        let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
+        if (!upiID)
+            return alert("Cancelled");
+        User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
+            console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
+            User.tokenToCash(cashier, amount, txid, upiID).then(result => {
+                console.log(result);
+                alert("Requested cashier. please wait!");
+            }).catch(error => console.error(error))
+        }).catch(error => console.error(error))
+    }
+})
+function walletAction(type) {
+    let cashier = User.findCashier();
+    if (!cashier)
+        return notify("No cashier online. Please try again in a while.", 'error');
+    showPopup('wallet_popup')
 }
 
 userUI.sendMoneyToUser = function (floID, amount, remark) {
@@ -333,12 +340,17 @@ const render = {
                 <button class="button" onclick="userUI.declineRequest('${vectorClock}')">Decline</button>`;
 
         return clone;
+    },
+    transactionMessage(details) {
+        const { tokenAmount, time, sender, receiver } = tokenAPI.util.parseTxData(details)
+        let messageType = sender === receiver ? 'self' : sender === myFloID ? 'sent' : 'received';
+        const clone = getRef('transaction_message_template').content.cloneNode(true).firstElementChild;
+        clone.classList.add(messageType);
+        clone.querySelector('.transaction-message__amount').textContent = formatAmount(tokenAmount);
+        clone.querySelector('.transaction-message__time').textContent = getFormattedTime(time * 1000);
+        return clone;
     }
 };
-
-getRef('history_type_selector').addEventListener('change', (e) => {
-    location.hash = `#/history?type=${e.target.value}`;
-})
 
 let currentUserAction;
 function showTokenTransfer(type) {
@@ -352,7 +364,7 @@ function showTokenTransfer(type) {
     showPopup('token_transfer_popup');
 }
 
-saveId = async function () {
+async function saveId() {
     const floID = getRef('flo_id_to_save').value.trim();
     const title = getRef('flo_id_title_to_save').value.trim();
     floGlobals.savedIds[floID] = { title }
