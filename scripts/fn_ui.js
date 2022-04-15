@@ -12,6 +12,7 @@ const relativeTime = new RelativeTime({ style: 'narrow' });
 const userUI = {};
 
 getRef('wallet_popup__cta').addEventListener('click', function () {
+    let cashier = User.findCashier();
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
     if (walletAction === 'deposit') {
         //get UPI txid from user
