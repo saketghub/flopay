@@ -678,8 +678,15 @@ h3 {
           clip-path: circle(0);
 }
 
+#home {
+  padding: 0;
+}
+
 #user {
+  position: relative;
   gap: 0.5rem;
+  height: 100%;
+  padding: 0 1.5rem;
 }
 
 #quick_actions_container {
@@ -713,14 +720,6 @@ h3 {
 }
 
 .wallet-action {
-  display: flex;
-  white-space: normal;
-  font-size: 0.85rem;
-  padding: 0.8rem 0.6rem !important;
-  color: rgba(var(--text-color), 1);
-  text-align: center;
-  align-items: center;
-  justify-content: flex-start;
   background-color: rgba(var(--text-color), 0.03);
   flex: 1;
 }
@@ -849,6 +848,7 @@ h3 {
 #payments_history {
   display: grid;
   gap: 2rem;
+  padding-bottom: 4rem;
 }
 
 .transaction {
@@ -912,6 +912,15 @@ h3 {
 #scroll_to_top {
   border-radius: 3rem;
   background-color: rgba(var(--foreground-color), 1);
+}
+
+#add_address_button {
+  border-radius: 0.5rem;
+  color: rgba(var(--background-color), 1);
+  background-color: var(--accent-color);
+}
+#add_address_button .icon {
+  fill: rgba(var(--background-color), 1);
 }
 
 #transaction_result {
@@ -1132,17 +1141,7 @@ h3 {
   }
 
   #saved_ids_list {
-    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
-  }
-
-  .saved-id {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background-color: rgba(var(--text-color), 0.03);
-    grid-template-columns: minmax(0, 1fr);
-    justify-content: center;
-    text-align: center;
-    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
   }
 }
 @media screen and (min-width: 56rem) {
