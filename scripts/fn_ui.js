@@ -6,6 +6,8 @@ userUI.requestTokenFromCashier = function () {
     if (!cashier)
         return alert("No cashier online");
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
+    if (!amount)
+        return alert("Enter amount");
     //get UPI txid from user
     let upiTxID = prompt(`Send Rs. ${amount} to ${cashierUPI[cashier]} and enter UPI txid`);
     if (!upiTxID)
@@ -21,6 +23,8 @@ userUI.withdrawCashFromCashier = function () {
     if (!cashier)
         return alert("No cashier online");
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
+    if (!amount)
+        return alert("Enter amount");
     //get confirmation from user
     let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
     if (!upiID)
