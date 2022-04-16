@@ -349,14 +349,35 @@ async function showPage(targetPage, options = {}) {
                 console.error(e)
             })
             break;
+        case 'requests':
+            const frag = document.createDocumentFragment();
+            for (let transactionID in User.moneyRequests) {
+                frag.prepend(render.paymentRequestCard(User.moneyRequests[transactionID]));
+            }
+            getRef('user-money-requests').innerHTML = '';
+            getRef('user-money-requests').prepend(frag);
+            break;
         case 'wallet':
             const walletTransactions = []
             if (walletHistoryLoader)
                 walletHistoryLoader.clear()
-            getRef('wallet_history').innerHTML = '<sm-spinner></sm-spinner>'
-            const requests = User.cashierRequests;
-            for (const transactionId in requests) {
-                walletTransactions.push(User.cashierRequests[transactionId])
+            const pendingWalletTransactions = document.createDocumentFragment()
+
+            let areTransactionsPending = false
+            for (const transactionId in User.cashierRequests) {
+                if (!User.cashierRequests[transactionId].note) {
+                    areTransactionsPending = true
+                    pendingWalletTransactions.prepend(render.walletRequestCard(User.cashierRequests[transactionId]))
+                } else {
+                    walletTransactions.push(User.cashierRequests[transactionId])
+                }
+            }
+            if (areTransactionsPending) {
+                getRef('pending_wallet_transactions').innerHTML = ''
+                getRef('pending_wallet_transactions').append(pendingWalletTransactions)
+                getRef('pending_wallet_transactions').parentNode.classList.remove('hide')
+            } else {
+                getRef('pending_wallet_transactions').parentNode.classList.add('hide')
             }
             if (walletHistoryLoader) {
                 walletHistoryLoader.update(walletTransactions)

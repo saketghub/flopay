@@ -73,60 +73,40 @@ userUI.renderCashierRequests = function (requests, error = null) {
         return console.error(error);
     else if (typeof requests !== "object" || requests === null)
         return;
-    if (pagesData.lastPage === 'history' && pagesData.params.type === 'wallet') {
-        const frag = document.createDocumentFragment()
+    if (pagesData.lastPage === 'wallet') {
         for (let transactionID in requests) {
-            let oldCard = getRef('wallet_history').querySelector(`#${transactionID}`);
-            if (oldCard) oldCard.remove();
-            frag.append(render.walletRequestCard(transactionID, requests[transactionID]))
+            let oldCard = getRef('pending_wallet_transactions').querySelector(`[data-vc-${transactionID}]`);
+            if (oldCard) {
+                oldCard.remove()
+                getRef('wallet_history').prepend(render.walletRequestCard(requests[transactionID]))
+            }
         }
-        getRef('wallet_history').prepend(frag)
     }
-}
+};
+
+delegate(getRef('wallet_history_wrapper'), 'click', '.wallet-request', e => {
+    let transactionID = e.delegateTarget.dataset.vc;
+    let request = User.cashierRequests[transactionID];
+    console.log(request)
+})
 
 userUI.renderMoneyRequests = function (requests, error = null) {
     if (error)
         return console.error(error);
     else if (typeof requests !== "object" || requests === null)
         return;
-    const frag = document.createDocumentFragment()
-    for (let r in requests) {
-        let oldCard = document.getElementById(r);
-        if (oldCard) oldCard.remove();
-        frag.append(render.paymentRequestCard(requests[r]))
-    }
-    getRef('user-money-requests').append(frag)
-}
-
-userUI.renderSavedIds = async function () {
-    floGlobals.savedIds = {}
-    const frag = document.createDocumentFragment()
-    const savedIds = await floCloudAPI.requestApplicationData('savedIds', { mostRecent: true, senderIDs: [myFloID], receiverID: myFloID });
-    if (savedIds.length && await compactIDB.readData('savedIds', 'lastSyncTime') !== savedIds[0].time) {
-        await compactIDB.clearData('savedIds');
-        const dataToDecrypt = floCloudAPI.util.decodeMessage(savedIds[0].message)
-        const data = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, myPrivKey));
-        for (let key in data) {
-            floGlobals.savedIds[key] = data[key];
-            compactIDB.addData('savedIds', data[key], key);
-        }
-        compactIDB.addData('savedIds', savedIds[0].time, 'lastSyncTime');
-    } else {
-        const idsToRender = await compactIDB.readAllData('savedIds');
-        for (const key in idsToRender) {
-            if (key !== 'lastSyncTime')
-                floGlobals.savedIds[key] = idsToRender[key];
+    if (pagesData.lastPage === 'requests') {
+        for (let r in requests) {
+            let oldCard = getRef('user-money-requests').querySelector(`[data-vc-${r}]`);
+            if (oldCard)
+                oldCard.replaceWith(render.paymentRequestCard(requests[r]));
         }
     }
-    for (const key in floGlobals.savedIds) {
-        frag.append(render.savedId(key, floGlobals.savedIds[key]));
-    }
-    getRef('saved_ids_list').append(frag);
-}
+};
 
 userUI.payRequest = function (reqID) {
     let request = User.moneyRequests[reqID];
-    getConfirmation('Pay?', { message: `Do you want to pay ${request.message.amount} to ${request.senderID}?` }).then(confirmation => {
+    getConfirmation('Pay?', { message: `Do you want to pay ${request.message.amount} to ${request.senderID}?`, confirmText: 'Pay' }).then(confirmation => {
         if (confirmation) {
             User.sendToken(request.senderID, request.message.amount, "|" + request.message.remark).then(txid => {
                 console.warn(`Sent ${request.message.amount} to ${request.senderID}`, txid);
@@ -141,7 +121,7 @@ userUI.payRequest = function (reqID) {
 
 userUI.declineRequest = function (reqID) {
     let request = User.moneyRequests[reqID];
-    getConfirmation('Decline payment?').then(confirmation => {
+    getConfirmation('Decline payment?', { confirmText: 'Decline' }).then(confirmation => {
         if (confirmation) {
             User.decideRequest(request, "DECLINED").then(result => {
                 console.log(result);
@@ -150,6 +130,15 @@ userUI.declineRequest = function (reqID) {
         }
     })
 }
+
+delegate(getRef('user-money-requests'), 'click', '.pay-requested', e => {
+    const vectorClock = e.target.closest('.payment-request').dataset.vc;
+    userUI.payRequest(vectorClock);
+})
+delegate(getRef('user-money-requests'), 'click', '.decline-payment', e => {
+    const vectorClock = e.target.closest('.payment-request').dataset.vc;
+    userUI.declineRequest(vectorClock);
+})
 
 //Cashier
 const cashierUI = {};
@@ -287,47 +276,30 @@ const render = {
     },
     walletRequestCard(details) {
         const { time, message: { mode, amount }, note, tag, vectorClock } = details;
-        const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild;
-        clone.id = vectorClock;
-        clone.querySelector('.wallet-request__details').textContent = `${mode === 'cash-to-token' ? 'Deposit' : 'Withdraw'} ${formatAmount(amount)}`;
-        clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time);
+        const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild.firstElementChild;
+        const type = mode === 'cash-to-token' ? 'Deposit' : 'Withdraw';
         let status = tag ? tag : (note ? 'REJECTED' : "PENDING");
+        clone.classList.add(status.toLowerCase());
+        clone.dataset.vc = vectorClock;
+        clone.href = `#/transaction?transactionId=${vectorClock}`;
+        clone.querySelector('.wallet-request__icon').innerHTML = type === 'Deposit' ?
+            `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none" /><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>`
+            :
+            `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24" /></g><g><g><rect height="7" width="3" x="4" y="10" /><rect height="7" width="3" x="10.5" y="10" /><rect height="3" width="20" x="2" y="19" /><rect height="7" width="3" x="17" y="10" /><polygon points="12,1 2,6 2,8 22,8 22,6" /></g></g></svg>`;
+        clone.querySelector('.wallet-request__details').textContent = `${type} ${formatAmount(amount)}`;
+        clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time);
         let icon = '';
-        switch (status) {
-            case 'COMPLETED':
-                clone.children[1].append(
-                    createElement('div', {
-                        className: 'flex flex-wrap align-center wallet-request__note',
-                        innerHTML: `<b>Transaction ID:</b><sm-copy value="${note}"></sm-copy>`
-                    })
-                );
-                icon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>`
-                break;
-            case 'REJECTED':
-                clone.children[1].append(
-                    createElement('div', {
-                        className: 'wallet-request__note',
-                        innerHTML: note.split(':')[1]
-                    })
-                );
-                icon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>`
-                break;
-            case 'PENDING':
-                icon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><g><path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M16.2,16.2L11,13V7h1.5v5.2l4.5,2.7L16.2,16.2z"/></g></g></g></svg>`
-                break;
-
-            default:
-                break;
+        if (status === 'REJECTED') {
+            icon = `<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`
+            clone.querySelector('.wallet-request__status').innerHTML = `Failed ${icon}`;
         }
-        clone.querySelector('.wallet-request__status').innerHTML = `${icon}${status}`;
-        clone.querySelector('.wallet-request__status').classList.add(status.toLowerCase());
         return clone;
     },
     paymentRequestCard(details) {
         const { time, senderID, message: { amount, remark }, note, vectorClock } = details;
         const clone = getRef('payment_request_template').content.cloneNode(true).firstElementChild;
-        clone.id = vectorClock;
-        clone.querySelector('.payment-request__requestor').textContent = senderID;
+        clone.dataset.vc = vectorClock;
+        clone.querySelector('.payment-request__requestor').textContent = getFloIdTitle(senderID);
         clone.querySelector('.payment-request__time').textContent = getFormattedTime(time);
         clone.querySelector('.payment-request__amount').textContent = amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' });
         clone.querySelector('.payment-request__remark').textContent = remark;
@@ -337,8 +309,8 @@ const render = {
             clone.querySelector('.payment-request__actions').textContent = note;
         else
             clone.querySelector('.payment-request__actions').innerHTML =
-                `<button class="button" onclick="userUI.payRequest('${vectorClock}')">Pay</button>
-                <button class="button" onclick="userUI.declineRequest('${vectorClock}')">Decline</button>`;
+                `<button class="button pay-requested">Pay</button>
+                <button class="button decline-payment">Decline</button>`;
 
         return clone;
     },
@@ -364,7 +336,31 @@ function showTokenTransfer(type) {
     }
     showPopup('token_transfer_popup');
 }
-
+userUI.renderSavedIds = async function () {
+    floGlobals.savedIds = {}
+    const frag = document.createDocumentFragment()
+    const savedIds = await floCloudAPI.requestApplicationData('savedIds', { mostRecent: true, senderIDs: [myFloID], receiverID: myFloID });
+    if (savedIds.length && await compactIDB.readData('savedIds', 'lastSyncTime') !== savedIds[0].time) {
+        await compactIDB.clearData('savedIds');
+        const dataToDecrypt = floCloudAPI.util.decodeMessage(savedIds[0].message)
+        const data = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, myPrivKey));
+        for (let key in data) {
+            floGlobals.savedIds[key] = data[key];
+            compactIDB.addData('savedIds', data[key], key);
+        }
+        compactIDB.addData('savedIds', savedIds[0].time, 'lastSyncTime');
+    } else {
+        const idsToRender = await compactIDB.readAllData('savedIds');
+        for (const key in idsToRender) {
+            if (key !== 'lastSyncTime')
+                floGlobals.savedIds[key] = idsToRender[key];
+        }
+    }
+    for (const key in floGlobals.savedIds) {
+        frag.append(render.savedId(key, floGlobals.savedIds[key]));
+    }
+    getRef('saved_ids_list').append(frag);
+}
 async function saveId() {
     const floID = getRef('flo_id_to_save').value.trim();
     const title = getRef('flo_id_title_to_save').value.trim();

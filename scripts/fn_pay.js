@@ -85,8 +85,10 @@ User.findCashier = function () {
             online.push(c);
     if (!online.length)
         return null;
-    else
-        return online[floCrypto.randInt(0, online.length)];
+    else {
+        const random = floCrypto.randInt(0, online.length - 1)
+        return online[random];
+    }
 }
 
 User.cashToToken = function (cashier, amount, upiTxID) {
