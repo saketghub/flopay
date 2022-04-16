@@ -45,7 +45,7 @@
     </script>
 </head>
 
-<body onload="onLoadStartUp()">
+<body onload="onLoadStartUp()" class="hide">
     <sm-notifications id="notification_drawer"></sm-notifications>
     <sm-popup id="confirmation_popup">
         <h4 id="confirm_title"></h4>
@@ -55,55 +55,134 @@
             <sm-button variant="no-outline" class="submit-btn">OK</sm-button>
         </div>
     </sm-popup>
-    <div id="loader" class="grid gap-1 text-center">
-        <sm-spinner></sm-spinner>
-        <h4>Loading RanchiMall Pay</h4>
-    </div>
-    <div id="main_card" class="hide">
-        <header id="main_header" class="flex align-center space-between">
-            <div class="flex align-center">
+    <div id="secondary_pages" class="page hide">
+        <header class="flex align-center gap-1">
+            <div class="flex align-center flex-1">
                 <svg class="icon" style="margin-right:0.3rem" viewBox="0 0 96 108"
                     style="enable-background:new 0 0 90.5 106.3;" xml:space="preserve">
                     <path d="M90.2,102.5c-2.4-8.2-9.9-14.5-27.4-23.1c-7.1-3.5-11.8-6.2-14-8.3c-1.7-1.6-3.5-4-4.2-5.5c-0.7-1.7-0.7-5.5,0-7.5
-                            c1.3-3.6,2.6-5.2,12.9-15.1c6.2-5.9,9.3-10.3,11.1-15.5c0.7-2.1,0.8-7.6,0.2-9.4C66.5,12,61.7,6.7,53.7,1.6c-3-1.9-4.3-2.1-4.3-0.8
-                            c0,0.3-0.5,1.4-1,2.4l-1,1.8l-2.8-1.9c-1.5-1.1-3.4-2.2-4.1-2.6c-1.3-0.7-2.4-0.6-2.4,0.2c0,0.3-1.4,3.4-2,4.4
-                            c0,0.1-0.4-0.1-0.9-0.4c-6.1-4.4-8.7-5.5-8.7-3.9c0,0.7-1.8,4.2-4,7.9C16,19.5,9.4,24.9,2.6,24.9c-3,0-2.9-0.1-2,3.4
-                            c0.7,2.8,1.1,3.1,3.6,2.3c2.3-0.7,3.9-1.5,5.8-2.9c0.8-0.6,1.5-0.9,1.6-0.9c0.1,0.1,0.5,1,0.7,2.1s0.7,2,0.9,2.1
-                            c0.8,0.3,5.1-1.3,7.5-2.9l2.3-1.5l0.5,1.8c0.6,2.4,1,2.7,3.3,2.1c3.9-1,7.7-3.7,11.5-8.2l2-2.4l-0.2,2.1c-0.6,5.4-4.3,11.4-11.3,18
-                            c-1.8,1.7-4.7,4.5-6.5,6.2c-10.7,10.2-10,18.6,2,26.5c2.7,1.8,10.3,5.8,15.3,8c0.9,0.4,3.3,1.7,5.3,2.9c11,6.5,16.4,13.1,16.4,19.7
-                            c0,1.3,0.1,2.4,0.2,2.6l0,0c0.3,0.3,0.1,0.3,3-0.5c1.4-0.4,2.6-0.9,2.8-1.1c0.4-0.6-0.6-3.7-1.8-6.1c-1.3-2.5-5.6-7-8.9-9.4
-                            c-3.8-2.8-9.3-5.9-17-9.7c-8.5-4.2-11.8-6.2-14.7-9.1c-2.6-2.6-3.9-5.3-3.9-8.2c0-4.6,2.3-8.6,8.3-14.1c9.4-8.7,13-13,15.5-18.8
-                            c1.3-3,1.4-3.4,1.4-6.7c0-3.1-0.1-3.8-1.1-6l-1.1-2.4l1-1.6c0.5-0.9,1.2-2.1,1.5-2.6l0.5-1l1.5,2.1c1.8,2.6,3.2,6.8,3.2,9.3
-                            c0,1.7-0.6,4.7-1.4,6.4c-0.2,0.4-0.4,1-0.5,1.3c-0.1,0.3-1.1,2-2.2,3.7c-2,3-5.2,6.4-13.4,14.2c-5.7,5.4-7.6,8.6-7.8,13.1
-                            c-0.2,3.7,0.7,5.9,3.7,9.2c3.2,3.4,6.9,5.8,17.4,11c12.1,6,17.3,9.6,21.3,14.5c2.5,3.2,3.7,5.8,3.9,9.3c0.1,1.6,0.3,3,0.5,3
-                            c0.1,0.1,0.8,0,1.4-0.2s1.9-0.5,2.7-0.7l1.5-0.4l-0.2-1.5c-0.7-5.1-5.4-10.8-13.1-16c-4.4-2.9-5.8-3.7-17.3-9.4
-                            c-5.7-2.8-9.2-5.1-11.8-7.6c-4.3-4.2-5.1-8.8-2.7-13.9c1.4-2.8,2.7-4.4,12.5-13.8c8-7.7,11.4-13.7,11.4-20.1c0-5.1-2.3-9.9-6.9-14.3
-                            c-1.1-1-2-2-2.1-2.2c-0.2-0.4,1.5-3.9,1.9-3.9c1.2,0,7.8,6.3,9.7,9.2c2,3.3,2.5,5,2.5,8.9c0,3.9-0.6,5.9-2.9,9.8
-                            c-2.4,4.1-4.2,6-14.2,15.5c-3.4,3.2-5.7,6.1-6.9,8.7c-0.9,2-1.1,2.7-1.1,5.1c0,2.3,0.2,3.2,1,4.9c1.9,4,7.4,8.5,15.4,12.4
-                            c12.5,6.1,15.1,7.6,19.4,10.7c7.2,5.3,10.6,10.5,10.6,16c0,1.3,0.1,2.4,0.3,2.5c0.4,0.3,4.8-0.8,5.5-1.3
-                            C90.7,104.4,90.7,104.3,90.2,102.5z M20.3,23.3L20.3,23.3c-2,1-3.3,1.4-4.8,1.5L13.3,25l2.3-2.8c3.7-4.5,6.4-8.9,10-16
-                            c0.9-1.8,1.8-3.5,2-3.6c0.4-0.4,2.6,1.1,5.1,3.4l2.1,1.9l-1.9,2.8C28.2,17.5,24.5,21.2,20.3,23.3z M39.3,17.4
-                            c-1.2,1.7-6.5,5.7-8.6,6.5v0c-1.1,0.4-2.8,0.8-3.9,0.9L24.9,25l2.1-2.6c2.5-3.1,5.1-7,7-10.4c0.7-1.4,1.4-2.5,1.5-2.6
-                            c0.3-0.4,1.7,1.4,3,4.1l1.5,3L39.3,17.4z M44.6,10c-0.7,1.2-1.4,2.1-1.5,2.1c-0.1,0-1.5-1.4-3-3l-2.8-3l0.6-1.5
-                            c1.1-2.6,1.3-2.7,3.4-1c1.9,1.5,4.5,3.8,4.5,4.1C45.8,7.8,45.3,8.9,44.6,10z" />
+                                c1.3-3.6,2.6-5.2,12.9-15.1c6.2-5.9,9.3-10.3,11.1-15.5c0.7-2.1,0.8-7.6,0.2-9.4C66.5,12,61.7,6.7,53.7,1.6c-3-1.9-4.3-2.1-4.3-0.8
+                                c0,0.3-0.5,1.4-1,2.4l-1,1.8l-2.8-1.9c-1.5-1.1-3.4-2.2-4.1-2.6c-1.3-0.7-2.4-0.6-2.4,0.2c0,0.3-1.4,3.4-2,4.4
+                                c0,0.1-0.4-0.1-0.9-0.4c-6.1-4.4-8.7-5.5-8.7-3.9c0,0.7-1.8,4.2-4,7.9C16,19.5,9.4,24.9,2.6,24.9c-3,0-2.9-0.1-2,3.4
+                                c0.7,2.8,1.1,3.1,3.6,2.3c2.3-0.7,3.9-1.5,5.8-2.9c0.8-0.6,1.5-0.9,1.6-0.9c0.1,0.1,0.5,1,0.7,2.1s0.7,2,0.9,2.1
+                                c0.8,0.3,5.1-1.3,7.5-2.9l2.3-1.5l0.5,1.8c0.6,2.4,1,2.7,3.3,2.1c3.9-1,7.7-3.7,11.5-8.2l2-2.4l-0.2,2.1c-0.6,5.4-4.3,11.4-11.3,18
+                                c-1.8,1.7-4.7,4.5-6.5,6.2c-10.7,10.2-10,18.6,2,26.5c2.7,1.8,10.3,5.8,15.3,8c0.9,0.4,3.3,1.7,5.3,2.9c11,6.5,16.4,13.1,16.4,19.7
+                                c0,1.3,0.1,2.4,0.2,2.6l0,0c0.3,0.3,0.1,0.3,3-0.5c1.4-0.4,2.6-0.9,2.8-1.1c0.4-0.6-0.6-3.7-1.8-6.1c-1.3-2.5-5.6-7-8.9-9.4
+                                c-3.8-2.8-9.3-5.9-17-9.7c-8.5-4.2-11.8-6.2-14.7-9.1c-2.6-2.6-3.9-5.3-3.9-8.2c0-4.6,2.3-8.6,8.3-14.1c9.4-8.7,13-13,15.5-18.8
+                                c1.3-3,1.4-3.4,1.4-6.7c0-3.1-0.1-3.8-1.1-6l-1.1-2.4l1-1.6c0.5-0.9,1.2-2.1,1.5-2.6l0.5-1l1.5,2.1c1.8,2.6,3.2,6.8,3.2,9.3
+                                c0,1.7-0.6,4.7-1.4,6.4c-0.2,0.4-0.4,1-0.5,1.3c-0.1,0.3-1.1,2-2.2,3.7c-2,3-5.2,6.4-13.4,14.2c-5.7,5.4-7.6,8.6-7.8,13.1
+                                c-0.2,3.7,0.7,5.9,3.7,9.2c3.2,3.4,6.9,5.8,17.4,11c12.1,6,17.3,9.6,21.3,14.5c2.5,3.2,3.7,5.8,3.9,9.3c0.1,1.6,0.3,3,0.5,3
+                                c0.1,0.1,0.8,0,1.4-0.2s1.9-0.5,2.7-0.7l1.5-0.4l-0.2-1.5c-0.7-5.1-5.4-10.8-13.1-16c-4.4-2.9-5.8-3.7-17.3-9.4
+                                c-5.7-2.8-9.2-5.1-11.8-7.6c-4.3-4.2-5.1-8.8-2.7-13.9c1.4-2.8,2.7-4.4,12.5-13.8c8-7.7,11.4-13.7,11.4-20.1c0-5.1-2.3-9.9-6.9-14.3
+                                c-1.1-1-2-2-2.1-2.2c-0.2-0.4,1.5-3.9,1.9-3.9c1.2,0,7.8,6.3,9.7,9.2c2,3.3,2.5,5,2.5,8.9c0,3.9-0.6,5.9-2.9,9.8
+                                c-2.4,4.1-4.2,6-14.2,15.5c-3.4,3.2-5.7,6.1-6.9,8.7c-0.9,2-1.1,2.7-1.1,5.1c0,2.3,0.2,3.2,1,4.9c1.9,4,7.4,8.5,15.4,12.4
+                                c12.5,6.1,15.1,7.6,19.4,10.7c7.2,5.3,10.6,10.5,10.6,16c0,1.3,0.1,2.4,0.3,2.5c0.4,0.3,4.8-0.8,5.5-1.3
+                                C90.7,104.4,90.7,104.3,90.2,102.5z M20.3,23.3L20.3,23.3c-2,1-3.3,1.4-4.8,1.5L13.3,25l2.3-2.8c3.7-4.5,6.4-8.9,10-16
+                                c0.9-1.8,1.8-3.5,2-3.6c0.4-0.4,2.6,1.1,5.1,3.4l2.1,1.9l-1.9,2.8C28.2,17.5,24.5,21.2,20.3,23.3z M39.3,17.4
+                                c-1.2,1.7-6.5,5.7-8.6,6.5v0c-1.1,0.4-2.8,0.8-3.9,0.9L24.9,25l2.1-2.6c2.5-3.1,5.1-7,7-10.4c0.7-1.4,1.4-2.5,1.5-2.6
+                                c0.3-0.4,1.7,1.4,3,4.1l1.5,3L39.3,17.4z M44.6,10c-0.7,1.2-1.4,2.1-1.5,2.1c-0.1,0-1.5-1.4-3-3l-2.8-3l0.6-1.5
+                                c1.1-2.6,1.3-2.7,3.4-1c1.9,1.5,4.5,3.8,4.5,4.1C45.8,7.8,45.3,8.9,44.6,10z" />
                 </svg>
                 <h4>RanchiMall Pay</h4>
             </div>
             <theme-toggle></theme-toggle>
         </header>
-        <section id="pages_container" class="gap-2">
-            <section id="home" class="page hide">
-                <div id="user" class="hide grid gap-2 user-element">
-                    <div class="flex">
-                        <button class="button primary-action" onclick="showTokenTransfer('send')">
+        <article id="landing" class="inner-page page-layout hide">
+            <section class="grid justify-center gap-1">
+                <h1 class="h1">Send.request</h1>
+                <div class="flex gap-0-5">
+                    <a href="#/sign_up" class="button">Sign up</a>
+                    <a href="#/sign_in" class="button button--primary">Sign in</a>
+                </div>
+            </section>
+        </article>
+        <article id="sign_in" class="inner-page page-layout hide">
+            <section>
+                <h1 class="h2">Sign In</h1>
+                <p>Welcome back, glad to see you again</p>
+                <sm-form>
+                    <sm-input id="private_key_field" type="password" placeholder="FLO private key"
+                        error-text="Private key is invalid" data-private-key required></sm-input>
+                    <sm-button id="sign_in_button" variant="primary" disabled>Sign In</sm-button>
+                </sm-form>
+                <p>
+                    New here? <a href="#/sign_up">get your FLO login credentials</a>
+                </p>
+            </section>
+        </article>
+        <article id="sign_up" class="inner-page page-layout hide">
+            <section class="grid">
+                <h1 class="h2">FLO credentials</h1>
+                <p>Get your FLO credentials to use RanchiMall Pay and all RanchiMall FLO apps. </p>
+                <div class="grid gap-1-5 card">
+                    <div class="grid gap-0-5">
+                        <h5>FLO ID</h5>
+                        <sm-copy id="generated_flo_id"></sm-copy>
+                    </div>
+                    <div class="grid gap-0-5">
+                        <h5>Private key</h5>
+                        <sm-copy id="generated_private_key"></sm-copy>
+                    </div>
+                </div>
+                <sm-button id="sign_up_button" variant="primary">Sign in with these credentials</sm-button>
+                <strong class="warning">
+                    Keep your private key secure and don't share with anyone.
+                    Once lost there is no way to recover private key.
+                </strong>
+            </section>
+        </article>
+        <div id="loading" class="inner-page flex align-center justify-center">
+            <div class="grid gap-1 text-center">
+                <sm-spinner></sm-spinner>
+                <h4>Loading RanchiMall Pay</h4>
+            </div>
+        </div>
+    </div>
+    <div id="main_card" class="page hide">
+        <header id="main_header" class="flex align-center space-between">
+            <div class="flex align-center flex-1">
+                <svg class="icon" style="margin-right:0.3rem" viewBox="0 0 96 108"
+                    style="enable-background:new 0 0 90.5 106.3;" xml:space="preserve">
+                    <path d="M90.2,102.5c-2.4-8.2-9.9-14.5-27.4-23.1c-7.1-3.5-11.8-6.2-14-8.3c-1.7-1.6-3.5-4-4.2-5.5c-0.7-1.7-0.7-5.5,0-7.5
+                                c1.3-3.6,2.6-5.2,12.9-15.1c6.2-5.9,9.3-10.3,11.1-15.5c0.7-2.1,0.8-7.6,0.2-9.4C66.5,12,61.7,6.7,53.7,1.6c-3-1.9-4.3-2.1-4.3-0.8
+                                c0,0.3-0.5,1.4-1,2.4l-1,1.8l-2.8-1.9c-1.5-1.1-3.4-2.2-4.1-2.6c-1.3-0.7-2.4-0.6-2.4,0.2c0,0.3-1.4,3.4-2,4.4
+                                c0,0.1-0.4-0.1-0.9-0.4c-6.1-4.4-8.7-5.5-8.7-3.9c0,0.7-1.8,4.2-4,7.9C16,19.5,9.4,24.9,2.6,24.9c-3,0-2.9-0.1-2,3.4
+                                c0.7,2.8,1.1,3.1,3.6,2.3c2.3-0.7,3.9-1.5,5.8-2.9c0.8-0.6,1.5-0.9,1.6-0.9c0.1,0.1,0.5,1,0.7,2.1s0.7,2,0.9,2.1
+                                c0.8,0.3,5.1-1.3,7.5-2.9l2.3-1.5l0.5,1.8c0.6,2.4,1,2.7,3.3,2.1c3.9-1,7.7-3.7,11.5-8.2l2-2.4l-0.2,2.1c-0.6,5.4-4.3,11.4-11.3,18
+                                c-1.8,1.7-4.7,4.5-6.5,6.2c-10.7,10.2-10,18.6,2,26.5c2.7,1.8,10.3,5.8,15.3,8c0.9,0.4,3.3,1.7,5.3,2.9c11,6.5,16.4,13.1,16.4,19.7
+                                c0,1.3,0.1,2.4,0.2,2.6l0,0c0.3,0.3,0.1,0.3,3-0.5c1.4-0.4,2.6-0.9,2.8-1.1c0.4-0.6-0.6-3.7-1.8-6.1c-1.3-2.5-5.6-7-8.9-9.4
+                                c-3.8-2.8-9.3-5.9-17-9.7c-8.5-4.2-11.8-6.2-14.7-9.1c-2.6-2.6-3.9-5.3-3.9-8.2c0-4.6,2.3-8.6,8.3-14.1c9.4-8.7,13-13,15.5-18.8
+                                c1.3-3,1.4-3.4,1.4-6.7c0-3.1-0.1-3.8-1.1-6l-1.1-2.4l1-1.6c0.5-0.9,1.2-2.1,1.5-2.6l0.5-1l1.5,2.1c1.8,2.6,3.2,6.8,3.2,9.3
+                                c0,1.7-0.6,4.7-1.4,6.4c-0.2,0.4-0.4,1-0.5,1.3c-0.1,0.3-1.1,2-2.2,3.7c-2,3-5.2,6.4-13.4,14.2c-5.7,5.4-7.6,8.6-7.8,13.1
+                                c-0.2,3.7,0.7,5.9,3.7,9.2c3.2,3.4,6.9,5.8,17.4,11c12.1,6,17.3,9.6,21.3,14.5c2.5,3.2,3.7,5.8,3.9,9.3c0.1,1.6,0.3,3,0.5,3
+                                c0.1,0.1,0.8,0,1.4-0.2s1.9-0.5,2.7-0.7l1.5-0.4l-0.2-1.5c-0.7-5.1-5.4-10.8-13.1-16c-4.4-2.9-5.8-3.7-17.3-9.4
+                                c-5.7-2.8-9.2-5.1-11.8-7.6c-4.3-4.2-5.1-8.8-2.7-13.9c1.4-2.8,2.7-4.4,12.5-13.8c8-7.7,11.4-13.7,11.4-20.1c0-5.1-2.3-9.9-6.9-14.3
+                                c-1.1-1-2-2-2.1-2.2c-0.2-0.4,1.5-3.9,1.9-3.9c1.2,0,7.8,6.3,9.7,9.2c2,3.3,2.5,5,2.5,8.9c0,3.9-0.6,5.9-2.9,9.8
+                                c-2.4,4.1-4.2,6-14.2,15.5c-3.4,3.2-5.7,6.1-6.9,8.7c-0.9,2-1.1,2.7-1.1,5.1c0,2.3,0.2,3.2,1,4.9c1.9,4,7.4,8.5,15.4,12.4
+                                c12.5,6.1,15.1,7.6,19.4,10.7c7.2,5.3,10.6,10.5,10.6,16c0,1.3,0.1,2.4,0.3,2.5c0.4,0.3,4.8-0.8,5.5-1.3
+                                C90.7,104.4,90.7,104.3,90.2,102.5z M20.3,23.3L20.3,23.3c-2,1-3.3,1.4-4.8,1.5L13.3,25l2.3-2.8c3.7-4.5,6.4-8.9,10-16
+                                c0.9-1.8,1.8-3.5,2-3.6c0.4-0.4,2.6,1.1,5.1,3.4l2.1,1.9l-1.9,2.8C28.2,17.5,24.5,21.2,20.3,23.3z M39.3,17.4
+                                c-1.2,1.7-6.5,5.7-8.6,6.5v0c-1.1,0.4-2.8,0.8-3.9,0.9L24.9,25l2.1-2.6c2.5-3.1,5.1-7,7-10.4c0.7-1.4,1.4-2.5,1.5-2.6
+                                c0.3-0.4,1.7,1.4,3,4.1l1.5,3L39.3,17.4z M44.6,10c-0.7,1.2-1.4,2.1-1.5,2.1c-0.1,0-1.5-1.4-3-3l-2.8-3l0.6-1.5
+                                c1.1-2.6,1.3-2.7,3.4-1c1.9,1.5,4.5,3.8,4.5,4.1C45.8,7.8,45.3,8.9,44.6,10z" />
+                </svg>
+                <h4>RanchiMall Pay</h4>
+            </div>
+            <theme-toggle></theme-toggle>
+        </header>
+        <section id="home" class="inner-page hide">
+            <div id="user" class="hide grid user-element">
+                <div class="flex direction-column gap-2 h-100">
+                    <div id="quick_actions_container">
+                        <button class="primary-action" onclick="showTokenTransfer('send')">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                                 width="24px" fill="#000000">
                                 <path d="M0 0h24v24H0z" fill="none" />
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                             </svg>
-                            Send
+                            Send rupee
                         </button>
-                        <button class="button primary-action" onclick="showTokenTransfer('request')">
+                        <button class="primary-action" onclick="showTokenTransfer('request')">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                                 height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                                 <g>
@@ -114,115 +193,226 @@
                                         d="M20,2H4.01c-1.1,0-2,0.9-2,2L2,22l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M12,6c1.1,0,2,0.9,2,2s-0.9,2-2,2 s-2-0.9-2-2S10.9,6,12,6z M16,14H8v-0.57c0-0.81,0.48-1.53,1.22-1.85C10.07,11.21,11.01,11,12,11c0.99,0,1.93,0.21,2.78,0.58 C15.52,11.9,16,12.62,16,13.43V14z" />
                                 </g>
                             </svg>
-                            Request
+                            Request rupee
                         </button>
-                    </div>
-                    <section id="wallet_section" class="grid gap-1-5">
-                        <h4 class="flex align-center">
-                            <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg"
-                                enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px"
-                                fill="#000000">
+                        <button class="primary-action" onclick="">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                                 <g>
                                     <rect fill="none" height="24" width="24" />
                                 </g>
                                 <g>
-                                    <path
-                                        d="M18,4H6C3.79,4,2,5.79,2,8v8c0,2.21,1.79,4,4,4h12c2.21,0,4-1.79,4-4V8C22,5.79,20.21,4,18,4z M16.14,13.77 c-0.24,0.2-0.57,0.28-0.88,0.2L4.15,11.25C4.45,10.52,5.16,10,6,10h12c0.67,0,1.26,0.34,1.63,0.84L16.14,13.77z M6,6h12 c1.1,0,2,0.9,2,2v0.55C19.41,8.21,18.73,8,18,8H6C5.27,8,4.59,8.21,4,8.55V8C4,6.9,4.9,6,6,6z" />
+                                    <g>
+                                        <path d="M3,11h8V3H3V11z M5,5h4v4H5V5z" />
+                                        <path d="M3,21h8v-8H3V21z M5,15h4v4H5V15z" />
+                                        <path d="M13,3v8h8V3H13z M19,9h-4V5h4V9z" />
+                                        <rect height="2" width="2" x="19" y="19" />
+                                        <rect height="2" width="2" x="13" y="13" />
+                                        <rect height="2" width="2" x="15" y="15" />
+                                        <rect height="2" width="2" x="13" y="17" />
+                                        <rect height="2" width="2" x="15" y="19" />
+                                        <rect height="2" width="2" x="17" y="17" />
+                                        <rect height="2" width="2" x="17" y="13" />
+                                        <rect height="2" width="2" x="19" y="15" />
+                                    </g>
                                 </g>
                             </svg>
-                            Wallet
-                        </h4>
-                        <div class="grid gap-0-5">
-                            <h5>Balance</h5>
-                            <h1 class="h1" id="rupee_balance"></h1>
-                        </div>
-                        <div class="grid gap-1">
-                            <sm-input id="request_cashier_amount" type="number" name="amount" placeholder="Amount"
-                                animate>
-                            </sm-input>
-                            <div class="flex">
-                                <button class="primary-action flex-1" onclick="userUI.requestTokenFromCashier()">
-                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg"
-                                        enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px"
-                                        fill="#000000">
-                                        <rect fill="none" height="24" width="24" />
-                                        <g>
-                                            <path
-                                                d="M19.83,7.5l-2.27-2.27c0.07-0.42,0.18-0.81,0.32-1.15C17.96,3.9,18,3.71,18,3.5C18,2.67,17.33,2,16.5,2 c-1.64,0-3.09,0.79-4,2l-5,0C4.46,4,2,6.46,2,9.5S4.5,21,4.5,21l5.5,0v-2h2v2l5.5,0l1.68-5.59L22,14.47V7.5H19.83z M13,9H8V7h5V9z M16,11c-0.55,0-1-0.45-1-1c0-0.55,0.45-1,1-1s1,0.45,1,1C17,10.55,16.55,11,16,11z" />
-                                        </g>
-                                    </svg>
-                                    Deposit
-                                </button>
-                                <button class="primary-action flex-1" onclick="userUI.withdrawCashFromCashier()">
-                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                        viewBox="0 0 24 24" width="24px" fill="#000000">
-                                        <path d="M0 0h24v24H0z" fill="none" />
-                                        <path
-                                            d="M19 14V6c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-9-1c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-6v11c0 1.1-.9 2-2 2H4v-2h17V7h2z" />
-                                    </svg>
-                                    Withdraw
-                                </button>
+                            Scan FLO QR
+                        </button>
+                    </div>
+                    <section class="flex direction-column h-100">
+                        <div class="grid align-center gap-0-5">
+                            <div class="flex align-center">
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                </svg>
+                                <h4>Saved FLO IDs</h4>
                             </div>
+                            <p class="flex align-center">
+                                <svg class="icon margin-right-0-5" style="fill: #ffc107;"
+                                    xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                                    fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z" />
+                                </svg>
+                                <span id="saved_ids_tip">Click 'Add FLO ID' to add a new FLO ID.</span>
+                            </p>
+                        </div>
+                        <ul id="saved_ids_list" class="observe-empty-state grid"></ul>
+                        <div class="empty-state justify-center text-center align-center h-100"
+                            style="align-content: center;">
+                            <svg class="justify-self-center" style="height: 12rem;"
+                                id="bb7dac0d-c86d-4eae-9345-05ead570be6d" data-name="Layer 1"
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+                                <defs>
+                                    <style>
+                                        .e4b4c873-5e79-4c66-a530-269f7775150b {
+                                            fill: rgba(var(--text-color), 0.03);
+                                        }
+
+                                        .f8c35eef-c260-42fc-be6f-7c8afb0beeeb {
+                                            fill: rgba(var(--text-color), 0.2);
+                                        }
+
+                                        .ee8c2e6d-b8f3-4b81-80ab-31d470d121b9 {
+                                            fill: rgba(var(--text-color), 0.1);
+                                        }
+                                    </style>
+                                </defs>
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="34.76" y="40.75" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="57.21" cy="61.46" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="51.37" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="62.79" width="80.09"
+                                    height="9.03" rx="1.92" />
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="10" y="99.29" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="32.45" cy="120" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="109.91" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="121.33" width="80.09"
+                                    height="9.03" rx="1.92" />
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="52.47" y="157.83" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="74.93" cy="178.54" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="168.46" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="179.87" width="80.09"
+                                    height="9.03" rx="1.92" />
+                            </svg>
+                            <h4>No Saved FLO ID</h4>
                         </div>
                     </section>
                 </div>
-                <section id="cashier" class=" grid gap-1 hide admin-element">
-                    <h4>Requests</h4>
-                    <ul id="cashier_request_list" class="observe-empty-state"></ul>
-                    <div class="empty-state">
-                        <h4>No requests to process</h4>
-                    </div>
-                </section>
+                <button id="add_address_button" class="button interact fab" onclick="showPopup('add_address_popup')">
+                    <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                    </svg>
+                    Add FLO ID
+                </button>
+            </div>
+            <section id="cashier" class=" grid gap-1 hide admin-element">
+                <h4>Requests</h4>
+                <ul id="cashier_request_list" class="observe-empty-state"></ul>
+                <div class="empty-state">
+                    <h4>No requests to process</h4>
+                </div>
             </section>
-            <section id="history" class="page hide grid gap-1">
-                <h4>Transactions history</h4>
-                <ul id="token_transactions" class="observe-empty-state">
-                </ul>
+        </section>
+        <section id="history" class="inner-page hide grid gap-1">
+            <h4>Payments history</h4>
+            <ul id="payments_history" class="observe-empty-state"></ul>
+            <div class=" empty-state gap-1 justify-center text-center">
+                <h4>No transactions</h4>
+            </div>
+        </section>
+        <section id="contact" class="inner-page hide">
+            <div class="flex align-center">
+                <a href="#/home" class="button icon-only margin-right-0-5">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    </svg>
+                </a>
+                <h4 id="contact__title"></h4>
+            </div>
+            <ul id="contact__transactions"></ul>
+            <div class="flex">
+                <button class="button flex-1">Pay</button>
+                <button class="button flex-1">Request</button>
+            </div>
+        </section>
+        <section id="requests" class="inner-page hide">
+            <h4>Payment requests</h4>
+            <ul id="user-money-requests" class="observe-empty-state"></ul>
+            <div class=" empty-state gap-1 justify-center text-center">
+                <h4>No requests</h4>
+            </div>
+        </section>
+        <section id="wallet" class="inner-page hide">
+            <div class="flex align-center space-between">
+                <h4 class="flex align-center">
+                    <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg"
+                        enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <g>
+                            <rect fill="none" height="24" width="24" />
+                        </g>
+                        <g>
+                            <path
+                                d="M18,4H6C3.79,4,2,5.79,2,8v8c0,2.21,1.79,4,4,4h12c2.21,0,4-1.79,4-4V8C22,5.79,20.21,4,18,4z M16.14,13.77 c-0.24,0.2-0.57,0.28-0.88,0.2L4.15,11.25C4.45,10.52,5.16,10,6,10h12c0.67,0,1.26,0.34,1.63,0.84L16.14,13.77z M6,6h12 c1.1,0,2,0.9,2,2v0.55C19.41,8.21,18.73,8,18,8H6C5.27,8,4.59,8.21,4,8.55V8C4,6.9,4.9,6,6,6z" />
+                        </g>
+                    </svg>
+                    Wallet
+                </h4>
+            </div>
+            <div class="grid gap-0-5">
+                <h5>Balance</h5>
+                <h1 class="h1" id="rupee_balance"></h1>
+            </div>
+            <div class="flex">
+                <button class="wallet-action" onclick="walletAction('deposit')">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                    </svg>
+                    Top-up wallet
+                </button>
+                <button class="wallet-action" onclick="walletAction('deposit')">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px"
+                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <g>
+                            <rect fill="none" height="24" width="24" />
+                        </g>
+                        <g>
+                            <g>
+                                <rect height="7" width="3" x="4" y="10" />
+                                <rect height="7" width="3" x="10.5" y="10" />
+                                <rect height="3" width="20" x="2" y="19" />
+                                <rect height="7" width="3" x="17" y="10" />
+                                <polygon points="12,1 2,6 2,8 22,8 22,6" />
+                            </g>
+                        </g>
+                    </svg>
+                    Transfer to bank
+                </button>
+            </div>
+            <div id="wallet_history_wrapper" class="grid gap-0-5">
+                <h4>Wallet history</h4>
+                <ul id="wallet_history" class="observe-empty-state"></ul>
                 <div class=" empty-state gap-1 justify-center text-center">
                     <h4>No transactions</h4>
                 </div>
+            </div>
+        </section>
+        <section id="settings" class="inner-page hide">
+            <h4>Settings</h4>
+            <section class="grid gap-1">
+                <div class="grid">
+                    <h5>My FLO ID</h5>
+                    <sm-copy id="logged_in_user_id" style="font-size: 0.9rem;"></sm-copy>
+                </div>
+                <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
             </section>
-            <section id="activity" class="page hide grid gap-1">
-                <h4>Activity</h4>
-                <tab-header target="user_sections">
-                    <sm-tab>Wallet transactions</sm-tab>
-                    <sm-tab>Payment requests</sm-tab>
-                </tab-header>
-                <tab-panels id="user_sections">
-                    <section>
-                        <ul id="user-cashier-requests" class="observe-empty-state"></ul>
-                        <div class=" empty-state gap-1 justify-center text-center">
-                            <h4>No transactions</h4>
-                        </div>
-                    </section>
-                    <section>
-                        <ul id="user-money-requests" class="observe-empty-state"></ul>
-                        <div class=" empty-state gap-1 justify-center text-center">
-                            <h4>No requests</h4>
-                        </div>
-                    </section>
-                </tab-panels>
-            </section>
-            <section id="settings" class="page hide gap-2">
-                <h4>Settings</h4>
-                <section class="grid gap-1">
-                    <div class="grid">
-                        <h5>My FLO ID</h5>
-                        <sm-copy id="logged_in_user_id" style="font-size: 0.9rem;"></sm-copy>
-                    </div>
-                    <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
-                </section>
-                <section class="admin-element grid gap-1">
-                    <h4>Change UPI ID</h4>
-                    <sm-form style="width: min(100%,24rem);">
-                        <sm-input id="upi_id" placeholder="UPI ID" pattern="[a-zA-Z0-9_]{3,}@[a-zA-Z]{3,}"
-                            error-text="Invalid UPI ID" animate required></sm-input>
-                        <button class="button button--primary cta justify-self-start" type="submit"
-                            onclick="changeUpi()">
-                            Change
-                        </button>
-                    </sm-form>
-                </section>
+            <section class="admin-element grid gap-1">
+                <h4>Change UPI ID</h4>
+                <sm-form style="width: min(100%,24rem);">
+                    <sm-input id="upi_id" placeholder="UPI ID" pattern="[a-zA-Z0-9_]{3,}@[a-zA-Z]{3,}"
+                        error-text="Invalid UPI ID" animate required></sm-input>
+                    <button class="button button--primary cta justify-self-start" type="submit" onclick="changeUpi()">
+                        Change
+                    </button>
+                </sm-form>
             </section>
         </section>
         <nav id="main_navbar">
@@ -238,7 +428,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#/history" class="nav-item interact">
+                    <a href="#/history" class="nav-item interact" title='View payment requests'>
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                             height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                             <path d="M0,0h24v24H0V0z" fill="none" />
@@ -255,13 +445,29 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#/activity" class="nav-item interact user-element">
+                    <a href="#/requests" class="nav-item interact" title='View payment requests'>
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <g>
+                                <rect fill="none" height="24" width="24" />
+                            </g>
+                            <g>
+                                <path
+                                    d="M20,2H4.01c-1.1,0-2,0.9-2,2L2,22l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M12,6c1.1,0,2,0.9,2,2s-0.9,2-2,2 s-2-0.9-2-2S10.9,6,12,6z M16,14H8v-0.57c0-0.81,0.48-1.53,1.22-1.85C10.07,11.21,11.01,11,12,11c0.99,0,1.93,0.21,2.78,0.58 C15.52,11.9,16,12.62,16,13.43V14z" />
+                            </g>
+                        </svg>
+                        <span class="nav-item__title">Requests</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/wallet" class="nav-item interact" title='View payment requests'>
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
                             <path
-                                d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z" />
+                                d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
                         </svg>
-                        <span class="nav-item__title">Activity</span>
+                        <span class="nav-item__title">Wallet</span>
                     </a>
                 </li>
                 <li>
@@ -282,6 +488,60 @@
         </nav>
     </div>
     <!-- Popups -->
+    <sm-popup id="add_address_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h4>Save FLO ID</h4>
+        </header>
+        <sm-form>
+            <sm-input id="flo_id_to_save" placeholder="FLO ID" error-text="Invalid FLO ID" data-flo-id animate required
+                autofocus>
+            </sm-input>
+            <sm-input id="flo_id_title_to_save" placeholder="Title" animate required></sm-input>
+            <button class="button button--primary cta" onclick="saveId()" type="submit">Save</button>
+        </sm-form>
+    </sm-popup>
+    <sm-popup id="edit_saved_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="hidePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+                <h3>Edit</h3>
+            </div>
+        </header>
+        <section class="grid gap-1-5">
+            <div class="grid gap-0-5">
+                <h5>FLO ID</h5>
+                <sm-copy id="edit_saved_id"></sm-copy>
+            </div>
+            <sm-form>
+                <sm-input id="newAddrLabel" placeholder="Name" autofocus animate required></sm-input>
+                <div class="flex align-center space-between">
+                    <button class="button icon-only" title="Delete this FLO ID?" onclick="deleteSaved()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                        </svg>
+                    </button>
+                    <button class="button button--primary cta" type="submit" onclick="saveChanges()">Save</button>
+                </div>
+            </sm-form>
+        </section>
+    </sm-popup>
     <sm-popup id="token_transfer_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close justify-self-start" onclick="hidePopup()">
@@ -319,8 +579,40 @@
             </sm-form>
         </section>
     </sm-popup>
+    <sm-popup id="wallet_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h4 id="wallet_popup__title"></h4>
+        </header>
+        <sm-form>
+            <sm-input id="request_cashier_amount" type="number" name="amount" placeholder="Amount" animate>
+            </sm-input>
+            <button id="wallet_popup__cta" class="button button--primary cta" type="submit">Save</button>
+        </sm-form>
+    </sm-popup>
 
     <!-- templates -->
+    <template id="saved_id_template">
+        <li class="saved-id grid interact" tabindex="0">
+            <button class="interact edit-saved" title="Edit saved ID">
+                <div class="saved-id__initials"></div>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                </svg>
+            </button>
+            <h4 class="saved-id__title"></h4>
+        </li>
+    </template>
     <template id="transaction_template">
         <li class="transaction grid">
             <div class="transaction__icon"></div>
@@ -341,12 +633,13 @@
     </template>
     <template id="wallet_request_template">
         <li class="wallet-request flex-wrap">
-            <div class="grid gap-0-5 flex-1">
-                <div class="wallet-request__requestor breakable"></div>
+            <div class="flex align-center space-between">
                 <time class="wallet-request__time"></time>
+                <div class="wallet-request__status flex align-center"></div>
             </div>
-            <div class="wallet-request__mode"></div>
-            <div class="wallet-request__status"></div>
+            <div class="grid gap-0-5 flex-1">
+                <div class="wallet-request__details"></div>
+            </div>
         </li>
     </template>
     <template id="payment_request_template">
@@ -362,6 +655,12 @@
             </div>
         </li>
     </template>
+    <template id="transaction_message_template">
+        <li class="transaction-message grid">
+            <h3 class="transaction-message__amount"></h3>
+            <time class="transaction-message__time"></time>
+        </li>
+    </template>
     <script src="scripts/components.js"></script>
     <script src="scripts/std_ui.js"></script>
     <script src="scripts/std_op.js"></script>
@@ -369,13 +668,18 @@
     <script src="scripts/fn_ui.js"></script>
     <script id="onLoadStartUp">
         function onLoadStartUp() {
+            showPage('loading')
             console.log("Starting the app! Please Wait!")
+            floDapps.setCustomPrivKeyInput(getSignedIn)
+            floDapps.setAppObjectStores({ savedIds: {} })
             floDapps.launchStartUp().then(result => {
                 console.log(`Welcome ${myFloID}`);
                 getRef('logged_in_user_id').value = myFloID;
                 floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
                 tokenAPI.getBalance(myFloID).then(balance => {
-                    getRef('rupee_balance').textContent = balance.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' })
+                    const formattedBalance = formatAmount(balance)
+                    const [beforeDecimal, afterDecimal] = formattedBalance.split('.')
+                    getRef('rupee_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
                 })
                 if (floGlobals.isSubAdmin) {
                     cashierUI.renderRequests(Cashier.Requests);
@@ -383,10 +687,10 @@
                         console.log(result);
                         document.querySelectorAll('.admin-element').forEach(elem => elem.classList.remove('hide'))
                         document.querySelectorAll('.user-element').forEach(elem => elem.classList.add('hide'))
-                        getRef('loader').classList.add('hide')
-                        getRef('main_card').classList.remove('hide')
+                        showPage(window.location.hash, { firstLoad: true })
                     }).catch(error => console.error(error))
                 } else {
+                    userUI.renderSavedIds()
                     userUI.renderCashierRequests(User.cashierRequests);
                     userUI.renderMoneyRequests(User.moneyRequests);
                     User.init().then(result => {
@@ -394,12 +698,9 @@
                         console.log("Cashiers:", cashierUPI);
                         document.querySelectorAll('.admin-element').forEach(elem => elem.classList.add('hide'))
                         document.querySelectorAll('.user-element').forEach(elem => elem.classList.remove('hide'))
-                        getRef('loader').classList.add('hide')
-                        getRef('main_card').classList.remove('hide')
+                        showPage(window.location.hash, { firstLoad: true })
                     }).catch(error => console.error(error))
                 }
-                renderAllTokenTransactions();
-                showPage(window.location.hash, { firstLoad: true })
             }).catch(error => console.error(error))
         }
     </script>
