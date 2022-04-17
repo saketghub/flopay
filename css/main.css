@@ -247,27 +247,6 @@ ul {
   grid-column: 1/-1;
 }
 
-.h1 {
-  font-size: 1.5rem;
-}
-
-.h2 {
-  font-size: 1.2rem;
-}
-
-h3 {
-  font-size: 1.2rem;
-  line-height: 1.3;
-}
-
-.h4 {
-  font-size: 0.9rem;
-}
-
-.h5 {
-  font-size: 0.75rem;
-}
-
 .uppercase {
   text-transform: uppercase;
 }
@@ -346,7 +325,7 @@ h3 {
 }
 
 .justify-start {
-  justify-content: start;
+  justify-items: start;
 }
 
 .justify-center {
@@ -630,7 +609,7 @@ h3 {
   padding: 0.5rem 0.3rem;
   color: var(--text-color);
   font-size: 0.7rem;
-  border-radius: 0.7rem;
+  border-radius: 0.3rem;
 }
 .nav-item .icon {
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -699,13 +678,15 @@ h3 {
   position: relative;
 }
 
-#user {
+#user,
+#cashier {
   position: relative;
   gap: 2rem;
   height: 100%;
   padding: 0 1.5rem;
   overflow-y: auto;
   padding-bottom: 5rem;
+  align-content: flex-start;
 }
 
 #quick_actions_container {
@@ -732,10 +713,10 @@ h3 {
 }
 
 #rupee_balance span:first-of-type {
-  font-size: 1.5rem;
+  font-size: 2rem;
 }
 #rupee_balance span:last-of-type {
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 
 .wallet-action {
@@ -761,19 +742,20 @@ h3 {
   grid-template-columns: auto 1fr;
   gap: 0 0.8rem;
   border-radius: 0.3rem;
+  padding: 0.5rem 0;
+  background-color: rgba(var(--text-color), 0.03);
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
-  align-items: center;
 }
 .saved-id.highlight {
   box-shadow: 0 0 0.1rem 0.1rem var(--accent-color) inset;
 }
 .saved-id .edit-saved {
+  grid-area: 1/1/3/2;
   padding: 0.3rem;
   position: relative;
-  justify-self: center;
 }
 .saved-id .edit-saved .icon {
   position: absolute;
@@ -801,8 +783,13 @@ h3 {
   border-radius: 2rem;
 }
 .saved-id__title {
-  font-size: 0.9rem;
-  font-weight: 500;
+  align-self: flex-end;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.saved-id__flo-id {
+  font-size: 0.8rem;
 }
 
 .card {
@@ -827,7 +814,7 @@ h3 {
   overflow-y: auto;
   flex: 1;
   padding: 0 max(1rem, 8vw);
-  align-items: flex-start;
+  align-content: flex-start;
 }
 
 .transaction-message {
@@ -857,6 +844,10 @@ h3 {
 .transaction-message__time {
   opacity: 0.8;
   font-size: 0.8rem;
+}
+
+#transaction {
+  padding: 1.5rem;
 }
 
 #wallet_history_wrapper {
@@ -904,9 +895,7 @@ h3 {
   border-radius: 2rem;
 }
 .transaction__receiver {
-  font-size: 0.9rem;
   font-weight: 500;
-  color: rgba(var(--text-color), 0.8);
 }
 .transaction__time {
   font-size: 0.8rem;
@@ -1028,7 +1017,7 @@ h3 {
   align-items: center;
   padding: 0.8rem;
   border-radius: 0.3rem;
-  background-color: rgba(var(--text-color), 0.06);
+  background-color: rgba(var(--text-color), 0.03);
 }
 .cashier-request:not(:last-of-type),
 .payment-request:not(:last-of-type) {
@@ -1039,13 +1028,43 @@ h3 {
   font-size: 0.8rem;
 }
 
+#payment_request_history {
+  padding-bottom: 3rem;
+}
+
 .payment-request {
   display: grid;
+  gap: 0.5rem 1rem;
   grid-template-columns: 1fr auto;
+  color: rgba(var(--text-color), 1);
 }
 .payment-request__amount {
   font-weight: 700;
   text-align: right;
+}
+.payment-request__status {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.payment-request__status .icon {
+  height: 1rem;
+  width: 1rem;
+  margin-left: 0.3rem;
+}
+.payment-request .icon.paid {
+  fill: var(--green);
+}
+.payment-request .icon.declined {
+  fill: var(--danger-color);
+}
+.payment-request .button {
+  background-color: transparent;
+  padding: 0.6rem 0.8rem;
+  color: var(--accent-color);
+  background-color: rgba(var(--foreground-color), 1);
 }
 
 .wallet-request {
@@ -1121,7 +1140,7 @@ h3 {
     height: calc(100vh - 3rem);
     width: calc(100vw - 3rem);
     position: relative;
-    border-radius: 1rem;
+    border-radius: 0.5rem;
     overflow: hidden;
     box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05), 0 1rem 3rem rgba(0, 0, 0, 0.2);
   }
@@ -1166,13 +1185,8 @@ h3 {
     padding: 1.5rem;
   }
 
-  #user {
-    gap: 1rem;
-    align-items: flex-start;
-  }
-
   #saved_ids_list {
-    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   }
 }
 @media screen and (min-width: 56rem) {

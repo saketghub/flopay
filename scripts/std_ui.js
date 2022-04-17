@@ -5,6 +5,7 @@ const currentYear = new Date().getFullYear();
 let paymentsHistoryLoader = null;
 let walletHistoryLoader = null;
 let contactHistoryLoader = null;
+let paymentRequestsLoader = null;
 
 //Checks for internet connection status
 if (!navigator.onLine)
@@ -350,12 +351,33 @@ async function showPage(targetPage, options = {}) {
             })
             break;
         case 'requests':
-            const frag = document.createDocumentFragment();
-            for (let transactionID in User.moneyRequests) {
-                frag.prepend(render.paymentRequestCard(User.moneyRequests[transactionID]));
+            const paymentRequests = []
+            if (paymentRequestsLoader)
+                paymentRequestsLoader.clear()
+
+            const pendingPaymentRequests = document.createDocumentFragment()
+            let arePaymentsPending = false
+            for (const transactionId in User.moneyRequests) {
+                if (!User.moneyRequests[transactionId].note) {
+                    arePaymentsPending = true
+                    pendingPaymentRequests.prepend(render.paymentRequestCard(User.moneyRequests[transactionId]))
+                } else {
+                    paymentRequests.unshift(User.moneyRequests[transactionId])
+                }
             }
-            getRef('user-money-requests').innerHTML = '';
-            getRef('user-money-requests').prepend(frag);
+            if (arePaymentsPending) {
+                getRef('pending_payment_requests').innerHTML = ''
+                getRef('pending_payment_requests').append(pendingPaymentRequests)
+                getRef('pending_payment_requests').parentNode.classList.remove('hide')
+            } else {
+                getRef('pending_payment_requests').parentNode.classList.add('hide')
+            }
+            if (paymentRequestsLoader) {
+                paymentRequestsLoader.update(paymentRequests)
+            } else {
+                paymentRequestsLoader = new LazyLoader('#payment_request_history', paymentRequests, render.paymentRequestCard);
+            }
+            paymentRequestsLoader.init()
             break;
         case 'wallet':
             const walletTransactions = []
@@ -385,6 +407,29 @@ async function showPage(targetPage, options = {}) {
                 walletHistoryLoader = new LazyLoader('#wallet_history', walletTransactions, render.walletRequestCard);
             }
             walletHistoryLoader.init()
+            break;
+        case 'transaction':
+            let transactionDetails
+            let status
+            switch (params.type) {
+                case 'request':
+                    transactionDetails = User.moneyRequests[params.transactionId]
+                    status = transactionDetails.note ? transactionDetails.note.split(':')[0] : 'PENDING';
+                    getRef('transaction__type').textContent = 'Payment request'
+                    break;
+                case 'wallet':
+                    transactionDetails = User.cashierRequests[params.transactionId]
+                    const { message: { mode }, note, tag } = transactionDetails
+                    status = tag ? tag : (note ? 'REJECTED' : "PENDING");
+                    getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Deposit' : 'Withdraw';
+
+                    break;
+            }
+            const { message: { amount, remark }, note, senderID, receiverID, time } = transactionDetails
+            console.log(transactionDetails)
+            getRef('transaction__time').textContent = getFormattedTime(time)
+            getRef('transaction__amount').textContent = formatAmount(amount)
+            getRef('transaction__status').textContent = status
             break;
         default:
             break;

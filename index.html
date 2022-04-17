@@ -548,9 +548,18 @@
                     <circle cx="497.22047" cy="216.17011" r="6.46689" fill="#f2f2f2" />
                 </svg>
             </div>
-            <ul id="user-money-requests" class="observe-empty-state"></ul>
-            <div class=" empty-state gap-1 justify-center text-center">
-                <h4>No requests</h4>
+            <div id="requests_history_wrapper" class="grid gap-1-5">
+                <div class="hide grid gap-1">
+                    <h4>Pending requests</h4>
+                    <ul id="pending_payment_requests" class="grid gap-0-5"></ul>
+                </div>
+                <div class="grid gap-1">
+                    <h4>History</h4>
+                    <ul id="payment_request_history" class="observe-empty-state grid gap-0-5"></ul>
+                    <div class=" empty-state gap-1 justify-center text-center">
+                        <h4>No requests</h4>
+                    </div>
+                </div>
             </div>
         </section>
         <section id="wallet" class="inner-page hide">
@@ -627,7 +636,7 @@
                         transform="translate(-229.66231 -151.4124)" fill="#3f3d56" />
                 </svg>
             </div>
-            <div class="grid">
+            <div class="grid gap-1" style="width: min(24rem, 100%);">
                 <div class="grid gap-0-5">
                     <h5>Balance</h5>
                     <h1 class="h1" id="rupee_balance"></h1>
@@ -677,7 +686,7 @@
             </div>
         </section>
         <div id="transaction" class="inner-page hide">
-            <div class="flex align-center">
+            <div class="grid gap-0-5 justify-start">
                 <button class="button icon-only margin-right-0-5" onclick="history.back()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
@@ -685,7 +694,13 @@
                         <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                     </svg>
                 </button>
-                <h4 id="contact__title"></h4>
+                <h4 id="transaction__type"></h4>
+            </div>
+            <h1 id="transaction__amount"></h1>
+            <div class="flex align-center">
+                <time id="transaction__time"></time>
+                <div class="bullet-point"></div>
+                <span id="transaction__status"></span>
             </div>
         </div>
         <section id="settings" class="inner-page hide">
@@ -816,7 +831,7 @@
                         <span class="nav-item__title">History</span>
                     </a>
                 </li>
-                <li>
+                <li class="user-element hide">
                     <a href="#/requests" class="nav-item interact" title='View payment requests'>
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                             height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -900,7 +915,7 @@
                 <sm-copy id="edit_saved_id"></sm-copy>
             </div>
             <sm-form>
-                <sm-input id="newAddrLabel" placeholder="Name" autofocus animate required></sm-input>
+                <sm-input id="get_new_title" placeholder="Name" autofocus animate required></sm-input>
                 <div class="flex align-center space-between">
                     <button class="button icon-only" title="Delete this FLO ID?" onclick="deleteSaved()">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -973,7 +988,7 @@
     <!-- templates -->
     <template id="saved_id_template">
         <li class="saved-id grid interact" tabindex="0">
-            <button class="interact edit-saved" title="Edit saved ID">
+            <button class="interact edit-saved icon-only" title="Edit name">
                 <div class="saved-id__initials"></div>
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
@@ -983,6 +998,17 @@
                 </svg>
             </button>
             <h4 class="saved-id__title"></h4>
+            <div class="grid align-center" style="grid-template-columns: 1fr auto;">
+                <div class="saved-id__flo-id overflow-ellipsis"></div>
+                <button class="copy-saved-id icon-only margin-left-0-5" title="Copy FLO ID">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
+                </button>
+            </div>
         </li>
     </template>
     <template id="transaction_template">
@@ -1015,8 +1041,8 @@
             </a>
         </li>
     </template>
-    <template id="payment_request_template">
-        <li class="payment-request">
+    <template id="pending_payment_request_template">
+        <li class="payment-request payment-request--pending">
             <div class="grid gap-0-5 flex-1">
                 <div class="payment-request__requestor breakable"></div>
                 <div class="payment-request__remark"></div>
@@ -1024,8 +1050,26 @@
             <div class="payment-request__amount"></div>
             <div class="flex space-between full-bleed align-center">
                 <time class="payment-request__time"></time>
-                <div class="payment-request__actions"></div>
+                <div class="payment-request__actions">
+                    <button class="button decline-payment">Decline</button>
+                    <button class="button pay-requested">Pay</button>
+                </div>
             </div>
+        </li>
+    </template>
+    <template id="processed_payment_request_template">
+        <li>
+            <a href="" class="payment-request payment-request--processed interact">
+                <div class="grid gap-0-5 flex-1">
+                    <div class="payment-request__requestor breakable"></div>
+                    <div class="payment-request__remark"></div>
+                </div>
+                <div class="payment-request__amount"></div>
+                <div class="flex space-between full-bleed align-center">
+                    <time class="payment-request__time"></time>
+                    <div class="payment-request__status"></div>
+                </div>
+            </a>
         </li>
     </template>
     <template id="transaction_message_template">

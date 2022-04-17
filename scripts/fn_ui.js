@@ -97,7 +97,7 @@ userUI.renderMoneyRequests = function (requests, error = null) {
         return;
     if (pagesData.lastPage === 'requests') {
         for (let r in requests) {
-            let oldCard = getRef('user-money-requests').querySelector(`[data-vc-${r}]`);
+            let oldCard = getRef('payment_request_history').querySelector(`[data-vc-${r}]`);
             if (oldCard)
                 oldCard.replaceWith(render.paymentRequestCard(requests[r]));
         }
@@ -105,12 +105,12 @@ userUI.renderMoneyRequests = function (requests, error = null) {
 };
 
 userUI.payRequest = function (reqID) {
-    let request = User.moneyRequests[reqID];
+    let { message: { amount, remark }, senderID } = User.moneyRequests[reqID];
     getConfirmation('Pay?', { message: `Do you want to pay ${request.message.amount} to ${request.senderID}?`, confirmText: 'Pay' }).then(confirmation => {
         if (confirmation) {
-            User.sendToken(request.senderID, request.message.amount, "|" + request.message.remark).then(txid => {
-                console.warn(`Sent ${request.message.amount} to ${request.senderID}`, txid);
-                notify(`Sent ${request.message.amount} to ${request.senderID}. It may take a few mins to reflect in their wallet`, 'success');
+            User.sendToken(senderID, amount, "|" + remark).then(txid => {
+                console.warn(`Sent ${amount} to ${senderID}`, txid);
+                notify(`Sent ${formatAmount(amount)} to ${getFloIdTitle(senderID)}. It may take a few mins to reflect in their wallet`, 'success');
                 User.decideRequest(request, 'PAID: ' + txid)
                     .then(result => console.log(result))
                     .catch(error => console.error(error))
@@ -131,11 +131,11 @@ userUI.declineRequest = function (reqID) {
     })
 }
 
-delegate(getRef('user-money-requests'), 'click', '.pay-requested', e => {
+delegate(getRef('pending_payment_requests'), 'click', '.pay-requested', e => {
     const vectorClock = e.target.closest('.payment-request').dataset.vc;
     userUI.payRequest(vectorClock);
 })
-delegate(getRef('user-money-requests'), 'click', '.decline-payment', e => {
+delegate(getRef('pending_payment_requests'), 'click', '.decline-payment', e => {
     const vectorClock = e.target.closest('.payment-request').dataset.vc;
     userUI.declineRequest(vectorClock);
 })
@@ -152,9 +152,9 @@ cashierUI.renderRequests = function (requests, error = null) {
     for (let r in requests) {
         const oldCard = document.getElementById(r);
         if (oldCard) oldCard.remove();
-        frag.append(render.cashierRequestCard(requests[r]));
+        frag.prepend(render.cashierRequestCard(requests[r]));
     }
-    getRef('cashier_request_list').append(frag)
+    getRef('cashier_request_list').prepend(frag)
 }
 
 cashierUI.completeRequest = function (reqID) {
@@ -233,11 +233,12 @@ function getStatusIcon(status) {
 
 const render = {
     savedId(floID, details) {
-        const { title } = details.hasOwnProperty('title') ? details : { title: details };
+        const { title } = details;
         const clone = getRef('saved_id_template').content.cloneNode(true).firstElementChild;
         clone.dataset.floId = floID;
         clone.querySelector('.saved-id__initials').textContent = title.charAt(0);
         clone.querySelector('.saved-id__title').textContent = title;
+        clone.querySelector('.saved-id__flo-id').textContent = floID;
         return clone;
     },
     transactionCard(transactionDetails) {
@@ -281,7 +282,7 @@ const render = {
         let status = tag ? tag : (note ? 'REJECTED' : "PENDING");
         clone.classList.add(status.toLowerCase());
         clone.dataset.vc = vectorClock;
-        clone.href = `#/transaction?transactionId=${vectorClock}`;
+        clone.href = `#/transaction?transactionId=${vectorClock}&type=wallet`;
         clone.querySelector('.wallet-request__icon').innerHTML = type === 'Deposit' ?
             `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none" /><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>`
             :
@@ -297,21 +298,22 @@ const render = {
     },
     paymentRequestCard(details) {
         const { time, senderID, message: { amount, remark }, note, vectorClock } = details;
-        const clone = getRef('payment_request_template').content.cloneNode(true).firstElementChild;
+        const clone = getRef(`${note ? 'processed' : 'pending'}_payment_request_template`).content.cloneNode(true).firstElementChild;
         clone.dataset.vc = vectorClock;
         clone.querySelector('.payment-request__requestor').textContent = getFloIdTitle(senderID);
         clone.querySelector('.payment-request__time').textContent = getFormattedTime(time);
         clone.querySelector('.payment-request__amount').textContent = amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' });
         clone.querySelector('.payment-request__remark').textContent = remark;
-
-        let status = note;
-        if (status)
-            clone.querySelector('.payment-request__actions').textContent = note;
-        else
-            clone.querySelector('.payment-request__actions').innerHTML =
-                `<button class="button pay-requested">Pay</button>
-                <button class="button decline-payment">Decline</button>`;
-
+        const status = note ? note.split(':')[0] : 'PENDING';
+        if (note) {
+            clone.firstElementChild.href = `#/transaction?transactionId=${vectorClock}&type=request`;
+            let icon
+            if (status === 'PAID')
+                icon = `<svg class="icon paid" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M23,12l-2.44-2.79l0.34-3.69l-3.61-0.82L15.4,1.5L12,2.96L8.6,1.5L6.71,4.69L3.1,5.5L3.44,9.2L1,12l2.44,2.79l-0.34,3.7 l3.61,0.82L8.6,22.5l3.4-1.47l3.4,1.46l1.89-3.19l3.61-0.82l-0.34-3.69L23,12z M10.09,16.72l-3.8-3.81l1.48-1.48l2.32,2.33 l5.85-5.87l1.48,1.48L10.09,16.72z"/></g></svg>`
+            else
+                icon = `<svg class="icon declined" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>`
+            clone.querySelector('.payment-request__status').innerHTML = `${status} ${icon}`;
+        }
         return clone;
     },
     transactionMessage(details) {
@@ -336,6 +338,17 @@ function showTokenTransfer(type) {
     }
     showPopup('token_transfer_popup');
 }
+
+function getArrayOfSavedIds() {
+    const arr = []
+    for (const key in floGlobals.savedIds) {
+        arr.push({
+            floID: key,
+            details: floGlobals.savedIds[key]
+        })
+    }
+    return arr.sort((a, b) => a.details.title.localeCompare(b.details.title))
+}
 userUI.renderSavedIds = async function () {
     floGlobals.savedIds = {}
     const frag = document.createDocumentFragment()
@@ -356,17 +369,17 @@ userUI.renderSavedIds = async function () {
                 floGlobals.savedIds[key] = idsToRender[key];
         }
     }
-    for (const key in floGlobals.savedIds) {
-        frag.append(render.savedId(key, floGlobals.savedIds[key]));
-    }
+    getArrayOfSavedIds().forEach(({ floID, details }) => {
+        frag.append(render.savedId(floID, details));
+    })
     getRef('saved_ids_list').append(frag);
 }
 async function saveId() {
     const floID = getRef('flo_id_to_save').value.trim();
     const title = getRef('flo_id_title_to_save').value.trim();
     floGlobals.savedIds[floID] = { title }
-    getRef('saved_ids_list').append(render.savedId(floID, { title }));
     syncSavedIds().then(() => {
+        insertElementAlphabetically(title, render.savedIdCard(floID, { title }))
         notify(`Saved ${floID}`, 'success');
         hidePopup();
     }).catch(error => {
@@ -381,13 +394,43 @@ delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
     if (e.target.closest('.edit-saved')) {
         const target = e.target.closest('.saved-id');
         getRef('edit_saved_id').setAttribute('value', target.dataset.floId);
-        getRef('newAddrLabel').value = getFloIdTitle(target.dataset.floId);
+        getRef('get_new_title').value = getFloIdTitle(target.dataset.floId);
         showPopup('edit_saved_popup');
+    } else if (e.target.closest('.copy-saved-id')) {
+        const target = e.target.closest('.saved-id');
+        navigator.clipboard.writeText(target.dataset.floId)
+        target.dispatchEvent(
+            new CustomEvent('copy', {
+                bubbles: true,
+                cancelable: true,
+            })
+        );
     } else {
         const target = e.target.closest('.saved-id');
         window.location.hash = `#/contact?floId=${target.dataset.floId}`;
     }
 });
+function saveChanges() {
+    const floID = getRef('edit_saved_id').value;
+    let title = getRef('get_new_title').value.trim();
+    if (title == '')
+        title = 'Unknown';
+    floGlobals.savedIds[floID] = { title }
+    syncSavedIds().then(() => {
+        const potentialTarget = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${floID}"]`)
+        if (potentialTarget) {
+            potentialTarget.querySelector('.saved-id__title').textContent = title;
+            potentialTarget.querySelector('.saved-id__initials').textContent = title.charAt(0).toUpperCase();
+            // place the renamed card in alphabetically correct position
+            const clone = potentialTarget.cloneNode(true);
+            potentialTarget.remove();
+            insertElementAlphabetically(title, clone)
+        }
+        hidePopup();
+    }).catch(error => {
+        notify(error, 'error');
+    })
+}
 function deleteSaved() {
     getConfirmation('Do you want delete this FLO ID?', {
         confirmText: 'Delete',
@@ -405,6 +448,27 @@ function deleteSaved() {
             });
         }
     });
+}
+const savedIdsObserver = new MutationObserver((mutationList) => {
+    mutationList.forEach(mutation => {
+        getRef('saved_ids_tip').textContent = mutation.target.children.length === 0 ? `Click 'Add FLO ID' to add a new FLO ID.` : `Tap on saved IDs to see transaction history.`
+    })
+})
+
+savedIdsObserver.observe(getRef('saved_ids_list'), {
+    childList: true,
+})
+function insertElementAlphabetically(name, elementToInsert) {
+    const elementInserted = [...getRef('saved_ids_list').children].some(child => {
+        const floID = child.dataset.floId;
+        if (floGlobals.savedIds[floID].title.localeCompare(name) > 0) {
+            child.before(elementToInsert)
+            return true
+        }
+    })
+    if (!elementInserted) {
+        getRef('saved_ids_list').append(elementToInsert)
+    }
 }
 
 function executeUserAction() {
