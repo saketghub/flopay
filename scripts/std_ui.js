@@ -411,22 +411,50 @@ async function showPage(targetPage, options = {}) {
         case 'transaction':
             let transactionDetails
             let status
-            switch (params.type) {
-                case 'request':
-                    transactionDetails = User.moneyRequests[params.transactionId]
-                    status = transactionDetails.note ? transactionDetails.note.split(':')[0] : 'PENDING';
-                    getRef('transaction__type').textContent = 'Payment request'
-                    break;
-                case 'wallet':
-                    transactionDetails = User.cashierRequests[params.transactionId]
-                    const { message: { mode }, note, tag } = transactionDetails
-                    status = tag ? tag : (note ? 'REJECTED' : "PENDING");
-                    getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Deposit' : 'Withdraw';
+            getRef('transaction__link').classList.add('hide')
+            getRef('transaction__remark').classList.add('hide')
+            getRef('transaction__note').classList.add('hide')
+            if (params.type === 'request') {
+                transactionDetails = User.moneyRequests[params.transactionId]
+                const { message: { remark }, note, tag } = transactionDetails
+                status = note ? note.split(':')[0] : 'PENDING';
+                getRef('transaction__type').textContent = 'Payment request'
+                if (status === 'PAID') {
+                    getRef('transaction__link').href = `https://flosight.duckdns.org/tx/${note.split(':')[1].trim()}`
+                    getRef('transaction__link').classList.remove('hide')
+                }
+                if (remark !== '') {
+                    getRef('transaction__remark').textContent = remark
+                    getRef('transaction__remark').classList.remove('hide')
+                }
+                console.log(status)
+            } else if (params.type === 'wallet') {
+                transactionDetails = User.cashierRequests[params.transactionId]
+                const { message: { amount, mode, upi_id, upi_txid }, note, tag } = transactionDetails
+                status = tag ? tag : (note ? 'REJECTED' : "PENDING");
+                getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Transfer to bank';
+                if (status === 'COMPLETED') {
+                    getRef('transaction__link').href = `https://flosight.duckdns.org/tx/${note}`
+                    getRef('transaction__link').classList.remove('hide')
+                } else if (status === 'REJECTED') {
+                    getRef('transaction__note').innerHTML = `<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${note.split(':')[1]}`
+                    getRef('transaction__note').classList.remove('hide')
+                }
+                if (mode === 'cash-to-token') {
+                    getRef('transaction__note').textContent = `UPI transaction ID: ${upi_txid}`
+                    getRef('transaction__note').classList.remove('hide')
 
-                    break;
+                } else {
+                    if (status === 'PENDING') {
+                        getRef('transaction__note').textContent = `Pending transfer of ${formatAmount(amount)} to bank account linked to ${upi_id}`
+                    } else if (status === 'COMPLETED') {
+                        getRef('transaction__note').textContent = `Transfer of ${formatAmount(amount)} to bank account linked to ${upi_id} completed`
+                    }
+                    getRef('transaction__note').classList.remove('hide')
+                }
             }
             const { message: { amount, remark }, note, senderID, receiverID, time } = transactionDetails
-            console.log(transactionDetails)
+            console.table(transactionDetails)
             getRef('transaction__time').textContent = getFormattedTime(time)
             getRef('transaction__amount').textContent = formatAmount(amount)
             getRef('transaction__status').textContent = status
@@ -533,7 +561,7 @@ async function showPage(targetPage, options = {}) {
                 }).onfinish = () => {
                     getRef('main_navbar').classList.add('hide')
                 }
-                getRef('main_header').classList.add('hide')
+                // getRef('main_header').classList.add('hide')
             }
         }
         document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))

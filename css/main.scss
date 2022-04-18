@@ -536,7 +536,6 @@ ul {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: rgba(var(--foreground-color), 1);
   transition: background-color 0.3s;
 }
 
@@ -565,7 +564,7 @@ ul {
   justify-content: center;
   padding: 0.5rem 0.3rem;
   color: var(--text-color);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   border-radius: 0.3rem;
   .icon {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -686,15 +685,13 @@ ul {
 #saved_ids_list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 .saved-id {
   grid-template-columns: auto 1fr;
   gap: 0 0.8rem;
   border-radius: 0.3rem;
-  padding: 0.5rem 0;
-  background-color: rgba(var(--text-color), 0.03);
+  padding: 0.8rem 0;
   user-select: none;
   &.highlight {
     box-shadow: 0 0 0.1rem 0.1rem var(--accent-color) inset;
@@ -734,6 +731,7 @@ ul {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-weight: 500;
   }
   &__flo-id {
     font-size: 0.8rem;
@@ -751,7 +749,10 @@ ul {
   padding: 0;
   height: 100%;
   & > * {
-    padding: 1rem;
+    padding: 1rem 1.5rem;
+  }
+  & > :first-child {
+    padding-top: 0;
   }
 }
 #contact__transactions {
@@ -790,10 +791,6 @@ ul {
     opacity: 0.8;
     font-size: 0.8rem;
   }
-}
-
-#transaction {
-  padding: 1.5rem;
 }
 
 #wallet_history_wrapper {
@@ -945,7 +942,7 @@ ul {
   align-items: center;
   padding: 0.8rem;
   border-radius: 0.3rem;
-  background-color: rgba(var(--text-color), 0.03);
+  background-color: rgba(var(--foreground-color), 1);
   &:not(:last-of-type) {
     margin-bottom: 0.5rem;
   }
@@ -961,6 +958,9 @@ ul {
   gap: 0.5rem 1rem;
   grid-template-columns: 1fr auto;
   color: rgba(var(--text-color), 1);
+  &__requestor {
+    font-weight: 500;
+  }
   &__amount {
     font-weight: 700;
     text-align: right;
@@ -969,8 +969,7 @@ ul {
     display: flex;
     align-items: center;
     font-size: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
+    text-transform: capitalize;
     .icon {
       height: 1rem;
       width: 1rem;
@@ -996,6 +995,23 @@ ul {
   padding: 0.5rem 0;
   border-radius: 0.5rem;
   grid-template-columns: auto 1fr;
+  &:not(.rejected, .pending) {
+    &.withdrawn {
+      .wallet-request__amount {
+        &::before {
+          content: "- ";
+        }
+      }
+    }
+    &.added {
+      .wallet-request__amount {
+        color: var(--green);
+        &::before {
+          content: "+ ";
+        }
+      }
+    }
+  }
   .icon.pending {
     fill: var(--yellow);
   }
@@ -1016,20 +1032,45 @@ ul {
     }
   }
   &__details {
-    font-weight: 700;
+    font-weight: 500;
+  }
+  &__details,
+  &__amount {
     color: rgba(var(--text-color), 1);
   }
-  &__time {
+  &__amount {
+    font-weight: 700;
+  }
+  &__time,
+  &__status {
     font-size: 0.8rem;
     color: rgba(var(--text-color), 0.8);
   }
   &__status {
-    font-size: 0.8rem;
-    color: rgba(var(--text-color), 0.8);
     text-transform: capitalize;
+    text-align: right;
     .icon {
       margin-left: 0.3rem;
     }
+  }
+}
+#transaction {
+  // justify-content: center;
+  // text-align: center;
+  // justify-items: center;
+}
+#transaction__remark,
+#transaction__note {
+  line-height: 1.6;
+  justify-self: flex-start;
+  background-color: rgba(var(--text-color), 0.06);
+  border-radius: 0.5rem;
+  padding: 0.8rem;
+}
+#transaction__note {
+  .icon {
+    fill: var(--danger-color);
+    margin-right: 0.5rem;
   }
 }
 @media screen and (max-width: 40rem) {
@@ -1069,6 +1110,8 @@ ul {
     position: relative;
     border-radius: 0.5rem;
     overflow: hidden;
+    background-color: rgba(var(--background-color), 1);
+
     box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05),
       0 1rem 3rem rgba(0, 0, 0, 0.2);
   }
@@ -1105,6 +1148,7 @@ ul {
     padding: 1.5rem;
   }
   #saved_ids_list {
+    gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   }
 }

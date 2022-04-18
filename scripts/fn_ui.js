@@ -11,36 +11,45 @@
 const relativeTime = new RelativeTime({ style: 'narrow' });
 const userUI = {};
 
+let walletActionType = null;
 getRef('wallet_popup__cta').addEventListener('click', function () {
     let cashier = User.findCashier();
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    if (walletAction === 'deposit') {
+    if (walletActionType === 'deposit') {
         //get UPI txid from user
         let upiTxID = prompt(`Send Rs. ${amount} to ${cashierUPI[cashier]} and enter UPI txid`);
         if (!upiTxID)
-            return alert("Cancelled");
+            return;
         User.cashToToken(cashier, amount, upiTxID).then(result => {
             console.log(result);
-            alert("Requested cashier. please wait!");
+            notify("Requested cashier. please wait!");
         }).catch(error => console.error(error))
     } else {
         //get confirmation from user
         let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
         if (!upiID)
-            return alert("Cancelled");
+            return;
         User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
             console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
             User.tokenToCash(cashier, amount, txid, upiID).then(result => {
                 console.log(result);
-                alert("Requested cashier. please wait!");
+                notify("Requested cashier. please wait!");
             }).catch(error => console.error(error))
         }).catch(error => console.error(error))
     }
 })
 function walletAction(type) {
+    walletActionType = type;
     let cashier = User.findCashier();
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
+    if (type === 'deposit') {
+        getRef('wallet_popup__title').textContent = 'Top-up wallet';
+        getRef('request_description').textContent = 'Add money to your wallet';
+    } else {
+        getRef('wallet_popup__title').textContent = 'Transfer to bank';
+        getRef('request_description').textContent = 'Money will be sent to your bank account linked to given UPI ID';
+    }
     showPopup('wallet_popup')
 }
 
@@ -278,16 +287,18 @@ const render = {
     walletRequestCard(details) {
         const { time, message: { mode, amount }, note, tag, vectorClock } = details;
         const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild.firstElementChild;
-        const type = mode === 'cash-to-token' ? 'Deposit' : 'Withdraw';
+        const type = mode === 'cash-to-token' ? 'Wallet top-up' : 'Transfer to bank';
         let status = tag ? tag : (note ? 'REJECTED' : "PENDING");
         clone.classList.add(status.toLowerCase());
+        clone.classList.add(mode === 'cash-to-token' ? 'added' : 'withdrawn');
         clone.dataset.vc = vectorClock;
         clone.href = `#/transaction?transactionId=${vectorClock}&type=wallet`;
-        clone.querySelector('.wallet-request__icon').innerHTML = type === 'Deposit' ?
+        clone.querySelector('.wallet-request__icon').innerHTML = mode === 'cash-to-token' ?
             `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none" /><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>`
             :
             `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24" /></g><g><g><rect height="7" width="3" x="4" y="10" /><rect height="7" width="3" x="10.5" y="10" /><rect height="3" width="20" x="2" y="19" /><rect height="7" width="3" x="17" y="10" /><polygon points="12,1 2,6 2,8 22,8 22,6" /></g></g></svg>`;
-        clone.querySelector('.wallet-request__details').textContent = `${type} ${formatAmount(amount)}`;
+        clone.querySelector('.wallet-request__details').textContent = type;
+        clone.querySelector('.wallet-request__amount').textContent = formatAmount(amount);
         clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time);
         let icon = '';
         if (status === 'REJECTED') {
@@ -301,9 +312,9 @@ const render = {
         const clone = getRef(`${note ? 'processed' : 'pending'}_payment_request_template`).content.cloneNode(true).firstElementChild;
         clone.dataset.vc = vectorClock;
         clone.querySelector('.payment-request__requestor').textContent = getFloIdTitle(senderID);
+        clone.querySelector('.payment-request__remark').textContent = remark;
         clone.querySelector('.payment-request__time').textContent = getFormattedTime(time);
         clone.querySelector('.payment-request__amount').textContent = amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' });
-        clone.querySelector('.payment-request__remark').textContent = remark;
         const status = note ? note.split(':')[0] : 'PENDING';
         if (note) {
             clone.firstElementChild.href = `#/transaction?transactionId=${vectorClock}&type=request`;
@@ -312,7 +323,7 @@ const render = {
                 icon = `<svg class="icon paid" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M23,12l-2.44-2.79l0.34-3.69l-3.61-0.82L15.4,1.5L12,2.96L8.6,1.5L6.71,4.69L3.1,5.5L3.44,9.2L1,12l2.44,2.79l-0.34,3.7 l3.61,0.82L8.6,22.5l3.4-1.47l3.4,1.46l1.89-3.19l3.61-0.82l-0.34-3.69L23,12z M10.09,16.72l-3.8-3.81l1.48-1.48l2.32,2.33 l5.85-5.87l1.48,1.48L10.09,16.72z"/></g></svg>`
             else
                 icon = `<svg class="icon declined" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>`
-            clone.querySelector('.payment-request__status').innerHTML = `${status} ${icon}`;
+            clone.querySelector('.payment-request__status').innerHTML = `${status.toLowerCase()} ${icon}`;
         }
         return clone;
     },
@@ -379,7 +390,7 @@ async function saveId() {
     const title = getRef('flo_id_title_to_save').value.trim();
     floGlobals.savedIds[floID] = { title }
     syncSavedIds().then(() => {
-        insertElementAlphabetically(title, render.savedIdCard(floID, { title }))
+        insertElementAlphabetically(title, render.savedId(floID, { title }))
         notify(`Saved ${floID}`, 'success');
         hidePopup();
     }).catch(error => {
