@@ -651,7 +651,7 @@
                         </svg>
                         Top-up wallet
                     </button>
-                    <button class="wallet-action" onclick="walletAction('deposit')">
+                    <button class="wallet-action" onclick="walletAction('withdraw')">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                             height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                             <g>
@@ -685,8 +685,8 @@
                 </div>
             </div>
         </section>
-        <div id="transaction" class="inner-page hide">
-            <div class="grid gap-0-5 justify-start">
+        <div id="transaction" class="inner-page hide grid gap-2">
+            <div class="grid gap-1 justify-start">
                 <button class="button icon-only margin-right-0-5" onclick="history.back()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
@@ -696,12 +696,17 @@
                 </button>
                 <h4 id="transaction__type"></h4>
             </div>
-            <h1 id="transaction__amount"></h1>
-            <div class="flex align-center">
-                <time id="transaction__time"></time>
-                <div class="bullet-point"></div>
-                <span id="transaction__status"></span>
+            <div class="grid gap-1">
+                <h1 id="transaction__amount"></h1>
+                <div id="transaction__remark" class="hide"></div>
+                <div class="flex align-center" style="font-size: 0.8rem;">
+                    <time id="transaction__time"></time>
+                    <div class="bullet-point"></div>
+                    <span id="transaction__status"></span>
+                </div>
             </div>
+            <a id="transaction__link" target="_blank" rel="noopener noreferrer">See transaction on blockchain</a>
+            <div id="transaction__note" class="hide flex align-center"></div>
         </div>
         <section id="settings" class="inner-page hide">
             <div class="page__header">
@@ -868,7 +873,6 @@
                             </g>
                         </svg>
                         <span class="nav-item__title">Settings</span>
-                        </button>
                     </a>
                 </li>
             </ul>
@@ -976,12 +980,28 @@
                         d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
                 </svg>
             </button>
-            <h4 id="wallet_popup__title"></h4>
         </header>
         <sm-form>
-            <sm-input id="request_cashier_amount" type="number" name="amount" placeholder="Amount" animate>
+            <div class="grid gap-0-5">
+                <h4 id="wallet_popup__title"></h4>
+                <p id="request_description"></p>
+            </div>
+            <sm-input id="request_cashier_amount" type="number" min="1" error-text="Amount should al least be ₹1"
+                name="amount" placeholder="Amount" autofocus animate required>
+                <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                    height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                    <g>
+                        <rect fill="none" height="24" width="24" />
+                    </g>
+                    <g>
+                        <g>
+                            <path
+                                d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z" />
+                        </g>
+                    </g>
+                </svg>
             </sm-input>
-            <button id="wallet_popup__cta" class="button button--primary cta" type="submit">Save</button>
+            <button id="wallet_popup__cta" class="button button--primary cta" type="submit">Continue</button>
         </sm-form>
     </sm-popup>
 
@@ -1033,7 +1053,10 @@
         <li>
             <a href="" class="wallet-request interact">
                 <div class="wallet-request__icon"></div>
-                <div class="wallet-request__details"></div>
+                <div class="flex align-center space-between">
+                    <div class="wallet-request__details"></div>
+                    <div class="wallet-request__amount"></div>
+                </div>
                 <div class="flex align-center space-between">
                     <time class="wallet-request__time"></time>
                     <div class="wallet-request__status flex align-center"></div>
@@ -1044,7 +1067,7 @@
     <template id="pending_payment_request_template">
         <li class="payment-request payment-request--pending">
             <div class="grid gap-0-5 flex-1">
-                <div class="payment-request__requestor breakable"></div>
+                <h4 class="payment-request__requestor breakable"></h4>
                 <div class="payment-request__remark"></div>
             </div>
             <div class="payment-request__amount"></div>
@@ -1061,7 +1084,7 @@
         <li>
             <a href="" class="payment-request payment-request--processed interact">
                 <div class="grid gap-0-5 flex-1">
-                    <div class="payment-request__requestor breakable"></div>
+                    <h4 class="payment-request__requestor breakable"></h4>
                     <div class="payment-request__remark"></div>
                 </div>
                 <div class="payment-request__amount"></div>

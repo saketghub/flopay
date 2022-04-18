@@ -578,7 +578,6 @@ ul {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: rgba(var(--foreground-color), 1);
   transition: background-color 0.3s;
 }
 
@@ -608,7 +607,7 @@ ul {
   justify-content: center;
   padding: 0.5rem 0.3rem;
   color: var(--text-color);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   border-radius: 0.3rem;
 }
 .nav-item .icon {
@@ -734,16 +733,14 @@ ul {
 #saved_ids_list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .saved-id {
   grid-template-columns: auto 1fr;
   gap: 0 0.8rem;
   border-radius: 0.3rem;
-  padding: 0.5rem 0;
-  background-color: rgba(var(--text-color), 0.03);
+  padding: 0.8rem 0;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
@@ -787,6 +784,7 @@ ul {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 500;
 }
 .saved-id__flo-id {
   font-size: 0.8rem;
@@ -805,7 +803,10 @@ ul {
   height: 100%;
 }
 #contact > * {
-  padding: 1rem;
+  padding: 1rem 1.5rem;
+}
+#contact > :first-child {
+  padding-top: 0;
 }
 
 #contact__transactions {
@@ -844,10 +845,6 @@ ul {
 .transaction-message__time {
   opacity: 0.8;
   font-size: 0.8rem;
-}
-
-#transaction {
-  padding: 1.5rem;
 }
 
 #wallet_history_wrapper {
@@ -1017,7 +1014,7 @@ ul {
   align-items: center;
   padding: 0.8rem;
   border-radius: 0.3rem;
-  background-color: rgba(var(--text-color), 0.03);
+  background-color: rgba(var(--foreground-color), 1);
 }
 .cashier-request:not(:last-of-type),
 .payment-request:not(:last-of-type) {
@@ -1038,6 +1035,9 @@ ul {
   grid-template-columns: 1fr auto;
   color: rgba(var(--text-color), 1);
 }
+.payment-request__requestor {
+  font-weight: 500;
+}
 .payment-request__amount {
   font-weight: 700;
   text-align: right;
@@ -1046,8 +1046,7 @@ ul {
   display: flex;
   align-items: center;
   font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  text-transform: capitalize;
 }
 .payment-request__status .icon {
   height: 1rem;
@@ -1074,6 +1073,15 @@ ul {
   border-radius: 0.5rem;
   grid-template-columns: auto 1fr;
 }
+.wallet-request:not(.rejected, .pending).withdrawn .wallet-request__amount::before {
+  content: "- ";
+}
+.wallet-request:not(.rejected, .pending).added .wallet-request__amount {
+  color: var(--green);
+}
+.wallet-request:not(.rejected, .pending).added .wallet-request__amount::before {
+  content: "+ ";
+}
 .wallet-request .icon.pending {
   fill: var(--yellow);
 }
@@ -1094,20 +1102,38 @@ ul {
   fill: var(--accent-color);
 }
 .wallet-request__details {
-  font-weight: 700;
+  font-weight: 500;
+}
+.wallet-request__details, .wallet-request__amount {
   color: rgba(var(--text-color), 1);
 }
-.wallet-request__time {
+.wallet-request__amount {
+  font-weight: 700;
+}
+.wallet-request__time, .wallet-request__status {
   font-size: 0.8rem;
   color: rgba(var(--text-color), 0.8);
 }
 .wallet-request__status {
-  font-size: 0.8rem;
-  color: rgba(var(--text-color), 0.8);
   text-transform: capitalize;
+  text-align: right;
 }
 .wallet-request__status .icon {
   margin-left: 0.3rem;
+}
+
+#transaction__remark,
+#transaction__note {
+  line-height: 1.6;
+  justify-self: flex-start;
+  background-color: rgba(var(--text-color), 0.06);
+  border-radius: 0.5rem;
+  padding: 0.8rem;
+}
+
+#transaction__note .icon {
+  fill: var(--danger-color);
+  margin-right: 0.5rem;
 }
 
 @media screen and (max-width: 40rem) {
@@ -1142,6 +1168,7 @@ ul {
     position: relative;
     border-radius: 0.5rem;
     overflow: hidden;
+    background-color: rgba(var(--background-color), 1);
     box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05), 0 1rem 3rem rgba(0, 0, 0, 0.2);
   }
   #main_card:not(.nav-hidden) {
@@ -1186,6 +1213,7 @@ ul {
   }
 
   #saved_ids_list {
+    gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   }
 }
