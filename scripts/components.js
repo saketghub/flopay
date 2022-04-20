@@ -2082,156 +2082,6 @@ class SpinnerLoader extends HTMLElement {
 }
 window.customElements.define('sm-spinner', SpinnerLoader);
 
-//Color Grid
-const colorGrid = document.createElement('template');
-colorGrid.innerHTML = `
-<style>
-    *{
-        padding:0;
-        margin:0;
-        -webkit-box-sizing: border-box;
-                box-sizing: border-box;
-    }
-    :host{
-        display: flex;
-    }
-    .color-tile-container{
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    .color-tile{
-        position: relative;
-        cursor: pointer;
-        display: flex;
-        height: 2.5rem;
-        width: 2.5rem;
-        border-radius: 0.3rem;
-        align-items: center;
-        justify-content: center;
-    }
-    .color-tile input[type="radio"]{
-        display: none;
-    }
-    .checkmark{
-        display: flex;
-        position: absolute;
-        top: 0;
-        right: 0;
-        align-items: center;
-        justify-content: center;
-        padding: 0.3rem;
-        border-radius: 0.3rem;
-        background-color: rgba(var(--background-color, (255,255,255)), 0.8);
-        animation: checkmark 0.1s ease;
-    }
-    .icon{
-        height: 1rem;
-        width: 1rem;
-        fill: rgba(var(--text-color, (17,17,17)), 1);
-    }
-    @keyframes checkmark{
-        from{
-            transform: scale(0);
-        }
-        to{
-            transform: scale(1);
-        }
-    }
-
-</style>
-<div class="color-tile-container">
-</div>`;
-
-customElements.define('color-grid',
-    class extends HTMLElement {
-        constructor() {
-            super()
-            this.attachShadow({
-                mode: 'open'
-            }).append(colorGrid.content.cloneNode(true))
-
-            this.colorArray = []
-            this.container = this.shadowRoot.querySelector('.color-tile-container')
-            this.handleChange = this.handleChange.bind(this)
-            this.setCheckMark = this.setCheckMark.bind(this)
-        }
-
-        set colors(arr) {
-            this.colorArray = arr
-            this.renderTiles()
-        }
-
-        set selectedColor(color) {
-            if (this.colorArray.includes(color) && this.container.querySelector(`[data-color="${color}"]`)) {
-                const selectedTile = this.container.querySelector(`[data-color="${color}"]`)
-                if (selectedTile) {
-                    selectedTile.querySelector('input').checked = true
-                    this.setCheckMark(selectedTile)
-                }
-            }
-        }
-
-        randString(length) {
-            let result = '';
-            let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-            for (let i = 0; i < length; i++)
-                result += characters.charAt(Math.floor(Math.random() * characters.length));
-            return result;
-        }
-
-        renderTiles() {
-            this.container.innerHTML = ''
-            const frag = document.createDocumentFragment()
-            const groupName = this.randString(6)
-            this.colorArray.forEach(color => {
-                const label = document.createElement('label')
-                label.classList.add('color-tile')
-                label.setAttribute('data-color', color)
-                if (color.includes('--'))
-                    label.setAttribute('style', `background-color: var(${color})`)
-                else
-                    label.setAttribute('style', `background-color: ${color}`)
-                label.innerHTML = `
-                <input type="radio" name="${groupName}">
-                `
-                frag.append(label)
-            })
-            this.container.append(frag)
-        }
-        setCheckMark(target) {
-            target.parentNode.querySelectorAll('.checkmark').forEach(checkmark => checkmark.remove())
-            const checkMark = document.createElement('div')
-            checkMark.classList.add('checkmark')
-            checkMark.innerHTML = `
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
-            `
-            target.append(checkMark)
-        }
-
-        handleChange(e) {
-            const clickedTile = e.target.closest('.color-tile')
-            this.setCheckMark(clickedTile)
-            const clickedTileColor = clickedTile.dataset.color
-            const tileSelected = new CustomEvent('colorselected', {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    value: clickedTileColor,
-                }
-            })
-            this.dispatchEvent(tileSelected)
-        }
-
-        connectedCallback() {
-            this.container.addEventListener('change', this.handleChange)
-        }
-
-        disconnectedCallback() {
-            this.container.removeEventListener('change', this.handleChange)
-        }
-    })
 const stripSelect = document.createElement('template');
 stripSelect.innerHTML = `
 <style>
@@ -2590,108 +2440,108 @@ customElements.define('strip-option', class extends HTMLElement {
         this.removeEventListener('keydown', this.handleKeyDown);
     }
 });
-const smTextarea = document.createElement('template')
-smTextarea.innerHTML = `
-<style>
-*,
-*::before,
-*::after { 
+
+const smSelect = document.createElement('template')
+smSelect.innerHTML = `
+<style>     
+*{
     padding: 0;
     margin: 0;
     -webkit-box-sizing: border-box;
             box-sizing: border-box;
 } 
-::-moz-focus-inner{
-    border: none;
+:host{
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    --min-width: 100%;
+}
+:host([disabled]) .select{
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.select{
+    position: relative;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    cursor: pointer;
+    width: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+.icon {
+    height: 1.2rem;
+    width: 1.2rem;
+    margin-left: 0.5rem;
+    fill: rgba(var(--text-color, (17,17,17)), 0.7);
+}      
+.selected-option-text{
+    font-size: inherit;
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+       text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+.selection{
+    border-radius: 0.3rem;
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 1fr auto;
+    grid-template-columns: 1fr auto;
+        grid-template-areas: 'heading heading' '. .';
+    padding: var(--padding,0.6rem 0.8rem);
+    background: rgba(var(--text-color,(17,17,17)), 0.06);
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    outline: none;
+    z-index: 2;
+}
+.selection:focus{
+    -webkit-box-shadow: 0 0 0 0.1rem var(--accent-color, teal);
+            box-shadow: 0 0 0 0.1rem var(--accent-color, teal) 
+}
+:host([align-select="left"]) .options{
+    left: 0;
+}
+:host([align-select="right"]) .options{
+    right: 0;
+}
+.options{
+    top: 100%;
+    padding: var(--options-padding, 0.3rem);
+    margin-top: 0.2rem; 
+    overflow: hidden auto;
+    position: absolute;
+    grid-area: options;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+    min-width: var(--min-width);
+    max-height: var(--max-height, auto);
+    background: rgba(var(--background-color,(255,255,255)), 1);
+    border: solid 1px rgba(var(--text-color,(17,17,17)), 0.2);
+    border-radius: var(--border-radius, 0.5rem);
+    z-index: 1;
+    -webkit-box-shadow: 0.4rem 0.8rem 1.2rem #00000030;
+            box-shadow: 0.4rem 0.8rem 1.2rem #00000030;
+}
+.rotate{
+    -webkit-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+            transform: rotate(180deg)
 }
 .hide{
-    display: none !important;
- }
-:host{
-    display: grid;
-    --danger-color: red;
-    --border-radius: 0.3rem;
-    --background: rgba(var(--text-color,(17,17,17)), 0.06);
-}
-.textarea{
-    display: grid;
-    position: relative;
-    cursor: text;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: stretch;
-    max-height: var(--max-height, 12rem);
-    background: var(--background);
-    border-radius: var(--border-radius);
-    padding: var(--padding, 1rem 0.8rem);
-}
-.textarea::after,
-textarea{
-    width: 100%;
-    min-width: 1em;
-    font: inherit;
-    color: inherit;
-    resize: none;
-    grid-area: 1/1/2/2;
-    justify-self: stretch;
-    background: none;
-    appearance: none;
-    border: none;
-    outline: none;
-    line-height: 1.5;
-    overflow: hidden;
-    caret-color: var(--accent-color, teal);
-}
-.textarea::after{
-    content: attr(data-value) ' ';
-    visibility: hidden;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    hyphens: auto;
-}
-.readonly{
-    pointer-events: none;
-}
-.textarea:focus-within:not(.readonly){
-    box-shadow: 0 0 0 0.1rem var(--accent-color,teal) inset;
-}
-.placeholder{
-    grid-area: 1/1/2/2;
-    font-size: inherit;
-    opacity: .7;
-    font-weight: 400;
-    transition: -webkit-transform 0.3s;
-    transition: transform 0.3s;
-    transition: transform 0.3s, -webkit-transform 0.3s, color .03;
-        transform-origin: left;
-    pointer-events: none;
-    white-space: nowrap;
-    overflow: hidden;
-    width: 100%;
-    user-select: none;
-    will-change: transform;
-}
-:host([disabled]) .textarea{
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-:host([animate]) .textarea:focus-within textarea,
-.animate-placeholder  textarea {
-    transform: translateY(0.8rem);
-    }
-  
-    :host([animate]) .textarea:focus-within .placeholder,
-    .animate-placeholder .placeholder {
-        opacity: 1;
-        transform: translateY(-1rem) scale(0.8);
-        color: var(--accent-color,teal);
-}
-:host([variant="outlined"]) .textarea {
-    box-shadow: 0 0 0 1px var(--border-color, rgba(var(--text-color, (17,17,17)), 0.3)) inset;
-    background: rgba(var(--background-color, (255,255,255)), 1);
-}
-.animate-placeholder:focus-within:not(.readonly) .placeholder{
-    color: var(--accent-color,teal)
+    display: none;
 }
 @media (any-hover: hover){
     ::-webkit-scrollbar{
@@ -2708,490 +2558,299 @@ textarea{
     }
 }
 </style>
-<label class="textarea" part="textarea">
-    <span class="placeholder"></span>
-    <textarea rows="1"></textarea>
-</label>
-`;
-customElements.define('sm-textarea',
-    class extends HTMLElement {
-        constructor() {
-            super()
-            this.attachShadow({
-                mode: 'open'
-            }).append(smTextarea.content.cloneNode(true))
-
-            this.textarea = this.shadowRoot.querySelector('textarea')
-            this.textareaBox = this.shadowRoot.querySelector('.textarea')
-            this.placeholder = this.shadowRoot.querySelector('.placeholder')
-            this.reflectedAttributes = ['disabled', 'required', 'readonly', 'rows', 'minlength', 'maxlength']
-
-            this.reset = this.reset.bind(this)
-            this.focusIn = this.focusIn.bind(this)
-            this.fireEvent = this.fireEvent.bind(this)
-            this.checkInput = this.checkInput.bind(this)
-        }
-        static get observedAttributes() {
-            return ['disabled', 'value', 'placeholder', 'required', 'readonly', 'rows', 'minlength', 'maxlength']
-        }
-        get value() {
-            return this.textarea.value
-        }
-        set value(val) {
-            this.setAttribute('value', val)
-            this.fireEvent()
-        }
-        get disabled() {
-            return this.hasAttribute('disabled')
-        }
-        set disabled(val) {
-            if (val) {
-                this.setAttribute('disabled', '')
-            } else {
-                this.removeAttribute('disabled')
-            }
-        }
-        get isValid() {
-            return this.textarea.checkValidity()
-        }
-        reset() {
-            this.setAttribute('value', '')
-        }
-        focusIn() {
-            this.textarea.focus()
-        }
-        fireEvent() {
-            let event = new Event('input', {
-                bubbles: true,
-                cancelable: true,
-                composed: true
-            });
-            this.dispatchEvent(event);
-        }
-        checkInput() {
-            if (!this.hasAttribute('placeholder') || this.getAttribute('placeholder') === '')
-                return;
-            if (this.textarea.value !== '') {
-                if (this.hasAttribute('animate'))
-                    this.textareaBox.classList.add('animate-placeholder')
-                else
-                    this.placeholder.classList.add('hide')
-
-            } else {
-                if (this.hasAttribute('animate'))
-                    this.textareaBox.classList.remove('animate-placeholder')
-                else
-                    this.placeholder.classList.remove('hide')
-            }
-        }
-        connectedCallback() {
-            this.textarea.addEventListener('input', e => {
-                this.textareaBox.dataset.value = this.textarea.value
-                this.checkInput()
-            })
-        }
-        attributeChangedCallback(name, oldValue, newValue) {
-            if (this.reflectedAttributes.includes(name)) {
-                if (this.hasAttribute(name)) {
-                    this.textarea.setAttribute(name, this.getAttribute(name) ? this.getAttribute(name) : '')
-                }
-                else {
-                    this.textContent.removeAttribute(name)
-                }
-            }
-            else if (name === 'placeholder') {
-                this.placeholder.textContent = this.getAttribute('placeholder')
-            }
-            else if (name === 'value') {
-                this.textarea.value = newValue;
-                this.textareaBox.dataset.value = newValue
-                this.checkInput()
-            }
-        }
-    })
-
-const smTabHeader = document.createElement('template')
-smTabHeader.innerHTML = `
-<style>
-    *{
-        padding: 0;
-        margin: 0;
-        -webkit-box-sizing: border-box;
-                box-sizing: border-box;
-    } 
-    :host{
-        display: -webkit-box;
-        display: -ms-flexbox;
-        display: flex;
-        --text-color: 17, 17, 17;
-        --background-color: 255, 255, 255;
-        --gap: 1rem;
-        --justify-content: flex-start;
-        --tab-indicator-border-radius: 0.3rem;
-    }
-    .tabs{
-        position: relative;
-        display: -ms-grid;
-        display: grid;
-        width: 100%;
-    }
-    .tab-header{
-        display: -ms-grid;
-        display: grid;
-        grid-auto-flow: column;
-        justify-content: var(--justify-content);
-        gap: var(--gap);
-        position: relative;
-        overflow: auto hidden;
-        max-width: 100%;
-        scrollbar-width: 0;
-    }
-    .indicator{
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        height: 0.15rem;
-        border-radius: 1rem 1rem 0 0;  
-        background: var(--accent-color,teal);
-        -webkit-transition: width 0.3s, -webkit-transform 0.3s;
-        transition: width 0.3s, -webkit-transform 0.3s;
-        -o-transition: transform 0.3s, width 0.3s;
-        transition: transform 0.3s, width 0.3s;
-        transition: transform 0.3s, width 0.3s, -webkit-transform 0.3s;
-        pointer-events: none;
-    }
-    :host([variant="tab"]) .indicator{
-        height: 100%;
-        border-radius: var(--tab-indicator-border-radius);
-    }
-    :host([variant="tab"]) .tab-header{
-        border-bottom: none; 
-    }
-    .hide-completely{
-        display: none;
-    }
-    :host([variant="tab"]) .tab-header{
-        gap: 0.2rem;
-        display: -ms-inline-grid;
-        display: inline-grid;
-        justify-self: flex-start;
-        border-radius: 0.3rem;
-    }
-    :host([variant="tab"]) slot::slotted(.active){
-        color: rgba(var(--background-color), 1);
-    }
-    slot::slotted(.active){
-        color: var(--accent-color,teal);
-        opacity: 1;
-    }
-    @media (any-hover: none){
-        .tab-header::-webkit-scrollbar-track {
-            -webkit-box-shadow: none !important;
-            background-color: transparent !important;
-        }
-        .tab-header::-webkit-scrollbar {
-            height: 0;
-            background-color: transparent;
-        }
-    }         
-    @media (any-hover: hover){
-        .tab-header{
-            overflow: hidden;
-        }
-    }         
-</style>
-<div part="tab-container" class="tabs">
-    <div part="tab-header" class="tab-header">
-        <slot></slot>
-        <div part="indicator" class="indicator"></div>
+<div class="select">
+    <div class="selection">
+        <div class="selected-option-text"></div>
+        <svg class="icon toggle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 13.172l4.95-4.95 1.414 1.414L12 16 5.636 9.636 7.05 8.222z"/></svg>
     </div>
-</div>
-`;
-
-customElements.define('tab-header', class extends HTMLElement {
+    <div part="options" class="options hide">
+        <slot></slot> 
+    </div>
+</div>`;
+customElements.define('sm-select', class extends HTMLElement {
     constructor() {
         super()
         this.attachShadow({
             mode: 'open'
-        }).append(smTabHeader.content.cloneNode(true))
+        }).append(smSelect.content.cloneNode(true))
 
-        this.prevTab
-        this.allTabs
-        this.activeTab
+        this.focusIn = this.focusIn.bind(this)
+        this.reset = this.reset.bind(this)
+        this.open = this.open.bind(this)
+        this.collapse = this.collapse.bind(this)
+        this.toggle = this.toggle.bind(this)
+        this.handleOptionsNavigation = this.handleOptionsNavigation.bind(this)
+        this.handleOptionSelection = this.handleOptionSelection.bind(this)
+        this.handleKeydown = this.handleKeydown.bind(this)
+        this.handleClickOutside = this.handleClickOutside.bind(this)
 
-        this.indicator = this.shadowRoot.querySelector('.indicator');
-        this.tabSlot = this.shadowRoot.querySelector('slot');
-        this.tabHeader = this.shadowRoot.querySelector('.tab-header');
-
-        this.changeTab = this.changeTab.bind(this)
-        this.handleClick = this.handleClick.bind(this)
-        this.handlePanelChange = this.handlePanelChange.bind(this)
-        this.moveIndiactor = this.moveIndiactor.bind(this)
-    }
-
-    fireEvent(index) {
-        this.dispatchEvent(
-            new CustomEvent(`switchedtab${this.target}`, {
-                bubbles: true,
-                detail: {
-                    index: parseInt(index)
-                }
-            })
-        )
-    }
-
-    moveIndiactor(tabDimensions) {
-        this.indicator.setAttribute('style', `width: ${tabDimensions.width}px; transform: translateX(${tabDimensions.left - this.tabHeader.getBoundingClientRect().left + this.tabHeader.scrollLeft}px)`)
-    }
-
-
-    changeTab(target) {
-        if (target === this.prevTab || !target.closest('sm-tab'))
-            return
-        if (this.prevTab)
-            this.prevTab.classList.remove('active')
-        target.classList.add('active')
-
-        this.tabHeader.scrollTo({
-            behavior: 'smooth',
-            left: target.getBoundingClientRect().left - this.tabHeader.getBoundingClientRect().left + this.tabHeader.scrollLeft
-        })
-        this.moveIndiactor(target.getBoundingClientRect())
-        this.prevTab = target;
-        this.activeTab = target;
-    }
-    handleClick(e) {
-        if (e.target.closest('sm-tab')) {
-            this.changeTab(e.target)
-            this.fireEvent(e.target.dataset.index)
-        }
-    }
-
-    handlePanelChange(e) {
-        this.changeTab(this.allTabs[e.detail.index])
-    }
-
-    connectedCallback() {
-        if (!this.hasAttribute('target') || this.getAttribute('target').value === '') return;
-        this.target = this.getAttribute('target')
-
-        this.tabSlot.addEventListener('slotchange', () => {
-            this.allTabs = this.tabSlot.assignedElements();
-            this.allTabs.forEach((tab, index) => {
-                tab.dataset.index = index
-            })
-        })
-
-        this.addEventListener('click', this.handleClick)
-        document.addEventListener(`switchedpanel${this.target}`, this.handlePanelChange)
-
-        let resizeObserver = new ResizeObserver(entries => {
-            entries.forEach((entry) => {
-                if (this.prevTab) {
-                    let tabDimensions = this.activeTab.getBoundingClientRect();
-                    this.moveIndiactor(tabDimensions)
-                }
-            })
-        })
-        resizeObserver.observe(this)
-        let observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    this.indicator.style.transition = 'none'
-                    if (this.activeTab) {
-                        let tabDimensions = this.activeTab.getBoundingClientRect();
-                        this.moveIndiactor(tabDimensions)
-                    } else {
-                        this.allTabs[0].classList.add('active')
-                        let tabDimensions = this.allTabs[0].getBoundingClientRect();
-                        this.moveIndiactor(tabDimensions)
-                        this.fireEvent(0)
-                        this.prevTab = this.tabSlot.assignedElements()[0];
-                        this.activeTab = this.prevTab;
-                    }
-                }
-            })
-        }, {
-            threshold: 1.0
-        })
-        observer.observe(this)
-    }
-    disconnectedCallback() {
-        this.removeEventListener('click', this.handleClick)
-        document.removeEventListener(`switchedpanel${this.target}`, this.handlePanelChange)
-    }
-})
-
-// tab
-const smTab = document.createElement('template')
-smTab.innerHTML = `
-<style>
-    *{
-        padding: 0;
-        margin: 0;
-        -webkit-box-sizing: border-box;
-                box-sizing: border-box;
-    } 
-    :host{
-        position: relative;
-        display: -webkit-inline-box;
-        display: -ms-inline-flexbox;
-        display: inline-flex;
-        z-index: 1;
-        --padding: 0.8rem 1rem;
-    }
-    .tab{
-        position: relative;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-            -ms-user-select: none;
-                user-select: none;
-        -webkit-box-pack: center;
-            -ms-flex-pack: center;
-                justify-content: center;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-        white-space: nowrap;
-        padding: var(--padding);
-        font-weight: 500;
-        word-spacing: 0.1rem;
-        text-align: center;
-        -webkit-transition: color 0.3s;
-        -o-transition: color 0.3s;
-        transition: color 0.3s;
-        text-transform: capitalize;
-        height: 100%;
-    }
-    @media (hover: hover){
-        :host(.active) .tab{
-            opacity: 1;
-        }
-        .tab{
-            opacity: 0.7
-        }
-        .tab:hover{
+        this.availableOptions
+        this.previousOption
+        this.isOpen = false;
+        this.label = ''
+        this.slideDown = [{
+            transform: `translateY(-0.5rem)`,
+            opacity: 0
+        },
+        {
+            transform: `translateY(0)`,
             opacity: 1
         }
-    }
-</style>
-<div part="tab" class="tab">
-<slot></slot>
-</div>
-`;
+        ]
+        this.slideUp = [{
+            transform: `translateY(0)`,
+            opacity: 1
+        },
+        {
+            transform: `translateY(-0.5rem)`,
+            opacity: 0
+        }
+        ]
+        this.animationOptions = {
+            duration: 300,
+            fill: "forwards",
+            easing: 'ease'
+        }
 
-customElements.define('sm-tab', class extends HTMLElement {
-    constructor() {
-        super()
-        this.shadow = this.attachShadow({
-            mode: 'open'
-        }).append(smTab.content.cloneNode(true))
+        this.optionList = this.shadowRoot.querySelector('.options')
+        this.chevron = this.shadowRoot.querySelector('.toggle')
+        this.selection = this.shadowRoot.querySelector('.selection')
+        this.selectedOptionText = this.shadowRoot.querySelector('.selected-option-text')
+    }
+    static get observedAttributes() {
+        return ['disabled', 'label']
+    }
+    get value() {
+        return this.getAttribute('value')
+    }
+    set value(val) {
+        const selectedOption = this.availableOptions.find(option => option.getAttribute('value') === val)
+        if (selectedOption) {
+            this.setAttribute('value', val)
+            this.selectedOptionText.textContent = `${this.label}${selectedOption.textContent}`;
+            if (this.previousOption) {
+                this.previousOption.classList.remove('check-selected')
+            }
+            selectedOption.classList.add('check-selected')
+            this.previousOption = selectedOption
+        } else {
+            console.warn(`There is no option with ${val} as value`)
+        }
+    }
+
+    reset(fire = true) {
+        if (this.availableOptions[0] && this.previousOption !== this.availableOptions[0]) {
+            const firstElement = this.availableOptions[0];
+            if (this.previousOption) {
+                this.previousOption.classList.remove('check-selected')
+            }
+            firstElement.classList.add('check-selected')
+            this.value = firstElement.getAttribute('value')
+            this.selectedOptionText.textContent = `${this.label}${firstElement.textContent}`
+            this.previousOption = firstElement;
+            if (fire) {
+                this.fireEvent()
+            }
+        }
+    }
+
+    focusIn() {
+        this.selection.focus()
+    }
+
+    open() {
+        this.optionList.classList.remove('hide')
+        this.optionList.animate(this.slideDown, this.animationOptions)
+        this.chevron.classList.add('rotate')
+        this.isOpen = true
+    }
+    collapse() {
+        this.chevron.classList.remove('rotate')
+        this.optionList.animate(this.slideUp, this.animationOptions)
+            .onfinish = () => {
+                this.optionList.classList.add('hide')
+                this.isOpen = false
+            }
+    }
+    toggle() {
+        if (!this.isOpen && !this.hasAttribute('disabled')) {
+            this.open()
+        } else {
+            this.collapse()
+        }
+    }
+
+    fireEvent() {
+        this.dispatchEvent(new CustomEvent('change', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                value: this.value
+            }
+        }))
+    }
+
+    handleOptionsNavigation(e) {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            if (document.activeElement.previousElementSibling) {
+                document.activeElement.previousElementSibling.focus()
+            } else {
+                this.availableOptions[this.availableOptions.length - 1].focus()
+            }
+        }
+        else if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            if (document.activeElement.nextElementSibling) {
+                document.activeElement.nextElementSibling.focus()
+            } else {
+                this.availableOptions[0].focus()
+            }
+        }
+    }
+    handleOptionSelection(e) {
+        if (this.previousOption !== document.activeElement) {
+            this.value = document.activeElement.getAttribute('value')
+            this.fireEvent()
+        }
+    }
+    handleClick(e) {
+        if (e.target === this) {
+            this.toggle()
+        }
+        else {
+            this.handleOptionSelection()
+            this.collapse()
+        }
+    }
+    handleKeydown(e) {
+        if (e.target === this) {
+            if (this.isOpen && e.key === 'ArrowDown') {
+                e.preventDefault()
+                this.availableOptions[0].focus()
+                this.handleOptionSelection(e)
+            }
+            else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                this.toggle()
+            }
+        }
+        else {
+            this.handleOptionsNavigation(e)
+            this.handleOptionSelection(e)
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                this.collapse()
+            }
+        }
+    }
+    handleClickOutside(e) {
+        if (this.isOpen && !this.contains(e.target)) {
+            this.collapse()
+        }
+    }
+    connectedCallback() {
+        this.setAttribute('role', 'listbox')
+        if (!this.hasAttribute('disabled')) {
+            this.selection.setAttribute('tabindex', '0')
+        }
+        let slot = this.shadowRoot.querySelector('slot')
+        slot.addEventListener('slotchange', e => {
+            this.availableOptions = slot.assignedElements()
+            this.reset(false)
+        });
+        this.addEventListener('click', this.handleClick)
+        this.addEventListener('keydown', this.handleKeydown)
+        document.addEventListener('mousedown', this.handleClickOutside)
+    }
+    disconnectedCallback() {
+        this.removeEventListener('click', this.toggle)
+        this.removeEventListener('keydown', this.handleKeydown)
+        document.removeEventListener('mousedown', this.handleClickOutside)
+    }
+    attributeChangedCallback(name) {
+        if (name === "disabled") {
+            if (this.hasAttribute('disabled')) {
+                this.selection.removeAttribute('tabindex')
+            } else {
+                this.selection.setAttribute('tabindex', '0')
+            }
+        } else if (name === 'label') {
+            this.label = this.hasAttribute('label') ? `${this.getAttribute('label')} ` : ''
+        }
     }
 })
 
-// tab-panels
-
-const smTabPanels = document.createElement('template')
-smTabPanels.innerHTML = `
-<style>
+// option
+const smOption = document.createElement('template')
+smOption.innerHTML = `
+<style>     
 *{
     padding: 0;
     margin: 0;
     -webkit-box-sizing: border-box;
             box-sizing: border-box;
-} 
+}     
 :host{
-    width: 100%;
-}
-.panel-container{
-    position: relative;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
+}
+.option{
+    display: grid;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    min-width: max-content;
     width: 100%;
-    height: 100%;
-    overflow: hidden;
-    scroll-snap-type: x mandatory;
-    content-visibility: auto;
+    gap: 0.5rem;
+    grid-template-columns: max-content minmax(0, 1fr);
+    padding: var(--padding, 0.6rem 1rem);
+    cursor: pointer;
+    white-space: nowrap;
+    outline: none;
+    user-select: none;
+    border-radius: var(--border-radius, 0.3rem);
 }
-::slotted(*){
-    min-width: 100%;
-    scroll-snap-align: center;
+:host(:focus){
+    outline: none;
+    background: rgba(var(--text-color,(17,17,17)), 0.1);
 }
-@media (any-hover: none) {
-    .panel-container{
-        overflow-x: auto;
-        scrollbar-width: none;
+.icon {
+    opacity: 0;
+    height: 1.2rem;
+    width: 1.2rem;
+    fill: rgba(var(--text-color,(17,17,17)), 0.8);
+}
+:host(:focus) .option .icon{
+    opacity: 0.4
+}
+:host(.check-selected) .icon{
+    opacity: 1
+}
+@media (hover: hover){
+    .option:hover{
+        background: rgba(var(--text-color,(17,17,17)), 0.1);
     }
-    .container {
-        overflow-y: scroll;
-    }
-    ::-webkit-scrollbar {
-        width: 0;
-        height: 0;
+    :host(:not(.check-selected):hover) .icon{
+        opacity: 0.4
     }
 }
 </style>
-<div part="panel-container" class="panel-container">
-    <slot>Nothing to see here.</slot>
-</div>
-`;
-
-customElements.define('tab-panels', class extends HTMLElement {
+<div class="option">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>
+    <slot></slot> 
+</div>`;
+customElements.define('sm-option', class extends HTMLElement {
     constructor() {
         super()
         this.attachShadow({
             mode: 'open'
-        }).append(smTabPanels.content.cloneNode(true))
+        }).append(smOption.content.cloneNode(true))
+    }
 
-        this.isTransitioning = false
-
-        this.panelContainer = this.shadowRoot.querySelector('.panel-container');
-        this.handleTabChange = this.handleTabChange.bind(this)
-    }
-    handleTabChange(e) {
-        this.isTransitioning = true
-        this.panelContainer.scrollTo({
-            left: this.allPanels[e.detail.index].getBoundingClientRect().left - this.panelContainer.getBoundingClientRect().left + this.panelContainer.scrollLeft,
-            behavior: 'smooth'
-        })
-        setTimeout(() => {
-            this.isTransitioning = false
-        }, 300);
-    }
-    fireEvent(index) {
-        this.dispatchEvent(
-            new CustomEvent(`switchedpanel${this.id}`, {
-                bubbles: true,
-                detail: {
-                    index: parseInt(index)
-                }
-            })
-        )
-    }
     connectedCallback() {
-        const slot = this.shadowRoot.querySelector('slot');
-        slot.addEventListener('slotchange', (e) => {
-            this.allPanels = e.target.assignedElements()
-            this.allPanels.forEach((panel, index) => {
-                panel.dataset.index = index
-                intersectionObserver.observe(panel)
-            })
-        })
-        document.addEventListener(`switchedtab${this.id}`, this.handleTabChange)
-
-        const intersectionObserver = new IntersectionObserver(entries => {
-
-            entries.forEach(entry => {
-                if (!this.isTransitioning && entry.isIntersecting) {
-                    this.fireEvent(entry.target.dataset.index)
-                }
-            })
-        }, {
-            threshold: 0.6
-        })
-    }
-    disconnectedCallback() {
-        intersectionObserver.disconnect()
-        document.removeEventListener(`switchedtab${this.id}`, this.handleTabChange)
+        this.setAttribute('role', 'option')
+        this.setAttribute('tabindex', '0')
     }
 })

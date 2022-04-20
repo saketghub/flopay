@@ -86,7 +86,6 @@ User.findCashier = function () {
     if (!online.length)
         return null;
     else {
-        console.log(online);
         const random = floCrypto.randInt(0, online.length - 1)
         return online[random];
     }

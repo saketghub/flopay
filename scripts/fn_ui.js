@@ -9,49 +9,161 @@
 !function (e, t) { var o = o || {}; "function" == typeof o && o.amd ? o([], t) : "object" == typeof exports && "object" == typeof module ? module.exports = t() : "object" == typeof exports ? exports.RelativeTime = t() : e.RelativeTime = t() }(this, (function () { const e = { year: 31536e6, month: 2628e6, day: 864e5, hour: 36e5, minute: 6e4, second: 1e3 }, t = "en", o = { numeric: "auto" }; function n(e) { e = { locale: (e = e || {}).locale || t, options: { ...o, ...e.options } }, this.rtf = new Intl.RelativeTimeFormat(e.locale, e.options) } return n.prototype = { from(t, o) { const n = t - (o || new Date); for (let t in e) if (Math.abs(n) > e[t] || "second" == t) return this.rtf.format(Math.round(n / e[t]), t) } }, n }));
 
 const relativeTime = new RelativeTime({ style: 'narrow' });
-const userUI = {};
 
-let walletActionType = null;
-getRef('wallet_popup__cta').addEventListener('click', function () {
-    let cashier = User.findCashier();
-    let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    if (walletActionType === 'deposit') {
-        //get UPI txid from user
-        let upiTxID = prompt(`Send Rs. ${amount} to ${cashierUPI[cashier]} and enter UPI txid`);
-        if (!upiTxID)
-            return;
-        User.cashToToken(cashier, amount, upiTxID).then(result => {
-            console.log(result);
-            notify("Requested cashier. please wait!");
-        }).catch(error => console.error(error))
+function syncUserData(obsName, data) {
+    const dataToSend = Crypto.AES.encrypt(JSON.stringify(data), myPrivKey);
+    return floCloudAPI.sendApplicationData(dataToSend, obsName, { receiverID: myFloID });
+}
+async function organizeSyncedData(obsName) {
+    const fetchedData = await floCloudAPI.requestApplicationData(obsName, { mostRecent: true, senderIDs: [myFloID], receiverID: myFloID });
+    if (fetchedData.length && await compactIDB.readData(obsName, 'lastSyncTime') !== fetchedData[0].time) {
+        await compactIDB.clearData(obsName);
+        const dataToDecrypt = floCloudAPI.util.decodeMessage(fetchedData[0].message);
+        const decryptedData = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, myPrivKey));
+        for (let key in decryptedData) {
+            floGlobals[fetchedData][key] = decryptedData[key];
+            compactIDB.addData(obsName, decryptedData[key], key);
+        }
+        compactIDB.addData(obsName, fetchedData[0].time, 'lastSyncTime');
     } else {
-        //get confirmation from user
-        let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
-        if (!upiID)
-            return;
-        User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
-            console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
-            User.tokenToCash(cashier, amount, txid, upiID).then(result => {
-                console.log(result);
-                notify("Requested cashier. please wait!");
-            }).catch(error => console.error(error))
-        }).catch(error => console.error(error))
+        const idbData = await compactIDB.readAllData(obsName);
+        for (const key in idbData) {
+            if (key !== 'lastSyncTime')
+                floGlobals[obsName][key] = idbData[key];
+        }
     }
-})
-function walletAction(type) {
-    walletActionType = type;
+}
+
+const userUI = {};
+function continueWalletTopup() {
     let cashier = User.findCashier();
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
-    if (type === 'deposit') {
-        getRef('wallet_popup__title').textContent = 'Top-up wallet';
-        getRef('request_description').textContent = 'Add money to your wallet';
-    } else {
-        getRef('wallet_popup__title').textContent = 'Transfer to bank';
-        getRef('request_description').textContent = 'Money will be sent to your bank account linked to given UPI ID';
-    }
-    showPopup('wallet_popup')
+    let amount = parseFloat(getRef('request_cashier_amount').value.trim());
+    getRef('topup_wallet__details').innerHTML = `Send <b>${formatAmount(amount)}</b> to UPI ID below`;
+    getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
+    showProcessStage('topup_wallet_process', 1)
+    getRef('topup_wallet__txid').focusIn();
 }
+function depositMoneyToWallet() {
+    let cashier = User.findCashier();
+    if (!cashier)
+        return notify("No cashier online. Please try again in a while.", 'error');
+    let amount = parseFloat(getRef('request_cashier_amount').value.trim());
+    let upiTxID = getRef('topup_wallet__txid').value.trim();
+    if (upiTxID === '')
+        return notify("Please enter UPI transaction ID", 'error');
+    User.cashToToken(cashier, amount, upiTxID).then(result => {
+        console.log(result);
+        notify("Requested cashier. please wait!");
+    }).catch(error => console.error(error))
+}
+
+function withdrawMoneyFromWallet() {
+    let cashier = User.findCashier();
+    if (!cashier)
+        return notify("No cashier online. Please try again in a while.", 'error');
+    let amount = parseFloat(getRef('send_cashier_amount').value.trim());
+    // let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
+    const upiID = getRef('select_upi_id').value;
+    if (!upiID)
+        return notify("Please add an UPI ID to continue", 'error');
+    User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
+        console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
+        User.tokenToCash(cashier, amount, txid, upiID).then(result => {
+            console.log(result);
+            notify("Requested cashier. please wait!");
+        }).catch(error => console.error(error))
+    }).catch(error => console.error(error))
+}
+
+async function renderSavedUpiIds() {
+    const frag = document.createDocumentFragment();
+    await organizeSyncedData('savedUserData');
+    console.log(floGlobals.savedUserData)
+}
+function saveUpiId() {
+    const upiID = getRef('get_upi_id').value.trim();
+    if (upiID === '')
+        return notify("Please add an UPI ID to continue", 'error');
+    if (floGlobals.savedUserData.upiIds.hasOwnProperty(upiID))
+        return notify('This UPI ID is already saved', 'error');
+    floGlobals.savedUserData.upiIds[upiID] = {}
+    syncUserData('savedUserData', floGlobals.savedUserData).then(() => {
+        notify(`Saved ${upiID}`, 'success');
+        hidePopup();
+    }).catch(error => {
+        notify(error, 'error');
+    })
+}
+// delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
+//     if (e.target.closest('.edit-saved')) {
+//         const target = e.target.closest('.saved-id');
+//         getRef('edit_saved_id').setAttribute('value', target.dataset.floId);
+//         getRef('get_new_title').value = getFloIdTitle(target.dataset.floId);
+//         showPopup('edit_saved_popup');
+//     } else if (e.target.closest('.copy-saved-id')) {
+//         const target = e.target.closest('.saved-id');
+//         navigator.clipboard.writeText(target.dataset.floId)
+//         target.dispatchEvent(
+//             new CustomEvent('copy', {
+//                 bubbles: true,
+//                 cancelable: true,
+//             })
+//         );
+//     } else {
+//         const target = e.target.closest('.saved-id');
+//         window.location.hash = `#/contact?floId=${target.dataset.floId}`;
+//     }
+// });
+// function saveIdChanges() {
+//     const floID = getRef('edit_saved_id').value;
+//     let title = getRef('get_new_title').value.trim();
+//     if (title == '')
+//         title = 'Unknown';
+//     floGlobals.savedIds[floID] = { title }
+//     syncUserData('savedIds', floGlobals.savedIds).then(() => {
+//         const potentialTarget = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${floID}"]`)
+//         if (potentialTarget) {
+//             potentialTarget.querySelector('.saved-id__title').textContent = title;
+//             potentialTarget.querySelector('.saved-id__initials').textContent = title.charAt(0).toUpperCase();
+//             // place the renamed card in alphabetically correct position
+//             const clone = potentialTarget.cloneNode(true);
+//             potentialTarget.remove();
+//             insertElementAlphabetically(title, clone)
+//         }
+//         hidePopup();
+//     }).catch(error => {
+//         notify(error, 'error');
+//     })
+// }
+// function deleteSavedId() {
+//     getConfirmation('Do you want delete this FLO ID?', {
+//         confirmText: 'Delete',
+//     }).then(res => {
+//         if (res) {
+//             const toDelete = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${getRef('edit_saved_id').value}"]`);
+//             if (toDelete)
+//                 toDelete.remove();
+//             delete floGlobals.savedIds[getRef('edit_saved_id').value];
+//             hidePopup();
+//             syncUserData('savedIds', floGlobals.savedIds).then(() => {
+//                 notify(`Deleted saved ID`, 'success');
+//             }).catch(error => {
+//                 notify(error, 'error');
+//             });
+//         }
+//     });
+// }
+// const savedIdsObserver = new MutationObserver((mutationList) => {
+//     mutationList.forEach(mutation => {
+//         getRef('saved_ids_tip').textContent = mutation.target.children.length === 0 ? `Click 'Add FLO ID' to add a new FLO ID.` : `Tap on saved IDs to see transaction history.`
+//     })
+// })
+
+// savedIdsObserver.observe(getRef('saved_ids_list'), {
+//     childList: true,
+// })
 
 userUI.sendMoneyToUser = function (floID, amount, remark) {
     getConfirmation('Confirm', { message: `Do you want to SEND ${amount} to ${floID}?` }).then(confirmation => {
@@ -351,35 +463,18 @@ function showTokenTransfer(type) {
 }
 
 function getArrayOfSavedIds() {
-    const arr = []
+    const arr = [];
     for (const key in floGlobals.savedIds) {
         arr.push({
             floID: key,
             details: floGlobals.savedIds[key]
-        })
+        });
     }
-    return arr.sort((a, b) => a.details.title.localeCompare(b.details.title))
+    return arr.sort((a, b) => a.details.title.localeCompare(b.details.title));
 }
 userUI.renderSavedIds = async function () {
-    floGlobals.savedIds = {}
-    const frag = document.createDocumentFragment()
-    const savedIds = await floCloudAPI.requestApplicationData('savedIds', { mostRecent: true, senderIDs: [myFloID], receiverID: myFloID });
-    if (savedIds.length && await compactIDB.readData('savedIds', 'lastSyncTime') !== savedIds[0].time) {
-        await compactIDB.clearData('savedIds');
-        const dataToDecrypt = floCloudAPI.util.decodeMessage(savedIds[0].message)
-        const data = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, myPrivKey));
-        for (let key in data) {
-            floGlobals.savedIds[key] = data[key];
-            compactIDB.addData('savedIds', data[key], key);
-        }
-        compactIDB.addData('savedIds', savedIds[0].time, 'lastSyncTime');
-    } else {
-        const idsToRender = await compactIDB.readAllData('savedIds');
-        for (const key in idsToRender) {
-            if (key !== 'lastSyncTime')
-                floGlobals.savedIds[key] = idsToRender[key];
-        }
-    }
+    const frag = document.createDocumentFragment();
+    await organizeSyncedData('savedIds');
     getArrayOfSavedIds().forEach(({ floID, details }) => {
         frag.append(render.savedId(floID, details));
     })
@@ -387,19 +482,17 @@ userUI.renderSavedIds = async function () {
 }
 async function saveId() {
     const floID = getRef('flo_id_to_save').value.trim();
+    if (floGlobals.savedIds.hasOwnProperty(floID))
+        return notify('This FLO ID is already saved', 'error');
     const title = getRef('flo_id_title_to_save').value.trim();
     floGlobals.savedIds[floID] = { title }
-    syncSavedIds().then(() => {
+    syncUserData('savedIds', floGlobals.savedIds).then(() => {
         insertElementAlphabetically(title, render.savedId(floID, { title }))
         notify(`Saved ${floID}`, 'success');
         hidePopup();
     }).catch(error => {
         notify(error, 'error');
     })
-}
-function syncSavedIds() {
-    const dataToSend = Crypto.AES.encrypt(JSON.stringify(floGlobals.savedIds), myPrivKey);
-    return floCloudAPI.sendApplicationData(dataToSend, 'savedIds', { receiverID: myFloID });
 }
 delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
     if (e.target.closest('.edit-saved')) {
@@ -421,13 +514,13 @@ delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
         window.location.hash = `#/contact?floId=${target.dataset.floId}`;
     }
 });
-function saveChanges() {
+function saveIdChanges() {
     const floID = getRef('edit_saved_id').value;
     let title = getRef('get_new_title').value.trim();
     if (title == '')
         title = 'Unknown';
     floGlobals.savedIds[floID] = { title }
-    syncSavedIds().then(() => {
+    syncUserData('savedIds', floGlobals.savedIds).then(() => {
         const potentialTarget = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${floID}"]`)
         if (potentialTarget) {
             potentialTarget.querySelector('.saved-id__title').textContent = title;
@@ -442,7 +535,7 @@ function saveChanges() {
         notify(error, 'error');
     })
 }
-function deleteSaved() {
+function deleteSavedId() {
     getConfirmation('Do you want delete this FLO ID?', {
         confirmText: 'Delete',
     }).then(res => {
@@ -452,7 +545,7 @@ function deleteSaved() {
                 toDelete.remove();
             delete floGlobals.savedIds[getRef('edit_saved_id').value];
             hidePopup();
-            syncSavedIds().then(() => {
+            syncUserData('savedIds', floGlobals.savedIds).then(() => {
                 notify(`Deleted saved ID`, 'success');
             }).catch(error => {
                 notify(error, 'error');

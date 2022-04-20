@@ -89,9 +89,9 @@ function hidePopup() {
 }
 
 document.addEventListener('popupopened', async e => {
+    const frag = document.createDocumentFragment()
     switch (e.target.id) {
         case 'saved_ids_popup':
-            const frag = document.createDocumentFragment()
             const allSavedIds = await getArrayOfSavedIds()
             allSavedIds.forEach(({ floID, name }) => {
                 frag.append(render.savedIdPickerCard(floID, name))
@@ -100,7 +100,21 @@ document.addEventListener('popupopened', async e => {
             getRef('saved_ids_picker_list').append(frag)
             getRef('search_saved_ids_picker').focusIn()
             break;
-        case 'get_private_key_popup':
+        case 'withdraw_wallet_popup':
+            // const savedUpiIds = ['7744023898@paytm', '7744023898@ybl'];
+            const savedUpiIds = [];
+            if (savedUpiIds.length > 0) {
+                getRef('select_upi_id').parentNode.classList.remove('hide')
+                savedUpiIds.forEach((id, index) => {
+                    frag.append(createElement('sm-option', {
+                        textContent: id,
+                        attributes: {
+                            value: id,
+                        }
+                    }))
+                })
+                getRef('select_upi_id').append(frag)
+            }
             break;
     }
 })
@@ -111,14 +125,12 @@ document.addEventListener('popupclosed', e => {
             getRef('saved_ids_picker_list').innerHTML = ''
             getRef('search_saved_ids_picker').value = ''
             break;
-        case 'get_private_key_popup':
-            getRef('get_private_key').classList.remove('hide')
-            getRef('transaction_result').classList.add('hide')
-            getRef('confirm_transaction_button').classList.remove('hide')
-            getRef('confirm_transaction_button').nextElementSibling.classList.add('hide')
+        case 'topup_wallet_popup':
+            showProcessStage('topup_wallet_process', 0)
             break;
-        case 'retrieve_flo_id_popup':
-            getRef('recovered_flo_id_wrapper').classList.add('hide')
+        case 'withdraw_wallet_popup':
+            getRef('select_upi_id').parentNode.classList.add('hide')
+            getRef('select_upi_id').innerHTML = ''
             break;
     }
 })
@@ -332,7 +344,7 @@ async function showPage(targetPage, options = {}) {
             const paymentTransactions = []
             if (paymentsHistoryLoader)
                 paymentsHistoryLoader.clear()
-            getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>'
+            getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
             tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
                 for (const transactionId in transactions) {
                     paymentTransactions.push({
@@ -341,21 +353,21 @@ async function showPage(targetPage, options = {}) {
                     })
                 }
                 if (paymentsHistoryLoader) {
-                    paymentsHistoryLoader.update(paymentTransactions)
+                    paymentsHistoryLoader.update(paymentTransactions);
                 } else {
                     paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
                 }
-                paymentsHistoryLoader.init()
+                paymentsHistoryLoader.init();
             }).catch(e => {
                 console.error(e)
             })
             break;
         case 'requests':
-            const paymentRequests = []
+            const paymentRequests = [];
             if (paymentRequestsLoader)
-                paymentRequestsLoader.clear()
+                paymentRequestsLoader.clear();
 
-            const pendingPaymentRequests = document.createDocumentFragment()
+            const pendingPaymentRequests = document.createDocumentFragment();
             let arePaymentsPending = false
             for (const transactionId in User.moneyRequests) {
                 if (!User.moneyRequests[transactionId].note) {
@@ -722,3 +734,12 @@ function handleMobileChange(e) {
 }
 mobileQuery.addEventListener('change', handleMobileChange)
 handleMobileChange(mobileQuery)
+
+function showProcessStage(id, index) {
+    [...getRef(id).children].forEach((child, i) => {
+        if (i === index)
+            child.classList.remove('hide')
+        else
+            child.classList.add('hide')
+    })
+}

@@ -207,6 +207,10 @@ sm-form {
   --gap: 1rem;
 }
 
+sm-select {
+  --padding: 0.8rem;
+}
+
 strip-select {
   --gap: 0;
   background-color: rgba(var(--text-color), 0.06);
@@ -1220,7 +1224,7 @@ ul {
 @media screen and (min-width: 56rem) {
   #main_card {
     width: 56rem;
-    height: min(80vh, 48rem);
+    height: min(90vh, 48rem);
   }
 }
 @media (any-hover: hover) {
@@ -1244,11 +1248,11 @@ ul {
     background-color: rgba(var(--text-color), 0.06);
   }
 
-  button,
+  button:not([disabled]),
 .button:not([disabled]) {
     transition: background-color 0.3s, filter 0.3s;
   }
-  button:hover,
+  button:not([disabled]):hover,
 .button:not([disabled]):hover {
     filter: contrast(2);
   }
