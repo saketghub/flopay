@@ -4,7 +4,6 @@
   box-sizing: border-box;
   font-family: "Roboto", sans-serif;
 }
-
 :root {
   font-size: clamp(1rem, 1.2vmax, 1.2rem);
 }
@@ -1076,6 +1075,19 @@ ul {
     fill: var(--danger-color);
     margin-right: 0.5rem;
   }
+}
+#saved_upi_ids_list {
+  display: grid;
+  gap: 0.5rem;
+  width: min(24rem, 100%);
+}
+.saved-upi {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.4rem 0.4rem 1rem;
+  border-radius: 0.5rem;
+  background-color: rgba(var(--foreground-color), 1);
 }
 @media screen and (max-width: 40rem) {
   #main_navbar {

@@ -101,18 +101,18 @@ document.addEventListener('popupopened', async e => {
             getRef('search_saved_ids_picker').focusIn()
             break;
         case 'withdraw_wallet_popup':
-            // const savedUpiIds = ['7744023898@paytm', '7744023898@ybl'];
-            const savedUpiIds = [];
-            if (savedUpiIds.length > 0) {
+            let hasSavedIds = false
+            for (const upiId in floGlobals.savedUserData.upiIds) {
+                frag.append(createElement('sm-option', {
+                    textContent: upiId,
+                    attributes: {
+                        value: upiId,
+                    }
+                }))
+                hasSavedIds = true
+            }
+            if (hasSavedIds) {
                 getRef('select_upi_id').parentNode.classList.remove('hide')
-                savedUpiIds.forEach((id, index) => {
-                    frag.append(createElement('sm-option', {
-                        textContent: id,
-                        attributes: {
-                            value: id,
-                        }
-                    }))
-                })
                 getRef('select_upi_id').append(frag)
             }
             break;

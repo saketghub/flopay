@@ -21,7 +21,7 @@ async function organizeSyncedData(obsName) {
         const dataToDecrypt = floCloudAPI.util.decodeMessage(fetchedData[0].message);
         const decryptedData = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, myPrivKey));
         for (let key in decryptedData) {
-            floGlobals[fetchedData][key] = decryptedData[key];
+            floGlobals[obsName][key] = decryptedData[key];
             compactIDB.addData(obsName, decryptedData[key], key);
         }
         compactIDB.addData(obsName, fetchedData[0].time, 'lastSyncTime');
@@ -64,13 +64,13 @@ function withdrawMoneyFromWallet() {
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
     let amount = parseFloat(getRef('send_cashier_amount').value.trim());
-    // let upiID = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
-    const upiID = getRef('select_upi_id').value;
-    if (!upiID)
+    // let upiId = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
+    const upiId = getRef('select_upi_id').value;
+    if (!upiId)
         return notify("Please add an UPI ID to continue", 'error');
     User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
         console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
-        User.tokenToCash(cashier, amount, txid, upiID).then(result => {
+        User.tokenToCash(cashier, amount, txid, upiId).then(result => {
             console.log(result);
             notify("Requested cashier. please wait!");
         }).catch(error => console.error(error))
@@ -80,90 +80,59 @@ function withdrawMoneyFromWallet() {
 async function renderSavedUpiIds() {
     const frag = document.createDocumentFragment();
     await organizeSyncedData('savedUserData');
-    console.log(floGlobals.savedUserData)
+    for (const upiId in floGlobals.savedUserData.upiIds) {
+        frag.append(render.savedUpiId(upiId));
+    }
+    getRef('saved_upi_ids_list').append(frag);
 }
 function saveUpiId() {
-    const upiID = getRef('get_upi_id').value.trim();
-    if (upiID === '')
+    const upiId = getRef('get_upi_id').value.trim();
+    if (upiId === '')
         return notify("Please add an UPI ID to continue", 'error');
-    if (floGlobals.savedUserData.upiIds.hasOwnProperty(upiID))
+    if (floGlobals.savedUserData.upiIds.hasOwnProperty(upiId))
         return notify('This UPI ID is already saved', 'error');
-    floGlobals.savedUserData.upiIds[upiID] = {}
+    floGlobals.savedUserData.upiIds[upiId] = {}
     syncUserData('savedUserData', floGlobals.savedUserData).then(() => {
-        notify(`Saved ${upiID}`, 'success');
+        notify(`Saved ${upiId}`, 'success');
+        if (pagesData.lastPage === 'settings') {
+            getRef('saved_upi_ids_list').append(render.savedUpiId(upiId));
+        } else if (pagesData.lastPage === 'wallet') {
+            getRef('select_upi_id').append(
+                createElement('sm-option', {
+                    textContent: upiId,
+                    attributes: {
+                        value: upiId,
+                    }
+                })
+            )
+            getRef('select_upi_id').parentNode.classList.remove('hide')
+        }
         hidePopup();
     }).catch(error => {
         notify(error, 'error');
     })
 }
-// delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
-//     if (e.target.closest('.edit-saved')) {
-//         const target = e.target.closest('.saved-id');
-//         getRef('edit_saved_id').setAttribute('value', target.dataset.floId);
-//         getRef('get_new_title').value = getFloIdTitle(target.dataset.floId);
-//         showPopup('edit_saved_popup');
-//     } else if (e.target.closest('.copy-saved-id')) {
-//         const target = e.target.closest('.saved-id');
-//         navigator.clipboard.writeText(target.dataset.floId)
-//         target.dispatchEvent(
-//             new CustomEvent('copy', {
-//                 bubbles: true,
-//                 cancelable: true,
-//             })
-//         );
-//     } else {
-//         const target = e.target.closest('.saved-id');
-//         window.location.hash = `#/contact?floId=${target.dataset.floId}`;
-//     }
-// });
-// function saveIdChanges() {
-//     const floID = getRef('edit_saved_id').value;
-//     let title = getRef('get_new_title').value.trim();
-//     if (title == '')
-//         title = 'Unknown';
-//     floGlobals.savedIds[floID] = { title }
-//     syncUserData('savedIds', floGlobals.savedIds).then(() => {
-//         const potentialTarget = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${floID}"]`)
-//         if (potentialTarget) {
-//             potentialTarget.querySelector('.saved-id__title').textContent = title;
-//             potentialTarget.querySelector('.saved-id__initials').textContent = title.charAt(0).toUpperCase();
-//             // place the renamed card in alphabetically correct position
-//             const clone = potentialTarget.cloneNode(true);
-//             potentialTarget.remove();
-//             insertElementAlphabetically(title, clone)
-//         }
-//         hidePopup();
-//     }).catch(error => {
-//         notify(error, 'error');
-//     })
-// }
-// function deleteSavedId() {
-//     getConfirmation('Do you want delete this FLO ID?', {
-//         confirmText: 'Delete',
-//     }).then(res => {
-//         if (res) {
-//             const toDelete = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${getRef('edit_saved_id').value}"]`);
-//             if (toDelete)
-//                 toDelete.remove();
-//             delete floGlobals.savedIds[getRef('edit_saved_id').value];
-//             hidePopup();
-//             syncUserData('savedIds', floGlobals.savedIds).then(() => {
-//                 notify(`Deleted saved ID`, 'success');
-//             }).catch(error => {
-//                 notify(error, 'error');
-//             });
-//         }
-//     });
-// }
-// const savedIdsObserver = new MutationObserver((mutationList) => {
-//     mutationList.forEach(mutation => {
-//         getRef('saved_ids_tip').textContent = mutation.target.children.length === 0 ? `Click 'Add FLO ID' to add a new FLO ID.` : `Tap on saved IDs to see transaction history.`
-//     })
-// })
-
-// savedIdsObserver.observe(getRef('saved_ids_list'), {
-//     childList: true,
-// })
+delegate(getRef('saved_upi_ids_list'), 'click', '.saved-upi', e => {
+    if (e.target.closest('.delete-upi')) {
+        const upiId = e.delegateTarget.dataset.upiId;
+        getConfirmation('Do you want delete this FLO ID?', {
+            confirmText: 'Delete',
+        }).then(res => {
+            if (res) {
+                const toDelete = getRef('saved_upi_ids_list').querySelector(`.saved-upi[data-upi-id="${upiId}"]`);
+                if (toDelete)
+                    toDelete.remove();
+                delete floGlobals.savedUserData.upiIds[upiId];
+                hidePopup();
+                syncUserData('savedUserData', floGlobals.savedUserData).then(() => {
+                    notify(`Deleted UPI ID`, 'success');
+                }).catch(error => {
+                    notify(error, 'error');
+                });
+            }
+        });
+    }
+});
 
 userUI.sendMoneyToUser = function (floID, amount, remark) {
     getConfirmation('Confirm', { message: `Do you want to SEND ${amount} to ${floID}?` }).then(confirmation => {
@@ -447,6 +416,12 @@ const render = {
         clone.querySelector('.transaction-message__amount').textContent = formatAmount(tokenAmount);
         clone.querySelector('.transaction-message__time').textContent = getFormattedTime(time * 1000);
         return clone;
+    },
+    savedUpiId(upiId) {
+        const clone = getRef('saved_upi_template').content.cloneNode(true).firstElementChild;
+        clone.dataset.upiId = upiId;
+        clone.querySelector('.saved-upi__id').textContent = upiId;
+        return clone;
     }
 };
 
@@ -588,8 +563,8 @@ function executeUserAction() {
 }
 
 function changeUpi() {
-    const upiID = getRef('upi_id').value.trim();
-    Cashier.updateUPI(upiID).then(() => {
+    const upiId = getRef('upi_id').value.trim();
+    Cashier.updateUPI(upiId).then(() => {
         notify('UPI ID updated successfully', 'success');
     }).catch(err => {
         notify(err, 'error');

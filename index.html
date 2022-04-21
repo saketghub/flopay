@@ -789,12 +789,29 @@
                         transform="translate(-223.5 -209.52444)" fill="#cacaca" />
                 </svg>
             </div>
-            <section class="grid gap-1">
-                <div class="grid">
-                    <h5>My FLO ID</h5>
-                    <sm-copy id="logged_in_user_id" style="font-size: 0.9rem;"></sm-copy>
+            <section class="grid gap-2">
+                <div class="grid gap-1">
+                    <div class="grid">
+                        <h5>My FLO ID</h5>
+                        <sm-copy id="logged_in_user_id" style="font-size: 0.9rem;"></sm-copy>
+                    </div>
+                    <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
                 </div>
-                <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
+                <div class="grid gap-1">
+                    <h4>My UPI IDs</h4>
+                    <ul id="saved_upi_ids_list" class="observe-empty-state"></ul>
+                    <div class="empty-state">
+                        <p>Add your UPI IDs for easier access during transactions.</p>
+                    </div>
+                    <button class="button justify-self-start" onclick="showPopup('save_upi_popup')">
+                        <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                        </svg>
+                        Add UPI ID
+                    </button>
+                </div>
             </section>
             <section class="admin-element grid gap-1">
                 <h4>Change UPI ID</h4>
@@ -1185,6 +1202,19 @@
         </li>
     </template>
 
+    <template id="saved_upi_template">
+        <li class="saved-upi">
+            <div class="saved-upi__id"></div>
+            <button class="delete-upi" title="Delete this UPI ID">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                </svg>
+            </button>
+        </li>
+    </template>
+
     <script src="scripts/components.js"></script>
     <script src="scripts/std_ui.js"></script>
     <script src="scripts/std_op.js"></script>
@@ -1219,6 +1249,7 @@
                     }).catch(error => console.error(error))
                 } else {
                     userUI.renderSavedIds()
+                    renderSavedUpiIds()
                     userUI.renderCashierRequests(User.cashierRequests);
                     userUI.renderMoneyRequests(User.moneyRequests);
                     User.init().then(result => {
