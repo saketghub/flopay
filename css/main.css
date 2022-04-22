@@ -671,11 +671,6 @@ ul {
   z-index: 1;
 }
 
-.clip {
-  -webkit-clip-path: circle(0);
-          clip-path: circle(0);
-}
-
 #home {
   padding: 0;
   position: relative;
@@ -931,45 +926,23 @@ ul {
   fill: rgba(var(--background-color), 1);
 }
 
-#transaction_result {
-  display: grid;
-  gap: 0.5rem;
-  height: max(40vh, 24rem);
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  align-content: center;
-}
-#transaction_result.success .icon--failed {
-  display: none;
-}
-#transaction_result.failed .icon--success {
-  display: none;
-}
-#transaction_result h3 {
-  text-align: center;
-  width: 100%;
-}
-#transaction_result .icon {
+.user-action-result__icon {
   justify-self: center;
   height: 4rem;
   width: 4rem;
   border-radius: 5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   -webkit-animation: popup 1s;
           animation: popup 1s;
 }
-#transaction_result .icon--success {
+.user-action-result__icon.success {
   fill: rgba(var(--background-color), 1);
   padding: 1rem;
   background-color: #0bbe56;
 }
-#transaction_result .icon--failed {
+.user-action-result__icon.failed {
   background-color: rgba(var(--text-color), 0.03);
   fill: var(--danger-color);
-}
-#transaction_result sm-copy {
-  font-size: 0.8rem;
 }
 
 @-webkit-keyframes popup {

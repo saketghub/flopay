@@ -25,12 +25,14 @@ async function organizeSyncedData(obsName) {
             compactIDB.addData(obsName, decryptedData[key], key);
         }
         compactIDB.addData(obsName, fetchedData[0].time, 'lastSyncTime');
+        return true;
     } else {
         const idbData = await compactIDB.readAllData(obsName);
         for (const key in idbData) {
             if (key !== 'lastSyncTime')
                 floGlobals[obsName][key] = idbData[key];
         }
+        return true;
     }
 }
 
@@ -53,10 +55,15 @@ function depositMoneyToWallet() {
     let upiTxID = getRef('topup_wallet__txid').value.trim();
     if (upiTxID === '')
         return notify("Please enter UPI transaction ID", 'error');
+    buttonLoader('topup_wallet_button', true);
     User.cashToToken(cashier, amount, upiTxID).then(result => {
         console.log(result);
-        notify("Requested cashier. please wait!");
-    }).catch(error => console.error(error))
+        showProcessStage('topup_wallet_process', 2);
+    }).catch(error => {
+        console.error(error)
+        getRef('topup_failed_reason').textContent = error;
+        showProcessStage('topup_wallet_process', 3);
+    })
 }
 
 function withdrawMoneyFromWallet() {
@@ -64,25 +71,36 @@ function withdrawMoneyFromWallet() {
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
     let amount = parseFloat(getRef('send_cashier_amount').value.trim());
-    // let upiId = prompt(`${amount} ${floGlobals.currency}# will be sent to ${cashier}. Enter UPI ID`);
     const upiId = getRef('select_upi_id').value;
     if (!upiId)
         return notify("Please add an UPI ID to continue", 'error');
+    buttonLoader('withdraw_rupee_button', true);
     User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
         console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
         User.tokenToCash(cashier, amount, txid, upiId).then(result => {
+            showProcessStage('withdraw_wallet_process', 1);
             console.log(result);
-            notify("Requested cashier. please wait!");
-        }).catch(error => console.error(error))
-    }).catch(error => console.error(error))
+        }).catch(error => {
+            getRef('withdrawal_failed_reason').textContent = error;
+            showProcessStage('withdraw_wallet_process', 2);
+            console.error(error)
+        }).finally(() => {
+            buttonLoader('withdraw_rupee_button', false);
+        });
+    }).catch(error => {
+        getRef('withdrawal_failed_reason').textContent = error;
+        showProcessStage('withdraw_wallet_process', 2);
+        buttonLoader('withdraw_rupee_button', false);
+        console.error(error)
+    })
 }
 
 async function renderSavedUpiIds() {
     const frag = document.createDocumentFragment();
-    await organizeSyncedData('savedUserData');
     for (const upiId in floGlobals.savedUserData.upiIds) {
         frag.append(render.savedUpiId(upiId));
     }
+    getRef('saved_upi_ids_list').innerHTML = '';
     getRef('saved_upi_ids_list').append(frag);
 }
 function saveUpiId() {
@@ -115,7 +133,7 @@ function saveUpiId() {
 delegate(getRef('saved_upi_ids_list'), 'click', '.saved-upi', e => {
     if (e.target.closest('.delete-upi')) {
         const upiId = e.delegateTarget.dataset.upiId;
-        getConfirmation('Do you want delete this FLO ID?', {
+        getConfirmation('Do you want delete this UPI ID?', {
             confirmText: 'Delete',
         }).then(res => {
             if (res) {
@@ -165,20 +183,25 @@ userUI.renderCashierRequests = function (requests, error = null) {
         return;
     if (pagesData.lastPage === 'wallet') {
         for (let transactionID in requests) {
-            let oldCard = getRef('pending_wallet_transactions').querySelector(`[data-vc-${transactionID}]`);
-            if (oldCard) {
-                oldCard.remove()
-                getRef('wallet_history').prepend(render.walletRequestCard(requests[transactionID]))
-            }
+            const { note, tag } = requests[transactionID];
+            let status = tag ? 'done' : (note ? 'failed' : "pending");
+            getRef('wallet_history_wrapper').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
+            getRef(status !== 'pending' ? 'wallet_history' : 'pending_wallet_transactions').prepend(render.walletRequestCard(requests[transactionID]))
         }
     }
 };
 
-delegate(getRef('wallet_history_wrapper'), 'click', '.wallet-request', e => {
-    let transactionID = e.delegateTarget.dataset.vc;
-    let request = User.cashierRequests[transactionID];
-    console.log(request)
-})
+const pendingTransactionsObserver = new MutationObserver((mutations) => {
+    mutations.forEach(mutation => {
+        if (mutation.type === 'childList') {
+            if (mutation.target.children.length)
+                mutation.target.parentNode.classList.remove('hide')
+            else
+                mutation.target.parentNode.classList.add('hide')
+
+        }
+    })
+});
 
 userUI.renderMoneyRequests = function (requests, error = null) {
     if (error)
@@ -187,9 +210,26 @@ userUI.renderMoneyRequests = function (requests, error = null) {
         return;
     if (pagesData.lastPage === 'requests') {
         for (let r in requests) {
-            let oldCard = getRef('payment_request_history').querySelector(`[data-vc-${r}]`);
-            if (oldCard)
-                oldCard.replaceWith(render.paymentRequestCard(requests[r]));
+            getRef('requests_history_wrapper').querySelectorAll(`[data-vc="${r}"]`).forEach(card => card.remove());
+            if (requests[r].note) {
+                getRef('payment_request_history').prepend(render.paymentRequestCard(requests[r]));
+            } else {
+                getRef('pending_payment_requests').prepend(render.paymentRequestCard(requests[r]));
+            }
+        }
+    }
+    if (floGlobals.loaded) {
+        for (let r in requests) {
+            if (!requests[r].note) {
+                notify(`You have received payment request from ${getFloIdTitle(requests[r].senderID)}`, '', {
+                    action: {
+                        label: 'View',
+                        callback: () => {
+                            window.location.hash = `#/requests`
+                        }
+                    }
+                });
+            }
         }
     }
 };
@@ -424,6 +464,33 @@ const render = {
         return clone;
     }
 };
+
+function buttonLoader(id, show) {
+    getRef(id).disabled = show;
+    const animOptions = {
+        duration: 200,
+        fill: 'forwards',
+        easing: 'ease'
+    }
+    if (show) {
+        getRef(id).animate([
+            {
+                clipPath: 'circle(100%)',
+            },
+            {
+                clipPath: 'circle(0)',
+            },
+        ], animOptions).onfinish = e => {
+            e.target.commitStyles()
+            e.target.cancel()
+        }
+        getRef(id).parentNode.append(createElement('sm-spinner'))
+    } else {
+        getRef(id).style = ''
+        const potentialTarget = getRef(id).parentNode.querySelector('sm-spinner')
+        if (potentialTarget) potentialTarget.remove();
+    }
+}
 
 let currentUserAction;
 function showTokenTransfer(type) {

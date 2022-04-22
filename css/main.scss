@@ -627,9 +627,6 @@ ul {
     z-index: 1;
   }
 }
-.clip {
-  clip-path: circle(0);
-}
 #home {
   padding: 0;
   position: relative;
@@ -874,48 +871,21 @@ ul {
     fill: rgba(var(--background-color), 1);
   }
 }
-
-#transaction_result {
-  display: grid;
-  gap: 0.5rem;
-  height: max(40vh, 24rem);
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  align-content: center;
+.user-action-result__icon {
+  justify-self: center;
+  height: 4rem;
+  width: 4rem;
+  border-radius: 5rem;
+  margin-bottom: 2rem;
+  animation: popup 1s;
   &.success {
-    .icon--failed {
-      display: none;
-    }
+    fill: rgba(var(--background-color), 1);
+    padding: 1rem;
+    background-color: #0bbe56;
   }
   &.failed {
-    .icon--success {
-      display: none;
-    }
-  }
-  h3 {
-    text-align: center;
-    width: 100%;
-  }
-  .icon {
-    justify-self: center;
-    height: 4rem;
-    width: 4rem;
-    border-radius: 5rem;
-    margin-bottom: 1rem;
-    animation: popup 1s;
-    &--success {
-      fill: rgba(var(--background-color), 1);
-      padding: 1rem;
-      background-color: #0bbe56;
-    }
-    &--failed {
-      background-color: rgba(var(--text-color), 0.03);
-      fill: var(--danger-color);
-    }
-  }
-  sm-copy {
-    font-size: 0.8rem;
+    background-color: rgba(var(--text-color), 0.03);
+    fill: var(--danger-color);
   }
 }
 @keyframes popup {

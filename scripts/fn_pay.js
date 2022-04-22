@@ -39,6 +39,7 @@ User.init = function () {
         }));
         */
         promises.push(User.getCashierUPI());
+        promises.push(organizeSyncedData('savedUserData'));
         Promise.all(promises)
             .then(result => resolve(result))
             .catch(error => reject(error))
