@@ -1,4 +1,4 @@
-/*jshint esversion: 6 */
+/*jshint esversion: 9 */
 // Global variables
 const domRefs = {};
 const currentYear = new Date().getFullYear();
@@ -89,9 +89,9 @@ function hidePopup() {
 }
 
 document.addEventListener('popupopened', async e => {
+    const frag = document.createDocumentFragment()
     switch (e.target.id) {
         case 'saved_ids_popup':
-            const frag = document.createDocumentFragment()
             const allSavedIds = await getArrayOfSavedIds()
             allSavedIds.forEach(({ floID, name }) => {
                 frag.append(render.savedIdPickerCard(floID, name))
@@ -100,7 +100,22 @@ document.addEventListener('popupopened', async e => {
             getRef('saved_ids_picker_list').append(frag)
             getRef('search_saved_ids_picker').focusIn()
             break;
-        case 'get_private_key_popup':
+        case 'withdraw_wallet_popup':
+            let hasSavedIds = false
+            for (const upiId in floGlobals.savedUserData.upiIds) {
+                frag.append(createElement('sm-option', {
+                    textContent: upiId,
+                    attributes: {
+                        value: upiId,
+                    }
+                }))
+                hasSavedIds = true
+            }
+            if (hasSavedIds) {
+                getRef('select_upi_id').parentNode.classList.remove('hide')
+                getRef('select_upi_id').append(frag)
+            }
+            showProcessStage('withdraw_wallet_process', 0)
             break;
     }
 })
@@ -111,14 +126,12 @@ document.addEventListener('popupclosed', e => {
             getRef('saved_ids_picker_list').innerHTML = ''
             getRef('search_saved_ids_picker').value = ''
             break;
-        case 'get_private_key_popup':
-            getRef('get_private_key').classList.remove('hide')
-            getRef('transaction_result').classList.add('hide')
-            getRef('confirm_transaction_button').classList.remove('hide')
-            getRef('confirm_transaction_button').nextElementSibling.classList.add('hide')
+        case 'topup_wallet_popup':
+            showProcessStage('topup_wallet_process', 0)
             break;
-        case 'retrieve_flo_id_popup':
-            getRef('recovered_flo_id_wrapper').classList.add('hide')
+        case 'withdraw_wallet_popup':
+            getRef('select_upi_id').parentNode.classList.add('hide')
+            getRef('select_upi_id').innerHTML = ''
             break;
     }
 })
@@ -147,7 +160,6 @@ const getConfirmation = (title, options = {}) => {
 
 //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
 function notify(message, mode, options = {}) {
-    const { pinned = false, sound = false } = options
     let icon
     switch (mode) {
         case 'success':
@@ -157,7 +169,7 @@ function notify(message, mode, options = {}) {
             icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
             break;
     }
-    getRef("notification_drawer").push(message, { pinned, icon });
+    getRef("notification_drawer").push(message, { icon, ...options });
     if (mode === 'error') {
         console.error(message)
     }
@@ -332,7 +344,7 @@ async function showPage(targetPage, options = {}) {
             const paymentTransactions = []
             if (paymentsHistoryLoader)
                 paymentsHistoryLoader.clear()
-            getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>'
+            getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
             tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
                 for (const transactionId in transactions) {
                     paymentTransactions.push({
@@ -341,21 +353,21 @@ async function showPage(targetPage, options = {}) {
                     })
                 }
                 if (paymentsHistoryLoader) {
-                    paymentsHistoryLoader.update(paymentTransactions)
+                    paymentsHistoryLoader.update(paymentTransactions);
                 } else {
                     paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
                 }
-                paymentsHistoryLoader.init()
+                paymentsHistoryLoader.init();
             }).catch(e => {
                 console.error(e)
             })
             break;
         case 'requests':
-            const paymentRequests = []
+            const paymentRequests = [];
             if (paymentRequestsLoader)
-                paymentRequestsLoader.clear()
+                paymentRequestsLoader.clear();
 
-            const pendingPaymentRequests = document.createDocumentFragment()
+            const pendingPaymentRequests = document.createDocumentFragment();
             let arePaymentsPending = false
             for (const transactionId in User.moneyRequests) {
                 if (!User.moneyRequests[transactionId].note) {
@@ -365,17 +377,15 @@ async function showPage(targetPage, options = {}) {
                     paymentRequests.unshift(User.moneyRequests[transactionId])
                 }
             }
-            if (arePaymentsPending) {
-                getRef('pending_payment_requests').innerHTML = ''
-                getRef('pending_payment_requests').append(pendingPaymentRequests)
-                getRef('pending_payment_requests').parentNode.classList.remove('hide')
-            } else {
-                getRef('pending_payment_requests').parentNode.classList.add('hide')
-            }
             if (paymentRequestsLoader) {
                 paymentRequestsLoader.update(paymentRequests)
             } else {
                 paymentRequestsLoader = new LazyLoader('#payment_request_history', paymentRequests, render.paymentRequestCard);
+                pendingTransactionsObserver.observe(getRef('pending_payment_requests'), { childList: true });
+            }
+            if (arePaymentsPending) {
+                getRef('pending_payment_requests').innerHTML = ''
+                getRef('pending_payment_requests').append(pendingPaymentRequests)
             }
             paymentRequestsLoader.init()
             break;
@@ -391,20 +401,18 @@ async function showPage(targetPage, options = {}) {
                     areTransactionsPending = true
                     pendingWalletTransactions.prepend(render.walletRequestCard(User.cashierRequests[transactionId]))
                 } else {
-                    walletTransactions.push(User.cashierRequests[transactionId])
+                    walletTransactions.unshift(User.cashierRequests[transactionId])
                 }
-            }
-            if (areTransactionsPending) {
-                getRef('pending_wallet_transactions').innerHTML = ''
-                getRef('pending_wallet_transactions').append(pendingWalletTransactions)
-                getRef('pending_wallet_transactions').parentNode.classList.remove('hide')
-            } else {
-                getRef('pending_wallet_transactions').parentNode.classList.add('hide')
             }
             if (walletHistoryLoader) {
                 walletHistoryLoader.update(walletTransactions)
             } else {
                 walletHistoryLoader = new LazyLoader('#wallet_history', walletTransactions, render.walletRequestCard);
+                pendingTransactionsObserver.observe(getRef('pending_wallet_transactions'), { childList: true });
+            }
+            if (areTransactionsPending) {
+                getRef('pending_wallet_transactions').innerHTML = ''
+                getRef('pending_wallet_transactions').append(pendingWalletTransactions)
             }
             walletHistoryLoader.init()
             break;
@@ -427,7 +435,6 @@ async function showPage(targetPage, options = {}) {
                     getRef('transaction__remark').textContent = remark
                     getRef('transaction__remark').classList.remove('hide')
                 }
-                console.log(status)
             } else if (params.type === 'wallet') {
                 transactionDetails = User.cashierRequests[params.transactionId]
                 const { message: { amount, mode, upi_id, upi_txid }, note, tag } = transactionDetails
@@ -453,11 +460,13 @@ async function showPage(targetPage, options = {}) {
                     getRef('transaction__note').classList.remove('hide')
                 }
             }
-            const { message: { amount, remark }, note, senderID, receiverID, time } = transactionDetails
-            console.table(transactionDetails)
+            const { message: { amount }, time } = transactionDetails
             getRef('transaction__time').textContent = getFormattedTime(time)
             getRef('transaction__amount').textContent = formatAmount(amount)
             getRef('transaction__status').textContent = status
+            break;
+        case 'settings':
+            renderSavedUpiIds()
             break;
         default:
             break;
@@ -473,6 +482,9 @@ async function showPage(targetPage, options = {}) {
     if (pageId !== 'wallet') {
         if (walletHistoryLoader)
             walletHistoryLoader.clear()
+    }
+    if (pageId !== 'settings') {
+        getRef('saved_upi_ids_list').innerHTML = '';
     }
 
     if (pagesData.lastPage !== pageId) {
@@ -722,3 +734,12 @@ function handleMobileChange(e) {
 }
 mobileQuery.addEventListener('change', handleMobileChange)
 handleMobileChange(mobileQuery)
+
+function showProcessStage(id, index) {
+    [...getRef(id).children].forEach((child, i) => {
+        if (i === index)
+            child.classList.remove('hide')
+        else
+            child.classList.add('hide')
+    })
+}

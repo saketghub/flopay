@@ -39,6 +39,7 @@ User.init = function () {
         }));
         */
         promises.push(User.getCashierUPI());
+        promises.push(organizeSyncedData('savedUserData'));
         Promise.all(promises)
             .then(result => resolve(result))
             .catch(error => reject(error))
@@ -86,7 +87,6 @@ User.findCashier = function () {
     if (!online.length)
         return null;
     else {
-        console.log(online);
         const random = floCrypto.randInt(0, online.length - 1)
         return online[random];
     }

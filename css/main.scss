@@ -4,7 +4,6 @@
   box-sizing: border-box;
   font-family: "Roboto", sans-serif;
 }
-
 :root {
   font-size: clamp(1rem, 1.2vmax, 1.2rem);
 }
@@ -186,6 +185,9 @@ sm-spinner {
 }
 sm-form {
   --gap: 1rem;
+}
+sm-select {
+  --padding: 0.8rem;
 }
 strip-select {
   --gap: 0;
@@ -389,6 +391,7 @@ ul {
     background-color: var(--accent-color);
   }
 }
+
 .icon {
   width: 1.2rem;
   height: 1.2rem;
@@ -623,9 +626,6 @@ ul {
   button {
     z-index: 1;
   }
-}
-.clip {
-  clip-path: circle(0);
 }
 #home {
   padding: 0;
@@ -871,48 +871,21 @@ ul {
     fill: rgba(var(--background-color), 1);
   }
 }
-
-#transaction_result {
-  display: grid;
-  gap: 0.5rem;
-  height: max(40vh, 24rem);
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  align-content: center;
+.user-action-result__icon {
+  justify-self: center;
+  height: 4rem;
+  width: 4rem;
+  border-radius: 5rem;
+  margin-bottom: 2rem;
+  animation: popup 1s;
   &.success {
-    .icon--failed {
-      display: none;
-    }
+    fill: rgba(var(--background-color), 1);
+    padding: 1rem;
+    background-color: #0bbe56;
   }
   &.failed {
-    .icon--success {
-      display: none;
-    }
-  }
-  h3 {
-    text-align: center;
-    width: 100%;
-  }
-  .icon {
-    justify-self: center;
-    height: 4rem;
-    width: 4rem;
-    border-radius: 5rem;
-    margin-bottom: 1rem;
-    animation: popup 1s;
-    &--success {
-      fill: rgba(var(--background-color), 1);
-      padding: 1rem;
-      background-color: #0bbe56;
-    }
-    &--failed {
-      background-color: rgba(var(--text-color), 0.03);
-      fill: var(--danger-color);
-    }
-  }
-  sm-copy {
-    font-size: 0.8rem;
+    background-color: rgba(var(--text-color), 0.03);
+    fill: var(--danger-color);
   }
 }
 @keyframes popup {
@@ -1073,6 +1046,19 @@ ul {
     margin-right: 0.5rem;
   }
 }
+#saved_upi_ids_list {
+  display: grid;
+  gap: 0.5rem;
+  width: min(24rem, 100%);
+}
+.saved-upi {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.4rem 0.4rem 1rem;
+  border-radius: 0.5rem;
+  background-color: rgba(var(--foreground-color), 1);
+}
 @media screen and (max-width: 40rem) {
   #main_navbar {
     &.hide-away {
@@ -1155,7 +1141,7 @@ ul {
 @media screen and (min-width: 56rem) {
   #main_card {
     width: 56rem;
-    height: min(80vh, 48rem);
+    height: min(90vh, 48rem);
   }
 }
 @media (any-hover: hover) {
@@ -1178,7 +1164,7 @@ ul {
       background-color: rgba(var(--text-color), 0.06);
     }
   }
-  button,
+  button:not([disabled]),
   .button:not([disabled]) {
     transition: background-color 0.3s, filter 0.3s;
     &:hover {
