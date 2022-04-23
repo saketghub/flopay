@@ -222,6 +222,7 @@ userUI.renderMoneyRequests = function (requests, error = null) {
         for (let r in requests) {
             if (!requests[r].note) {
                 notify(`You have received payment request from ${getFloIdTitle(requests[r].senderID)}`, '', {
+                    pinned: true,
                     action: {
                         label: 'View',
                         callback: () => {
