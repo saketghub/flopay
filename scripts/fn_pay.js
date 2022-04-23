@@ -169,6 +169,7 @@ Cashier.init = function () {
             callback: UI_RENDER_FN
         }));
         */
+        promises.push(User.getCashierUPI());
         Promise.all(promises)
             .then(result => resolve(result))
             .catch(error => reject(error))

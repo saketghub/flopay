@@ -2555,7 +2555,7 @@ smSelect.innerHTML = `
             flex-direction: column;
     min-width: var(--min-width);
     max-height: var(--max-height, auto);
-    background: rgba(var(--background-color,(255,255,255)), 1);
+    background: rgba(var(--foreground-color,(255,255,255)), 1);
     border: solid 1px rgba(var(--text-color,(17,17,17)), 0.2);
     border-radius: var(--border-radius, 0.5rem);
     z-index: 1;
