@@ -511,7 +511,6 @@ async function showPage(targetPage, options = {}) {
                     },
                 ], { ...animOptions, easing: 'ease-in' })
             }
-            getRef('main_header').classList.remove('hide')
             const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement)
             const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement)
             const isOnTop = previousActiveElementIndex < currentActiveElementIndex
@@ -573,7 +572,6 @@ async function showPage(targetPage, options = {}) {
                 }).onfinish = () => {
                     getRef('main_navbar').classList.add('hide')
                 }
-                // getRef('main_header').classList.add('hide')
             }
         }
         document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
