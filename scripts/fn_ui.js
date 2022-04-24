@@ -233,6 +233,54 @@ userUI.renderMoneyRequests = function (requests, error = null) {
             }
         }
     }
+    let totalRequests = 0;
+    for (const request in User.moneyRequests) {
+        if (!User.moneyRequests[request].note) totalRequests++;
+    }
+    const animOptions = {
+        duration: 200,
+        fill: 'forwards',
+        easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+    }
+    if (totalRequests) {
+        if (!getRef('requests_page_button').querySelector('.badge')) {
+            const badge = createElement('span', {
+                className: 'badge',
+                textContent: totalRequests
+            })
+            getRef('requests_page_button').append(badge)
+            badge.animate([
+                {
+                    transform: 'scale(0) translateY(0.5rem)'
+                },
+                {
+                    transform: 'scale(1) translateY(0)'
+                },
+            ], animOptions)
+        } else {
+            const badge = getRef('requests_page_button').querySelector('.badge');
+            badge.textContent = totalRequests;
+            badge.animate([
+                { transform: 'scale(1)' },
+                { transform: `scale(1.5)` },
+                { transform: 'scale(1)' }
+            ], animOptions)
+        }
+    } else {
+        if (getRef('requests_page_button').querySelector('.badge')) {
+            const badge = getRef('requests_page_button').querySelector('.badge')
+            badge.animate([
+                {
+                    transform: 'scale(1) translateY(0)'
+                },
+                {
+                    transform: 'scale(0) translateY(0.5rem)'
+                },
+            ], animOptions).onfinish = () => {
+                badge.remove()
+            }
+        }
+    }
 };
 
 userUI.payRequest = function (reqID) {
