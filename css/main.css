@@ -593,8 +593,9 @@ ul {
 }
 
 #main_card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   height: 100%;
   width: 100%;
   transition: background-color 0.3s;
@@ -828,8 +829,8 @@ ul {
 }
 
 #contact {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   padding: 0;
   height: 100%;
 }
@@ -839,14 +840,30 @@ ul {
 #contact > :first-child {
   padding-top: 0;
 }
+#contact > :last-child {
+  padding: 0.5rem 1.5rem;
+  background-color: rgba(var(--text-color), 0.03);
+}
+#contact > :last-child button {
+  padding: 0.8rem 2rem;
+  border-radius: 1rem;
+  color: var(--accent-color);
+  background-color: rgba(var(--foreground-color), 1);
+}
 
 #contact__transactions {
+  position: relative;
   display: grid;
   gap: 0.5rem;
   overflow-y: auto;
   flex: 1;
-  padding: 0 max(1rem, 8vw);
+  padding: 0 max(1rem, 8vw) 1rem max(1rem, 8vw);
   align-content: flex-start;
+}
+#contact__transactions sm-spinner {
+  position: absolute;
+  justify-self: center;
+  align-self: center;
 }
 
 .transaction-message {
@@ -1189,6 +1206,7 @@ ul {
   #main_card {
     height: calc(100vh - 3rem);
     width: calc(100vw - 3rem);
+    grid-template-areas: "header" ".";
     position: relative;
     border-radius: 0.5rem;
     overflow: hidden;
@@ -1196,7 +1214,6 @@ ul {
     box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05), 0 1rem 3rem rgba(0, 0, 0, 0.2);
   }
   #main_card:not(.nav-hidden) {
-    display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: auto 1fr;
     grid-template-areas: "nav header" "nav .";
