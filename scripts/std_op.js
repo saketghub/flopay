@@ -5,7 +5,7 @@
 */
 'use strict';
 //Crypto.js
-(function(GLOBAL) {
+(function (GLOBAL) {
     // Global Crypto object
     var Crypto = GLOBAL.Crypto = {};
     /*!
@@ -14,7 +14,7 @@
      * Copyright (c) 2009-2013, Jeff Mott. All rights reserved.
      * http://code.google.com/p/crypto-js/wiki/License
      */
-    (function() {
+    (function () {
 
         var base64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -22,17 +22,17 @@
         var util = Crypto.util = {
 
             // Bit-wise rotate left
-            rotl: function(n, b) {
+            rotl: function (n, b) {
                 return (n << b) | (n >>> (32 - b));
             },
 
             // Bit-wise rotate right
-            rotr: function(n, b) {
+            rotr: function (n, b) {
                 return (n << (32 - b)) | (n >>> b);
             },
 
             // Swap big-endian to little-endian and vice versa
-            endian: function(n) {
+            endian: function (n) {
 
                 // If number given, swap endian
                 if (n.constructor == Number) {
@@ -48,28 +48,28 @@
             },
 
             // Generate an array of any length of random bytes
-            randomBytes: function(n) {
+            randomBytes: function (n) {
                 for (var bytes = []; n > 0; n--)
                     bytes.push(Math.floor(Math.random() * 256));
                 return bytes;
             },
 
             // Convert a byte array to big-endian 32-bit words
-            bytesToWords: function(bytes) {
+            bytesToWords: function (bytes) {
                 for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
                     words[b >>> 5] |= (bytes[i] & 0xFF) << (24 - b % 32);
                 return words;
             },
 
             // Convert big-endian 32-bit words to a byte array
-            wordsToBytes: function(words) {
+            wordsToBytes: function (words) {
                 for (var bytes = [], b = 0; b < words.length * 32; b += 8)
                     bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
                 return bytes;
             },
 
             // Convert a byte array to a hex string
-            bytesToHex: function(bytes) {
+            bytesToHex: function (bytes) {
                 for (var hex = [], i = 0; i < bytes.length; i++) {
                     hex.push((bytes[i] >>> 4).toString(16));
                     hex.push((bytes[i] & 0xF).toString(16));
@@ -78,14 +78,14 @@
             },
 
             // Convert a hex string to a byte array
-            hexToBytes: function(hex) {
+            hexToBytes: function (hex) {
                 for (var bytes = [], c = 0; c < hex.length; c += 2)
                     bytes.push(parseInt(hex.substr(c, 2), 16));
                 return bytes;
             },
 
             // Convert a byte array to a base-64 string
-            bytesToBase64: function(bytes) {
+            bytesToBase64: function (bytes) {
                 for (var base64 = [], i = 0; i < bytes.length; i += 3) {
                     var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
                     for (var j = 0; j < 4; j++) {
@@ -99,7 +99,7 @@
             },
 
             // Convert a base-64 string to a byte array
-            base64ToBytes: function(base64) {
+            base64ToBytes: function (base64) {
                 // Remove non-base-64 characters
                 base64 = base64.replace(/[^A-Z0-9+\/]/ig, "");
 
@@ -121,12 +121,12 @@
         var UTF8 = charenc.UTF8 = {
 
             // Convert a string to a byte array
-            stringToBytes: function(str) {
+            stringToBytes: function (str) {
                 return Binary.stringToBytes(unescape(encodeURIComponent(str)));
             },
 
             // Convert a byte array to a string
-            bytesToString: function(bytes) {
+            bytesToString: function (bytes) {
                 return decodeURIComponent(escape(Binary.bytesToString(bytes)));
             }
 
@@ -136,14 +136,14 @@
         var Binary = charenc.Binary = {
 
             // Convert a string to a byte array
-            stringToBytes: function(str) {
+            stringToBytes: function (str) {
                 for (var bytes = [], i = 0; i < str.length; i++)
                     bytes.push(str.charCodeAt(i) & 0xFF);
                 return bytes;
             },
 
             // Convert a byte array to a string
-            bytesToString: function(bytes) {
+            bytesToString: function (bytes) {
                 for (var str = [], i = 0; i < bytes.length; i++)
                     str.push(String.fromCharCode(bytes[i]));
                 return str.join("");
@@ -159,7 +159,7 @@
      * (c) 2009-2012 by Jeff Mott. All rights reserved.
      * http://code.google.com/p/crypto-js/wiki/License
      */
-    (function() {
+    (function () {
 
         // Shortcuts
         var C = Crypto,
@@ -169,15 +169,15 @@
             Binary = charenc.Binary;
 
         // Public API
-        var SHA1 = C.SHA1 = function(message, options) {
+        var SHA1 = C.SHA1 = function (message, options) {
             var digestbytes = util.wordsToBytes(SHA1._sha1(message));
             return options && options.asBytes ? digestbytes :
                 options && options.asString ? Binary.bytesToString(digestbytes) :
-                util.bytesToHex(digestbytes);
+                    util.bytesToHex(digestbytes);
         };
 
         // The core
-        SHA1._sha1 = function(message) {
+        SHA1._sha1 = function (message) {
 
             // Convert to byte array
             if (message.constructor == String) message = UTF8.stringToBytes(message);
@@ -214,9 +214,9 @@
 
                     var t = ((H0 << 5) | (H0 >>> 27)) + H4 + (w[j] >>> 0) + (
                         j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
-                        j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
-                        j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
-                        (H1 ^ H2 ^ H3) - 899497514);
+                            j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
+                                j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
+                                    (H1 ^ H2 ^ H3) - 899497514);
 
                     H4 = H3;
                     H3 = H2;
@@ -252,7 +252,7 @@
      * (c) 2009-2012 by Jeff Mott. All rights reserved.
      * http://code.google.com/p/crypto-js/wiki/License
      */
-    (function() {
+    (function () {
 
         // Shortcuts
         var C = Crypto,
@@ -261,7 +261,7 @@
             UTF8 = charenc.UTF8,
             Binary = charenc.Binary;
 
-        C.HMAC = function(hasher, message, key, options) {
+        C.HMAC = function (hasher, message, key, options) {
 
             // Convert to byte arrays
             if (message.constructor == String) message = UTF8.stringToBytes(message);
@@ -290,7 +290,7 @@
 
             return options && options.asBytes ? hmacbytes :
                 options && options.asString ? Binary.bytesToString(hmacbytes) :
-                util.bytesToHex(hmacbytes);
+                    util.bytesToHex(hmacbytes);
 
         };
 
@@ -304,7 +304,7 @@
      * (c) 2009-2012 by Jeff Mott. All rights reserved.
      * http://code.google.com/p/crypto-js/wiki/License
      */
-    (function() {
+    (function () {
         var d = Crypto,
             k = d.util,
             g = d.charenc,
@@ -320,11 +320,11 @@
                 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222,
                 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298
             ],
-            e = d.SHA256 = function(b, c) {
+            e = d.SHA256 = function (b, c) {
                 var f = k.wordsToBytes(e._sha256(b));
                 return c && c.asBytes ? f : c && c.asString ? a.bytesToString(f) : k.bytesToHex(f)
             };
-        e._sha256 = function(a) {
+        e._sha256 = function (a) {
             a.constructor == String && (a = b.stringToBytes(a));
             var e = k.bytesToWords(a),
                 f = a.length * 8,
@@ -347,7 +347,7 @@
                 for (h = 0; h < 64; h++) {
                     h < 16 ? d[h] = e[h + t] : (l = d[h - 15], j = d[h - 2], d[h] = ((l << 25 | l >>> 7) ^
                         (l << 14 | l >>> 18) ^ l >>> 3) + (d[h - 7] >>> 0) + ((j << 15 | j >>> 17) ^
-                        (j << 13 | j >>> 19) ^ j >>> 10) + (d[h - 16] >>> 0));
+                            (j << 13 | j >>> 19) ^ j >>> 10) + (d[h - 16] >>> 0));
                     j = f & g ^ f & m ^ g & m;
                     var u = (f << 30 | f >>> 2) ^ (f << 19 | f >>> 13) ^ (f << 10 | f >>> 22);
                     l = (s >>> 0) + ((i << 26 | i >>> 6) ^ (i << 21 | i >>> 11) ^ (i << 7 | i >>> 25)) +
@@ -376,13 +376,13 @@
         e._blocksize = 16;
         e._digestsize = 32
     })();
-    (function() {
+    (function () {
         var d = Crypto,
             k = d.util,
             g = d.charenc,
             b = g.UTF8,
             a = g.Binary;
-        d.HMAC = function(c, e, d, g) {
+        d.HMAC = function (c, e, d, g) {
             e.constructor == String && (e = b.stringToBytes(e));
             d.constructor == String && (d = b.stringToBytes(d));
             d.length > c._blocksize * 4 && (d = c(d, {
@@ -401,9 +401,9 @@
 })(typeof global !== "undefined" ? global : window);
 
 //SecureRandom.js
-(function(GLOBAL) {
+(function (GLOBAL) {
 
-    const getRandomValues = function(buf) {
+    const getRandomValues = function (buf) {
         if (typeof require === 'function') {
             var bytes = require('crypto').randomBytes(buf.length);
             buf.set(bytes)
@@ -426,7 +426,7 @@
      */
 
     // Constructor function of Global SecureRandom object
-    var sr = GLOBAL.SecureRandom = function() {};
+    var sr = GLOBAL.SecureRandom = function () { };
 
     // Properties
     sr.state;
@@ -442,7 +442,7 @@
 
     // public method
     // ba: byte array
-    sr.prototype.nextBytes = function(ba) {
+    sr.prototype.nextBytes = function (ba) {
         var i;
         if (getRandomValues && GLOBAL.Uint8Array) {
             try {
@@ -463,11 +463,11 @@
 
     // Mix in the current time (w/milliseconds) into the pool
     // NOTE: this method should be called from body click/keypress event handlers to increase entropy
-    sr.seedTime = function() {
+    sr.seedTime = function () {
         sr.seedInt(new Date().getTime());
     }
 
-    sr.getByte = function() {
+    sr.getByte = function () {
         if (sr.state == null) {
             sr.seedTime();
             sr.state = sr.ArcFour(); // Plug in your RNG constructor here
@@ -482,7 +482,7 @@
     }
 
     // Mix in a 32-bit integer into the pool
-    sr.seedInt = function(x) {
+    sr.seedInt = function (x) {
         sr.seedInt8(x);
         sr.seedInt8((x >> 8));
         sr.seedInt8((x >> 16));
@@ -490,19 +490,19 @@
     }
 
     // Mix in a 16-bit integer into the pool
-    sr.seedInt16 = function(x) {
+    sr.seedInt16 = function (x) {
         sr.seedInt8(x);
         sr.seedInt8((x >> 8));
     }
 
     // Mix in a 8-bit integer into the pool
-    sr.seedInt8 = function(x) {
+    sr.seedInt8 = function (x) {
         sr.pool[sr.pptr++] ^= x & 255;
         if (sr.pptr >= sr.poolSize) sr.pptr -= sr.poolSize;
     }
 
     // Arcfour is a PRNG
-    sr.ArcFour = function() {
+    sr.ArcFour = function () {
         function Arcfour() {
             this.i = 0;
             this.j = 0;
@@ -587,7 +587,7 @@
         }
         entropyStr += pluginsStr + mimeTypesStr;
         // cookies and storage: 1 bit
-        entropyStr += navigator.cookieEnabled + typeof(sessionStorage) + typeof(localStorage);
+        entropyStr += navigator.cookieEnabled + typeof (sessionStorage) + typeof (localStorage);
         // language: ~7 bit
         entropyStr += navigator.language;
         // history: ~2 bit
@@ -605,7 +605,7 @@
 })(typeof global !== "undefined" ? global : window);
 
 //ripemd160.js
-(function(GLOBAL) {
+(function (GLOBAL) {
 
     /*
     CryptoJS v3.1.2
@@ -654,7 +654,7 @@
     var hl = [0x00000000, 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xA953FD4E];
     var hr = [0x50A28BE6, 0x5C4DD124, 0x6D703EF3, 0x7A6D76E9, 0x00000000];
 
-    var bytesToWords = function(bytes) {
+    var bytesToWords = function (bytes) {
         var words = [];
         for (var i = 0, b = 0; i < bytes.length; i++, b += 8) {
             words[b >>> 5] |= bytes[i] << (24 - b % 32);
@@ -662,7 +662,7 @@
         return words;
     };
 
-    var wordsToBytes = function(words) {
+    var wordsToBytes = function (words) {
         var bytes = [];
         for (var b = 0; b < words.length * 32; b += 8) {
             bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
@@ -670,7 +670,7 @@
         return bytes;
     };
 
-    var processBlock = function(H, M, offset) {
+    var processBlock = function (H, M, offset) {
 
         // Swap endian
         for (var i = 0; i < 16; i++) {
@@ -806,7 +806,7 @@
 })(typeof global !== "undefined" ? global : window);
 
 //BigInteger.js
-(function(GLOBAL) {
+(function (GLOBAL) {
     // Upstream 'BigInteger' here:
     // Original Author: http://www-cs-students.stanford.edu/~tjw/jsbn/
     // Follows 'jsbn' on Github: https://github.com/jasondavies/jsbn
@@ -831,7 +831,7 @@
         if (a != null)
             if ("number" == typeof a) this.fromNumber(a, b, c);
             else if (b == null && "string" != typeof a) this.fromString(a, 256);
-        else this.fromString(a, b);
+            else this.fromString(a, b);
     };
 
     // Bits per digit
@@ -977,7 +977,7 @@
 
 
     // (protected) copy this to r
-    BigInteger.prototype.copyTo = function(r) {
+    BigInteger.prototype.copyTo = function (r) {
         for (var i = this.t - 1; i >= 0; --i) r[i] = this[i];
         r.t = this.t;
         r.s = this.s;
@@ -985,7 +985,7 @@
 
 
     // (protected) set from integer value x, -DV <= x < DV
-    BigInteger.prototype.fromInt = function(x) {
+    BigInteger.prototype.fromInt = function (x) {
         this.t = 1;
         this.s = (x < 0) ? -1 : 0;
         if (x > 0) this[0] = x;
@@ -994,7 +994,7 @@
     };
 
     // (protected) set from string and radix
-    BigInteger.prototype.fromString = function(s, b) {
+    BigInteger.prototype.fromString = function (s, b) {
         var k;
         if (b == 16) k = 4;
         else if (b == 8) k = 3;
@@ -1038,13 +1038,13 @@
 
 
     // (protected) clamp off excess high words
-    BigInteger.prototype.clamp = function() {
+    BigInteger.prototype.clamp = function () {
         var c = this.s & this.DM;
         while (this.t > 0 && this[this.t - 1] == c) --this.t;
     };
 
     // (protected) r = this << n*DB
-    BigInteger.prototype.dlShiftTo = function(n, r) {
+    BigInteger.prototype.dlShiftTo = function (n, r) {
         var i;
         for (i = this.t - 1; i >= 0; --i) r[i + n] = this[i];
         for (i = n - 1; i >= 0; --i) r[i] = 0;
@@ -1053,7 +1053,7 @@
     };
 
     // (protected) r = this >> n*DB
-    BigInteger.prototype.drShiftTo = function(n, r) {
+    BigInteger.prototype.drShiftTo = function (n, r) {
         for (var i = n; i < this.t; ++i) r[i - n] = this[i];
         r.t = Math.max(this.t - n, 0);
         r.s = this.s;
@@ -1061,7 +1061,7 @@
 
 
     // (protected) r = this << n
-    BigInteger.prototype.lShiftTo = function(n, r) {
+    BigInteger.prototype.lShiftTo = function (n, r) {
         var bs = n % this.DB;
         var cbs = this.DB - bs;
         var bm = (1 << cbs) - 1;
@@ -1081,7 +1081,7 @@
 
 
     // (protected) r = this >> n
-    BigInteger.prototype.rShiftTo = function(n, r) {
+    BigInteger.prototype.rShiftTo = function (n, r) {
         r.s = this.s;
         var ds = Math.floor(n / this.DB);
         if (ds >= this.t) {
@@ -1103,7 +1103,7 @@
 
 
     // (protected) r = this - a
-    BigInteger.prototype.subTo = function(a, r) {
+    BigInteger.prototype.subTo = function (a, r) {
         var i = 0,
             c = 0,
             m = Math.min(a.t, this.t);
@@ -1139,7 +1139,7 @@
 
     // (protected) r = this * a, r != this,a (HAC 14.12)
     // "this" should be the larger one if appropriate.
-    BigInteger.prototype.multiplyTo = function(a, r) {
+    BigInteger.prototype.multiplyTo = function (a, r) {
         var x = this.abs(),
             y = a.abs();
         var i = x.t;
@@ -1153,7 +1153,7 @@
 
 
     // (protected) r = this^2, r != this (HAC 14.16)
-    BigInteger.prototype.squareTo = function(r) {
+    BigInteger.prototype.squareTo = function (r) {
         var x = this.abs();
         var i = r.t = 2 * x.t;
         while (--i >= 0) r[i] = 0;
@@ -1173,7 +1173,7 @@
 
     // (protected) divide this by m, quotient and remainder to q, r (HAC 14.20)
     // r != q, this != m.  q or r may be null.
-    BigInteger.prototype.divRemTo = function(m, q, r) {
+    BigInteger.prototype.divRemTo = function (m, q, r) {
         var pm = m.abs();
         if (pm.t <= 0) return;
         var pt = this.abs();
@@ -1242,7 +1242,7 @@
     // if y is 1/x mod m, then y(2-xy) is 1/x mod m^2
     // should reduce x and y(2-xy) by m^2 at each step to keep size bounded.
     // JS multiply "overflows" differently from C/C++, so care is needed here.
-    BigInteger.prototype.invDigit = function() {
+    BigInteger.prototype.invDigit = function () {
         if (this.t < 1) return 0;
         var x = this[0];
         if ((x & 1) == 0) return 0;
@@ -1259,13 +1259,13 @@
 
 
     // (protected) true iff this is even
-    BigInteger.prototype.isEven = function() {
+    BigInteger.prototype.isEven = function () {
         return ((this.t > 0) ? (this[0] & 1) : this.s) == 0;
     };
 
 
     // (protected) this^e, e < 2^32, doing sqr and mul with "r" (HAC 14.79)
-    BigInteger.prototype.exp = function(e, z) {
+    BigInteger.prototype.exp = function (e, z) {
         if (e > 0xffffffff || e < 1) return BigInteger.ONE;
         var r = nbi(),
             r2 = nbi(),
@@ -1286,7 +1286,7 @@
 
 
     // (public) return string representation in given radix
-    BigInteger.prototype.toString = function(b) {
+    BigInteger.prototype.toString = function (b) {
         if (this.s < 0) return "-" + this.negate().toString(b);
         var k;
         if (b == 16) k = 4;
@@ -1325,19 +1325,19 @@
 
 
     // (public) -this
-    BigInteger.prototype.negate = function() {
+    BigInteger.prototype.negate = function () {
         var r = nbi();
         BigInteger.ZERO.subTo(this, r);
         return r;
     };
 
     // (public) |this|
-    BigInteger.prototype.abs = function() {
+    BigInteger.prototype.abs = function () {
         return (this.s < 0) ? this.negate() : this;
     };
 
     // (public) return + if this > a, - if this < a, 0 if equal
-    BigInteger.prototype.compareTo = function(a) {
+    BigInteger.prototype.compareTo = function (a) {
         var r = this.s - a.s;
         if (r != 0) return r;
         var i = this.t;
@@ -1349,13 +1349,13 @@
     }
 
     // (public) return the number of bits in "this"
-    BigInteger.prototype.bitLength = function() {
+    BigInteger.prototype.bitLength = function () {
         if (this.t <= 0) return 0;
         return this.DB * (this.t - 1) + nbits(this[this.t - 1] ^ (this.s & this.DM));
     };
 
     // (public) this mod a
-    BigInteger.prototype.mod = function(a) {
+    BigInteger.prototype.mod = function (a) {
         var r = nbi();
         this.abs().divRemTo(a, null, r);
         if (this.s < 0 && r.compareTo(BigInteger.ZERO) > 0) a.subTo(r, r);
@@ -1363,7 +1363,7 @@
     }
 
     // (public) this^e % m, 0 <= e < 2^32
-    BigInteger.prototype.modPowInt = function(e, m) {
+    BigInteger.prototype.modPowInt = function (e, m) {
         var z;
         if (e < 256 || m.isEven()) z = new Classic(m);
         else z = new Montgomery(m);
@@ -1445,12 +1445,12 @@
 
 
     // (protected) return x s.t. r^x < DV
-    BigInteger.prototype.chunkSize = function(r) {
+    BigInteger.prototype.chunkSize = function (r) {
         return Math.floor(Math.LN2 * this.DB / Math.log(r));
     };
 
     // (protected) convert to radix string
-    BigInteger.prototype.toRadix = function(b) {
+    BigInteger.prototype.toRadix = function (b) {
         if (b == null) b = 10;
         if (this.signum() == 0 || b < 2 || b > 36) return "0";
         var cs = this.chunkSize(b);
@@ -1468,7 +1468,7 @@
     };
 
     // (protected) convert from radix string
-    BigInteger.prototype.fromRadix = function(s, b) {
+    BigInteger.prototype.fromRadix = function (s, b) {
         this.fromInt(0);
         if (b == null) b = 10;
         var cs = this.chunkSize(b);
@@ -1498,7 +1498,7 @@
     };
 
     // (protected) alternate constructor
-    BigInteger.prototype.fromNumber = function(a, b, c) {
+    BigInteger.prototype.fromNumber = function (a, b, c) {
         if ("number" == typeof b) {
             // new BigInteger(int,int,RNG)
             if (a < 2) this.fromInt(1);
@@ -1525,7 +1525,7 @@
     };
 
     // (protected) r = this op a (bitwise)
-    BigInteger.prototype.bitwiseTo = function(a, op, r) {
+    BigInteger.prototype.bitwiseTo = function (a, op, r) {
         var i, f, m = Math.min(a.t, this.t);
         for (i = 0; i < m; ++i) r[i] = op(this[i], a[i]);
         if (a.t < this.t) {
@@ -1542,14 +1542,14 @@
     };
 
     // (protected) this op (1<<n)
-    BigInteger.prototype.changeBit = function(n, op) {
+    BigInteger.prototype.changeBit = function (n, op) {
         var r = BigInteger.ONE.shiftLeft(n);
         this.bitwiseTo(r, op, r);
         return r;
     };
 
     // (protected) r = this + a
-    BigInteger.prototype.addTo = function(a, r) {
+    BigInteger.prototype.addTo = function (a, r) {
         var i = 0,
             c = 0,
             m = Math.min(a.t, this.t);
@@ -1583,14 +1583,14 @@
     };
 
     // (protected) this *= n, this >= 0, 1 < n < DV
-    BigInteger.prototype.dMultiply = function(n) {
+    BigInteger.prototype.dMultiply = function (n) {
         this[this.t] = this.am(0, n - 1, this, 0, 0, this.t);
         ++this.t;
         this.clamp();
     };
 
     // (protected) this += n << w words, this >= 0
-    BigInteger.prototype.dAddOffset = function(n, w) {
+    BigInteger.prototype.dAddOffset = function (n, w) {
         if (n == 0) return;
         while (this.t <= w) this[this.t++] = 0;
         this[w] += n;
@@ -1603,7 +1603,7 @@
 
     // (protected) r = lower n words of "this * a", a.t <= n
     // "this" should be the larger one if appropriate.
-    BigInteger.prototype.multiplyLowerTo = function(a, n, r) {
+    BigInteger.prototype.multiplyLowerTo = function (a, n, r) {
         var i = Math.min(this.t + a.t, n);
         r.s = 0; // assumes a,this >= 0
         r.t = i;
@@ -1617,7 +1617,7 @@
 
     // (protected) r = "this * a" without lower n words, n > 0
     // "this" should be the larger one if appropriate.
-    BigInteger.prototype.multiplyUpperTo = function(a, n, r) {
+    BigInteger.prototype.multiplyUpperTo = function (a, n, r) {
         --n;
         var i = r.t = this.t + a.t - n;
         r.s = 0; // assumes a,this >= 0
@@ -1629,7 +1629,7 @@
     };
 
     // (protected) this % n, n < 2^26
-    BigInteger.prototype.modInt = function(n) {
+    BigInteger.prototype.modInt = function (n) {
         if (n <= 0) return 0;
         var d = this.DV % n,
             r = (this.s < 0) ? n - 1 : 0;
@@ -1642,7 +1642,7 @@
 
 
     // (protected) true if probably prime (HAC 4.24, Miller-Rabin)
-    BigInteger.prototype.millerRabin = function(t) {
+    BigInteger.prototype.millerRabin = function (t) {
         var n1 = this.subtract(BigInteger.ONE);
         var k = n1.getLowestSetBit();
         if (k <= 0) return false;
@@ -1669,14 +1669,14 @@
 
 
     // (public)
-    BigInteger.prototype.clone = function() {
+    BigInteger.prototype.clone = function () {
         var r = nbi();
         this.copyTo(r);
         return r;
     };
 
     // (public) return value as integer
-    BigInteger.prototype.intValue = function() {
+    BigInteger.prototype.intValue = function () {
         if (this.s < 0) {
             if (this.t == 1) return this[0] - this.DV;
             else if (this.t == 0) return -1;
@@ -1688,17 +1688,17 @@
 
 
     // (public) return value as byte
-    BigInteger.prototype.byteValue = function() {
+    BigInteger.prototype.byteValue = function () {
         return (this.t == 0) ? this.s : (this[0] << 24) >> 24;
     };
 
     // (public) return value as short (assumes DB>=16)
-    BigInteger.prototype.shortValue = function() {
+    BigInteger.prototype.shortValue = function () {
         return (this.t == 0) ? this.s : (this[0] << 16) >> 16;
     };
 
     // (public) 0 if this == 0, 1 if this > 0
-    BigInteger.prototype.signum = function() {
+    BigInteger.prototype.signum = function () {
         if (this.s < 0) return -1;
         else if (this.t <= 0 || (this.t == 1 && this[0] <= 0)) return 0;
         else return 1;
@@ -1706,7 +1706,7 @@
 
 
     // (public) convert to bigendian byte array
-    BigInteger.prototype.toByteArray = function() {
+    BigInteger.prototype.toByteArray = function () {
         var i = this.t,
             r = new Array();
         r[0] = this.s;
@@ -1734,13 +1734,13 @@
         return r;
     };
 
-    BigInteger.prototype.equals = function(a) {
+    BigInteger.prototype.equals = function (a) {
         return (this.compareTo(a) == 0);
     };
-    BigInteger.prototype.min = function(a) {
+    BigInteger.prototype.min = function (a) {
         return (this.compareTo(a) < 0) ? this : a;
     };
-    BigInteger.prototype.max = function(a) {
+    BigInteger.prototype.max = function (a) {
         return (this.compareTo(a) > 0) ? this : a;
     };
 
@@ -1748,7 +1748,7 @@
     function op_and(x, y) {
         return x & y;
     }
-    BigInteger.prototype.and = function(a) {
+    BigInteger.prototype.and = function (a) {
         var r = nbi();
         this.bitwiseTo(a, op_and, r);
         return r;
@@ -1758,7 +1758,7 @@
     function op_or(x, y) {
         return x | y;
     }
-    BigInteger.prototype.or = function(a) {
+    BigInteger.prototype.or = function (a) {
         var r = nbi();
         this.bitwiseTo(a, op_or, r);
         return r;
@@ -1768,7 +1768,7 @@
     function op_xor(x, y) {
         return x ^ y;
     }
-    BigInteger.prototype.xor = function(a) {
+    BigInteger.prototype.xor = function (a) {
         var r = nbi();
         this.bitwiseTo(a, op_xor, r);
         return r;
@@ -1778,14 +1778,14 @@
     function op_andnot(x, y) {
         return x & ~y;
     }
-    BigInteger.prototype.andNot = function(a) {
+    BigInteger.prototype.andNot = function (a) {
         var r = nbi();
         this.bitwiseTo(a, op_andnot, r);
         return r;
     };
 
     // (public) ~this
-    BigInteger.prototype.not = function() {
+    BigInteger.prototype.not = function () {
         var r = nbi();
         for (var i = 0; i < this.t; ++i) r[i] = this.DM & ~this[i];
         r.t = this.t;
@@ -1794,7 +1794,7 @@
     };
 
     // (public) this << n
-    BigInteger.prototype.shiftLeft = function(n) {
+    BigInteger.prototype.shiftLeft = function (n) {
         var r = nbi();
         if (n < 0) this.rShiftTo(-n, r);
         else this.lShiftTo(n, r);
@@ -1802,7 +1802,7 @@
     };
 
     // (public) this >> n
-    BigInteger.prototype.shiftRight = function(n) {
+    BigInteger.prototype.shiftRight = function (n) {
         var r = nbi();
         if (n < 0) this.lShiftTo(-n, r);
         else this.rShiftTo(n, r);
@@ -1810,7 +1810,7 @@
     };
 
     // (public) returns index of lowest 1-bit (or -1 if none)
-    BigInteger.prototype.getLowestSetBit = function() {
+    BigInteger.prototype.getLowestSetBit = function () {
         for (var i = 0; i < this.t; ++i)
             if (this[i] != 0) return i * this.DB + lbit(this[i]);
         if (this.s < 0) return this.t * this.DB;
@@ -1818,7 +1818,7 @@
     };
 
     // (public) return number of set bits
-    BigInteger.prototype.bitCount = function() {
+    BigInteger.prototype.bitCount = function () {
         var r = 0,
             x = this.s & this.DM;
         for (var i = 0; i < this.t; ++i) r += cbit(this[i] ^ x);
@@ -1826,56 +1826,56 @@
     };
 
     // (public) true iff nth bit is set
-    BigInteger.prototype.testBit = function(n) {
+    BigInteger.prototype.testBit = function (n) {
         var j = Math.floor(n / this.DB);
         if (j >= this.t) return (this.s != 0);
         return ((this[j] & (1 << (n % this.DB))) != 0);
     };
 
     // (public) this | (1<<n)
-    BigInteger.prototype.setBit = function(n) {
+    BigInteger.prototype.setBit = function (n) {
         return this.changeBit(n, op_or);
     };
     // (public) this & ~(1<<n)
-    BigInteger.prototype.clearBit = function(n) {
+    BigInteger.prototype.clearBit = function (n) {
         return this.changeBit(n, op_andnot);
     };
     // (public) this ^ (1<<n)
-    BigInteger.prototype.flipBit = function(n) {
+    BigInteger.prototype.flipBit = function (n) {
         return this.changeBit(n, op_xor);
     };
     // (public) this + a
-    BigInteger.prototype.add = function(a) {
+    BigInteger.prototype.add = function (a) {
         var r = nbi();
         this.addTo(a, r);
         return r;
     };
     // (public) this - a
-    BigInteger.prototype.subtract = function(a) {
+    BigInteger.prototype.subtract = function (a) {
         var r = nbi();
         this.subTo(a, r);
         return r;
     };
     // (public) this * a
-    BigInteger.prototype.multiply = function(a) {
+    BigInteger.prototype.multiply = function (a) {
         var r = nbi();
         this.multiplyTo(a, r);
         return r;
     };
     // (public) this / a
-    BigInteger.prototype.divide = function(a) {
+    BigInteger.prototype.divide = function (a) {
         var r = nbi();
         this.divRemTo(a, r, null);
         return r;
     };
     // (public) this % a
-    BigInteger.prototype.remainder = function(a) {
+    BigInteger.prototype.remainder = function (a) {
         var r = nbi();
         this.divRemTo(a, null, r);
         return r;
     };
     // (public) [this/a,this%a]
-    BigInteger.prototype.divideAndRemainder = function(a) {
+    BigInteger.prototype.divideAndRemainder = function (a) {
         var q = nbi(),
             r = nbi();
         this.divRemTo(a, q, r);
@@ -1883,7 +1883,7 @@
     };
 
     // (public) this^e % m (HAC 14.85)
-    BigInteger.prototype.modPow = function(e, m) {
+    BigInteger.prototype.modPow = function (e, m) {
         var i = e.bitLength(),
             k, r = nbv(1),
             z;
@@ -1970,7 +1970,7 @@
     };
 
     // (public) 1/this % m (HAC 14.61)
-    BigInteger.prototype.modInverse = function(m) {
+    BigInteger.prototype.modInverse = function (m) {
         var ac = m.isEven();
         if (this.signum() === 0) throw new Error('division by zero');
         if ((this.isEven() && ac) || m.signum() == 0) return BigInteger.ZERO;
@@ -2021,12 +2021,12 @@
 
 
     // (public) this^e
-    BigInteger.prototype.pow = function(e) {
+    BigInteger.prototype.pow = function (e) {
         return this.exp(e, new NullExp());
     };
 
     // (public) gcd(this,a) (HAC 14.54)
-    BigInteger.prototype.gcd = function(a) {
+    BigInteger.prototype.gcd = function (a) {
         var x = (this.s < 0) ? this.negate() : this.clone();
         var y = (a.s < 0) ? a.negate() : a.clone();
         if (x.compareTo(y) < 0) {
@@ -2058,7 +2058,7 @@
     };
 
     // (public) test primality with certainty >= 1-.5^t
-    BigInteger.prototype.isProbablePrime = function(t) {
+    BigInteger.prototype.isProbablePrime = function (t) {
         var i, x = this.abs();
         if (x.t == 1 && x[0] <= lowprimes[lowprimes.length - 1]) {
             for (i = 0; i < lowprimes.length; ++i)
@@ -2082,7 +2082,7 @@
     // JSBN-specific extension
 
     // (public) this^2
-    BigInteger.prototype.square = function() {
+    BigInteger.prototype.square = function () {
         var r = nbi();
         this.squareTo(r);
         return r;
@@ -2110,13 +2110,13 @@
      * This returns the absolute of the contained value in big endian
      * form. A value of zero results in an empty array.
      */
-    BigInteger.prototype.toByteArrayUnsigned = function() {
+    BigInteger.prototype.toByteArrayUnsigned = function () {
         var ba = this.abs().toByteArray();
         if (ba.length) {
             if (ba[0] == 0) {
                 ba = ba.slice(1);
             }
-            return ba.map(function(v) {
+            return ba.map(function (v) {
                 return (v < 0) ? v + 256 : v;
             });
         } else {
@@ -2131,7 +2131,7 @@
      * This function will interpret a byte array as a big integer in big
      * endian notation and ignore leading zeros.
      */
-    BigInteger.fromByteArrayUnsigned = function(ba) {
+    BigInteger.fromByteArrayUnsigned = function (ba) {
         if (!ba.length) {
             return ba.valueOf(0);
         } else if (ba[0] & 0x80) {
@@ -2167,7 +2167,7 @@
      *  62300 => 0x00f35c
      * -62300 => 0x80f35c
      */
-    BigInteger.prototype.toByteArraySigned = function() {
+    BigInteger.prototype.toByteArraySigned = function () {
         var val = this.abs().toByteArrayUnsigned();
         var neg = this.compareTo(BigInteger.ZERO) < 0;
 
@@ -2191,7 +2191,7 @@
      *
      * For details on the format please see BigInteger.toByteArraySigned.
      */
-    BigInteger.fromByteArraySigned = function(ba) {
+    BigInteger.fromByteArraySigned = function (ba) {
         // Check for negative value
         if (ba[0] & 0x80) {
             // Remove sign bit
@@ -2213,21 +2213,21 @@
     var Classic = GLOBAL.Classic = function Classic(m) {
         this.m = m;
     }
-    Classic.prototype.convert = function(x) {
+    Classic.prototype.convert = function (x) {
         if (x.s < 0 || x.compareTo(this.m) >= 0) return x.mod(this.m);
         else return x;
     };
-    Classic.prototype.revert = function(x) {
+    Classic.prototype.revert = function (x) {
         return x;
     };
-    Classic.prototype.reduce = function(x) {
+    Classic.prototype.reduce = function (x) {
         x.divRemTo(this.m, null, x);
     };
-    Classic.prototype.mulTo = function(x, y, r) {
+    Classic.prototype.mulTo = function (x, y, r) {
         x.multiplyTo(y, r);
         this.reduce(r);
     };
-    Classic.prototype.sqrTo = function(x, r) {
+    Classic.prototype.sqrTo = function (x, r) {
         x.squareTo(r);
         this.reduce(r);
     };
@@ -2246,7 +2246,7 @@
         this.mt2 = 2 * m.t;
     }
     // xR mod m
-    Montgomery.prototype.convert = function(x) {
+    Montgomery.prototype.convert = function (x) {
         var r = nbi();
         x.abs().dlShiftTo(this.m.t, r);
         r.divRemTo(this.m, null, r);
@@ -2254,14 +2254,14 @@
         return r;
     }
     // x/R mod m
-    Montgomery.prototype.revert = function(x) {
+    Montgomery.prototype.revert = function (x) {
         var r = nbi();
         x.copyTo(r);
         this.reduce(r);
         return r;
     };
     // x = x/R mod m (HAC 14.32)
-    Montgomery.prototype.reduce = function(x) {
+    Montgomery.prototype.reduce = function (x) {
         while (x.t <= this.mt2) // pad x so am has enough room later
             x[x.t++] = 0;
         for (var i = 0; i < this.m.t; ++i) {
@@ -2282,12 +2282,12 @@
         if (x.compareTo(this.m) >= 0) x.subTo(this.m, x);
     };
     // r = "xy/R mod m"; x,y != r
-    Montgomery.prototype.mulTo = function(x, y, r) {
+    Montgomery.prototype.mulTo = function (x, y, r) {
         x.multiplyTo(y, r);
         this.reduce(r);
     };
     // r = "x^2/R mod m"; x != r
-    Montgomery.prototype.sqrTo = function(x, r) {
+    Montgomery.prototype.sqrTo = function (x, r) {
         x.squareTo(r);
         this.reduce(r);
     };
@@ -2297,17 +2297,17 @@
 
 
     // A "null" reducer
-    var NullExp = GLOBAL.NullExp = function NullExp() {}
-    NullExp.prototype.convert = function(x) {
+    var NullExp = GLOBAL.NullExp = function NullExp() { }
+    NullExp.prototype.convert = function (x) {
         return x;
     };
-    NullExp.prototype.revert = function(x) {
+    NullExp.prototype.revert = function (x) {
         return x;
     };
-    NullExp.prototype.mulTo = function(x, y, r) {
+    NullExp.prototype.mulTo = function (x, y, r) {
         x.multiplyTo(y, r);
     };
-    NullExp.prototype.sqrTo = function(x, r) {
+    NullExp.prototype.sqrTo = function (x, r) {
         x.squareTo(r);
     };
 
@@ -2324,7 +2324,7 @@
         this.mu = this.r2.divide(m);
         this.m = m;
     }
-    Barrett.prototype.convert = function(x) {
+    Barrett.prototype.convert = function (x) {
         if (x.s < 0 || x.t > 2 * this.m.t) return x.mod(this.m);
         else if (x.compareTo(this.m) < 0) return x;
         else {
@@ -2334,11 +2334,11 @@
             return r;
         }
     };
-    Barrett.prototype.revert = function(x) {
+    Barrett.prototype.revert = function (x) {
         return x;
     };
     // x = x mod m (HAC 14.42)
-    Barrett.prototype.reduce = function(x) {
+    Barrett.prototype.reduce = function (x) {
         x.drShiftTo(this.m.t - 1, this.r2);
         if (x.t > this.m.t + 1) {
             x.t = this.m.t + 1;
@@ -2351,12 +2351,12 @@
         while (x.compareTo(this.m) >= 0) x.subTo(this.m, x);
     };
     // r = x*y mod m; x,y != r
-    Barrett.prototype.mulTo = function(x, y, r) {
+    Barrett.prototype.mulTo = function (x, y, r) {
         x.multiplyTo(y, r);
         this.reduce(r);
     };
     // r = x^2 mod m; x != r
-    Barrett.prototype.sqrTo = function(x, r) {
+    Barrett.prototype.sqrTo = function (x, r) {
         x.squareTo(r);
         this.reduce(r);
     };
@@ -2372,7 +2372,7 @@
 })(typeof global !== "undefined" ? global : window);
 
 //ellipticcurve.js
-(function(GLOBAL) {
+(function (GLOBAL) {
     /*!
      * Basic Javascript Elliptic Curve implementation
      * Ported loosely from BouncyCastle's Java EC code
@@ -2382,53 +2382,53 @@
      * http://www-cs-students.stanford.edu/~tjw/jsbn/LICENSE
      */
     // Constructor function of Global EllipticCurve object
-    var ec = GLOBAL.EllipticCurve = function() {};
+    var ec = GLOBAL.EllipticCurve = function () { };
 
     // ----------------
     // ECFieldElementFp constructor
     // q instanceof BigInteger
     // x instanceof BigInteger
-    ec.FieldElementFp = function(q, x) {
+    ec.FieldElementFp = function (q, x) {
         this.x = x;
         // TODO if(x.compareTo(q) >= 0) error
         this.q = q;
     };
 
-    ec.FieldElementFp.prototype.equals = function(other) {
+    ec.FieldElementFp.prototype.equals = function (other) {
         if (other == this) return true;
         return (this.q.equals(other.q) && this.x.equals(other.x));
     };
 
-    ec.FieldElementFp.prototype.toBigInteger = function() {
+    ec.FieldElementFp.prototype.toBigInteger = function () {
         return this.x;
     };
 
-    ec.FieldElementFp.prototype.negate = function() {
+    ec.FieldElementFp.prototype.negate = function () {
         return new ec.FieldElementFp(this.q, this.x.negate().mod(this.q));
     };
 
-    ec.FieldElementFp.prototype.add = function(b) {
+    ec.FieldElementFp.prototype.add = function (b) {
         return new ec.FieldElementFp(this.q, this.x.add(b.toBigInteger()).mod(this.q));
     };
 
-    ec.FieldElementFp.prototype.subtract = function(b) {
+    ec.FieldElementFp.prototype.subtract = function (b) {
         return new ec.FieldElementFp(this.q, this.x.subtract(b.toBigInteger()).mod(this.q));
     };
 
-    ec.FieldElementFp.prototype.multiply = function(b) {
+    ec.FieldElementFp.prototype.multiply = function (b) {
         return new ec.FieldElementFp(this.q, this.x.multiply(b.toBigInteger()).mod(this.q));
     };
 
-    ec.FieldElementFp.prototype.square = function() {
+    ec.FieldElementFp.prototype.square = function () {
         return new ec.FieldElementFp(this.q, this.x.square().mod(this.q));
     };
 
-    ec.FieldElementFp.prototype.divide = function(b) {
+    ec.FieldElementFp.prototype.divide = function (b) {
         return new ec.FieldElementFp(this.q, this.x.multiply(b.toBigInteger().modInverse(this.q)).mod(
             this.q));
     };
 
-    ec.FieldElementFp.prototype.getByteLength = function() {
+    ec.FieldElementFp.prototype.getByteLength = function () {
         return Math.floor((this.toBigInteger().bitLength() + 7) / 8);
     };
 
@@ -2440,7 +2440,7 @@
      * Copyright (c) 2000 - 2011 The Legion Of The Bouncy Castle (http://www.bouncycastle.org)
      * Ported to JavaScript by bitaddress.org
      */
-    ec.FieldElementFp.prototype.sqrt = function() {
+    ec.FieldElementFp.prototype.sqrt = function () {
         if (!this.q.testBit(0)) throw new Error("even value of q");
 
         // p mod 4 == 3
@@ -2468,7 +2468,7 @@
                 P = new BigInteger(this.q.bitLength(), rand);
             }
             while (P.compareTo(this.q) >= 0 || !(P.multiply(P).subtract(fourQ).modPow(legendreExponent,
-                    this.q).equals(qMinusOne)));
+                this.q).equals(qMinusOne)));
 
             var result = ec.FieldElementFp.fastLucasSequence(this.q, P, Q, k);
 
@@ -2492,7 +2492,7 @@
      * contribution from Simon Greatrix
      */
 
-    (function(C) {
+    (function (C) {
 
         // Create pad namespace
         var C_pad = C.pad = {};
@@ -2505,7 +2505,7 @@
         }
 
         // Remove padding when the final byte gives the number of padding bytes.
-        var _unpadLength = function(cipher, message, alg, padding) {
+        var _unpadLength = function (cipher, message, alg, padding) {
             var pad = message.pop();
             if (pad == 0) {
                 throw new Error("Invalid zero-length padding specified for " + alg +
@@ -2529,8 +2529,8 @@
 
         // No-operation padding, used for stream ciphers
         C_pad.NoPadding = {
-            pad: function(cipher, message) {},
-            unpad: function(cipher, message) {}
+            pad: function (cipher, message) { },
+            unpad: function (cipher, message) { }
         };
 
         // Zero Padding.
@@ -2538,7 +2538,7 @@
         // If the message is not an exact number of blocks, the final block is
         // completed with 0x00 bytes. There is no unpadding.
         C_pad.ZeroPadding = {
-            pad: function(cipher, message) {
+            pad: function (cipher, message) {
                 var blockSizeInBytes = cipher._blocksize * 4;
                 var reqd = message.length % blockSizeInBytes;
                 if (reqd != 0) {
@@ -2548,7 +2548,7 @@
                 }
             },
 
-            unpad: function(cipher, message) {
+            unpad: function (cipher, message) {
                 while (message[message.length - 1] == 0) {
                     message.pop();
                 }
@@ -2560,7 +2560,7 @@
         // Pads the plain text with an 0x80 byte followed by as many 0x00
         // bytes are required to complete the block.
         C_pad.iso7816 = {
-            pad: function(cipher, message) {
+            pad: function (cipher, message) {
                 var reqd = _requiredPadding(cipher, message);
                 message.push(0x80);
                 for (; reqd > 1; reqd--) {
@@ -2568,7 +2568,7 @@
                 }
             },
 
-            unpad: function(cipher, message) {
+            unpad: function (cipher, message) {
                 var padLength;
                 for (padLength = cipher._blocksize * 4; padLength > 0; padLength--) {
                     var b = message.pop();
@@ -2589,7 +2589,7 @@
         // The final block is padded with zeros except for the last byte of the
         // last block which contains the number of padding bytes.
         C_pad.ansix923 = {
-            pad: function(cipher, message) {
+            pad: function (cipher, message) {
                 var reqd = _requiredPadding(cipher, message);
                 for (var i = 1; i < reqd; i++) {
                     message.push(0x00);
@@ -2597,7 +2597,7 @@
                 message.push(reqd);
             },
 
-            unpad: function(cipher, message) {
+            unpad: function (cipher, message) {
                 _unpadLength(cipher, message, "ANSI X.923", 0);
             }
         };
@@ -2607,7 +2607,7 @@
         // The final block is padded with random bytes except for the last
         // byte of the last block which contains the number of padding bytes.
         C_pad.iso10126 = {
-            pad: function(cipher, message) {
+            pad: function (cipher, message) {
                 var reqd = _requiredPadding(cipher, message);
                 for (var i = 1; i < reqd; i++) {
                     message.push(Math.floor(Math.random() * 256));
@@ -2615,7 +2615,7 @@
                 message.push(reqd);
             },
 
-            unpad: function(cipher, message) {
+            unpad: function (cipher, message) {
                 _unpadLength(cipher, message, "ISO 10126", undefined);
             }
         };
@@ -2626,14 +2626,14 @@
         // value of each added byte is the number of bytes that are added,
         // i.e. N bytes, each of value N are added.
         C_pad.pkcs7 = {
-            pad: function(cipher, message) {
+            pad: function (cipher, message) {
                 var reqd = _requiredPadding(cipher, message);
                 for (var i = 0; i < reqd; i++) {
                     message.push(reqd);
                 }
             },
 
-            unpad: function(cipher, message) {
+            unpad: function (cipher, message) {
                 _unpadLength(cipher, message, "PKCS 7", message[message.length - 1]);
             }
         };
@@ -2644,19 +2644,19 @@
         /**
          * Mode base "class".
          */
-        var Mode = C_mode.Mode = function(padding) {
+        var Mode = C_mode.Mode = function (padding) {
             if (padding) {
                 this._padding = padding;
             }
         };
 
         Mode.prototype = {
-            encrypt: function(cipher, m, iv) {
+            encrypt: function (cipher, m, iv) {
                 this._padding.pad(cipher, m);
                 this._doEncrypt(cipher, m, iv);
             },
 
-            decrypt: function(cipher, m, iv) {
+            decrypt: function (cipher, m, iv) {
                 this._doDecrypt(cipher, m, iv);
                 this._padding.unpad(cipher, m);
             },
@@ -2673,7 +2673,7 @@
          * 
          * ECB does not require an initialization vector.
          */
-        var ECB = C_mode.ECB = function() {
+        var ECB = C_mode.ECB = function () {
             // Call parent constructor
             Mode.apply(this, arguments);
         };
@@ -2682,14 +2682,14 @@
         var ECB_prototype = ECB.prototype = new Mode;
 
         // Concrete steps for Mode template
-        ECB_prototype._doEncrypt = function(cipher, m, iv) {
+        ECB_prototype._doEncrypt = function (cipher, m, iv) {
             var blockSizeInBytes = cipher._blocksize * 4;
             // Encrypt each block
             for (var offset = 0; offset < m.length; offset += blockSizeInBytes) {
                 cipher._encryptblock(m, offset);
             }
         };
-        ECB_prototype._doDecrypt = function(cipher, c, iv) {
+        ECB_prototype._doDecrypt = function (cipher, c, iv) {
             var blockSizeInBytes = cipher._blocksize * 4;
             // Decrypt each block
             for (var offset = 0; offset < c.length; offset += blockSizeInBytes) {
@@ -2698,7 +2698,7 @@
         };
 
         // ECB never uses an IV
-        ECB_prototype.fixOptions = function(options) {
+        ECB_prototype.fixOptions = function (options) {
             options.iv = [];
         };
 
@@ -2709,7 +2709,7 @@
          * The first block is XORed with the IV. Subsequent blocks are XOR with the
          * previous cipher output.
          */
-        var CBC = C_mode.CBC = function() {
+        var CBC = C_mode.CBC = function () {
             // Call parent constructor
             Mode.apply(this, arguments);
         };
@@ -2718,7 +2718,7 @@
         var CBC_prototype = CBC.prototype = new Mode;
 
         // Concrete steps for Mode template
-        CBC_prototype._doEncrypt = function(cipher, m, iv) {
+        CBC_prototype._doEncrypt = function (cipher, m, iv) {
             var blockSizeInBytes = cipher._blocksize * 4;
 
             // Encrypt each block
@@ -2736,7 +2736,7 @@
                 cipher._encryptblock(m, offset);
             }
         };
-        CBC_prototype._doDecrypt = function(cipher, c, iv) {
+        CBC_prototype._doDecrypt = function (cipher, c, iv) {
             var blockSizeInBytes = cipher._blocksize * 4;
 
             // At the start, the previously crypted block is the IV
@@ -2766,7 +2766,7 @@
          * 
          * This is a stream cipher mode and does not require padding.
          */
-        var CFB = C_mode.CFB = function() {
+        var CFB = C_mode.CFB = function () {
             // Call parent constructor
             Mode.apply(this, arguments);
         };
@@ -2778,7 +2778,7 @@
         CFB_prototype._padding = C_pad.NoPadding;
 
         // Concrete steps for Mode template
-        CFB_prototype._doEncrypt = function(cipher, m, iv) {
+        CFB_prototype._doEncrypt = function (cipher, m, iv) {
             var blockSizeInBytes = cipher._blocksize * 4,
                 keystream = iv.slice(0);
 
@@ -2792,7 +2792,7 @@
                 keystream[j] = m[i];
             }
         };
-        CFB_prototype._doDecrypt = function(cipher, c, iv) {
+        CFB_prototype._doDecrypt = function (cipher, c, iv) {
             var blockSizeInBytes = cipher._blocksize * 4,
                 keystream = iv.slice(0);
 
@@ -2817,7 +2817,7 @@
          * 
          * This is a stream cipher mode and does not require padding.
          */
-        var OFB = C_mode.OFB = function() {
+        var OFB = C_mode.OFB = function () {
             // Call parent constructor
             Mode.apply(this, arguments);
         };
@@ -2829,7 +2829,7 @@
         OFB_prototype._padding = C_pad.NoPadding;
 
         // Concrete steps for Mode template
-        OFB_prototype._doEncrypt = function(cipher, m, iv) {
+        OFB_prototype._doEncrypt = function (cipher, m, iv) {
 
             var blockSizeInBytes = cipher._blocksize * 4,
                 keystream = iv.slice(0);
@@ -2857,7 +2857,7 @@
          *
          * This is a stream cipher mode and does not require padding.
          */
-        var CTR = C_mode.CTR = function() {
+        var CTR = C_mode.CTR = function () {
             // Call parent constructor
             Mode.apply(this, arguments);
         };
@@ -2868,7 +2868,7 @@
         // Override padding
         CTR_prototype._padding = C_pad.NoPadding;
 
-        CTR_prototype._doEncrypt = function(cipher, m, iv) {
+        CTR_prototype._doEncrypt = function (cipher, m, iv) {
             var blockSizeInBytes = cipher._blocksize * 4;
             var counter = iv.slice(0);
 
@@ -2907,7 +2907,7 @@
      * Copyright (c) 2009-2013, Jeff Mott. All rights reserved.
      * http://code.google.com/p/crypto-js/wiki/License
      */
-    (function() {
+    (function () {
 
         // Shortcuts
         var C = Crypto,
@@ -2916,7 +2916,7 @@
             UTF8 = charenc.UTF8,
             Binary = charenc.Binary;
 
-        C.PBKDF2 = function(password, salt, keylen, options) {
+        C.PBKDF2 = function (password, salt, keylen, options) {
 
             // Convert to byte arrays
             if (password.constructor == String) password = UTF8.stringToBytes(password);
@@ -2952,7 +2952,7 @@
 
             return options && options.asBytes ? derivedKeyBytes :
                 options && options.asString ? Binary.bytesToString(derivedKeyBytes) :
-                util.bytesToHex(derivedKeyBytes);
+                    util.bytesToHex(derivedKeyBytes);
 
         };
 
@@ -2980,7 +2980,7 @@
      * THE SOFTWARE.
      */
     // https://github.com/cheongwy/node-scrypt-js
-    (function() {
+    (function () {
 
         var MAX_VALUE = 2147483647;
         var workerUrl = null;
@@ -2992,7 +2992,7 @@
          * p = parallelization cost
          * 
          */
-        GLOBAL.Crypto_scrypt = function(passwd, salt, N, r, p, dkLen, callback) {
+        GLOBAL.Crypto_scrypt = function (passwd, salt, N, r, p, dkLen, callback) {
             if (N == 0 || (N & (N - 1)) != 0) throw Error("N must be > 0 and a power of 2");
 
             if (N > MAX_VALUE / 128 / r) throw Error("Parameter N is too large");
@@ -3009,7 +3009,7 @@
             try {
                 var i = 0;
                 var worksDone = 0;
-                var makeWorker = function() {
+                var makeWorker = function () {
                     if (!workerUrl) {
                         var code = '(' + scryptCore.toString() + ')()';
                         var blob;
@@ -3028,7 +3028,7 @@
                         workerUrl = URL.createObjectURL(blob);
                     }
                     var worker = new Worker(workerUrl);
-                    worker.onmessage = function(event) {
+                    worker.onmessage = function (event) {
                         var Bi = event.data[0],
                             Bslice = event.data[1];
                         worksDone++;
@@ -3056,7 +3056,7 @@
                     workers[1].postMessage([N, r, p, B, i++]);
                 }
             } catch (e) {
-                GLOBAL.setTimeout(function() {
+                GLOBAL.setTimeout(function () {
                     scryptCore();
                     callback(Crypto.PBKDF2(passwd, B, dkLen, PBKDF2_opts));
                 }, 0);
@@ -3068,7 +3068,7 @@
                     V = [];
 
                 if (typeof B === 'undefined') {
-                    onmessage = function(event) {
+                    onmessage = function (event) {
                         var data = event.data;
                         var N = data[0],
                             r = data[1],
@@ -3340,7 +3340,7 @@
      * Copyright (c) 2009-2013, Jeff Mott. All rights reserved.
      * http://code.google.com/p/crypto-js/wiki/License
      */
-    (function() {
+    (function () {
 
         // Shortcuts
         var C = Crypto,
@@ -3419,11 +3419,11 @@
 
         // Inner state
         var state = [
-                [],
-                [],
-                [],
-                []
-            ],
+            [],
+            [],
+            [],
+            []
+        ],
             keylength,
             nrounds,
             keyschedule;
@@ -3434,7 +3434,7 @@
              * Public API
              */
 
-            encrypt: function(message, password, options) {
+            encrypt: function (message, password, options) {
 
                 options = options || {};
 
@@ -3449,8 +3449,8 @@
                     // Convert to bytes if message is a string
                     m = (
                         message.constructor == String ?
-                        UTF8.stringToBytes(message) :
-                        message
+                            UTF8.stringToBytes(message) :
+                            message
                     ),
 
                     // Generate random IV
@@ -3459,12 +3459,12 @@
                     // Generate key
                     k = (
                         password.constructor == String ?
-                        // Derive key from pass-phrase
-                        C.PBKDF2(password, iv, 32, {
-                            asBytes: true
-                        }) :
-                        // else, assume byte array representing cryptographic key
-                        password
+                            // Derive key from pass-phrase
+                            C.PBKDF2(password, iv, 32, {
+                                asBytes: true
+                            }) :
+                            // else, assume byte array representing cryptographic key
+                            password
                     );
 
                 // Encrypt
@@ -3477,7 +3477,7 @@
 
             },
 
-            decrypt: function(ciphertext, password, options) {
+            decrypt: function (ciphertext, password, options) {
 
                 options = options || {};
 
@@ -3492,8 +3492,8 @@
                     // Convert to bytes if ciphertext is a string
                     c = (
                         ciphertext.constructor == String ?
-                        util.base64ToBytes(ciphertext) :
-                        ciphertext
+                            util.base64ToBytes(ciphertext) :
+                            ciphertext
                     ),
 
                     // Separate IV and message
@@ -3502,12 +3502,12 @@
                     // Generate key
                     k = (
                         password.constructor == String ?
-                        // Derive key from pass-phrase
-                        C.PBKDF2(password, iv, 32, {
-                            asBytes: true
-                        }) :
-                        // else, assume byte array representing cryptographic key
-                        password
+                            // Derive key from pass-phrase
+                            C.PBKDF2(password, iv, 32, {
+                                asBytes: true
+                            }) :
+                            // else, assume byte array representing cryptographic key
+                            password
                     );
 
                 // Decrypt
@@ -3526,7 +3526,7 @@
 
             _blocksize: 4,
 
-            _encryptblock: function(m, offset) {
+            _encryptblock: function (m, offset) {
 
                 // Set input
                 for (var row = 0; row < AES._blocksize; row++) {
@@ -3603,7 +3603,7 @@
 
             },
 
-            _decryptblock: function(c, offset) {
+            _decryptblock: function (c, offset) {
 
                 // Set input
                 for (var row = 0; row < AES._blocksize; row++) {
@@ -3685,14 +3685,14 @@
              * Private methods
              */
 
-            _init: function(k) {
+            _init: function (k) {
                 keylength = k.length / 4;
                 nrounds = keylength + 6;
                 AES._keyexpansion(k);
             },
 
             // Generate a key schedule
-            _keyexpansion: function(k) {
+            _keyexpansion: function (k) {
 
                 keyschedule = [];
 
@@ -3756,7 +3756,7 @@
      * Copyright (c) 2000 - 2011 The Legion Of The Bouncy Castle (http://www.bouncycastle.org)
      * Ported to JavaScript by bitaddress.org
      */
-    ec.FieldElementFp.fastLucasSequence = function(p, P, Q, k) {
+    ec.FieldElementFp.fastLucasSequence = function (p, P, Q, k) {
         // TODO Research and apply "common-multiplicand multiplication here"
 
         var n = k.bitLength();
@@ -3799,7 +3799,7 @@
 
     // ----------------
     // ECPointFp constructor
-    ec.PointFp = function(curve, x, y, z, compressed) {
+    ec.PointFp = function (curve, x, y, z, compressed) {
         this.curve = curve;
         this.x = x;
         this.y = y;
@@ -3815,7 +3815,7 @@
         this.compressed = !!compressed;
     };
 
-    ec.PointFp.prototype.getX = function() {
+    ec.PointFp.prototype.getX = function () {
         if (this.zinv == null) {
             this.zinv = this.z.modInverse(this.curve.q);
         }
@@ -3824,7 +3824,7 @@
         return this.curve.fromBigInteger(r);
     };
 
-    ec.PointFp.prototype.getY = function() {
+    ec.PointFp.prototype.getY = function () {
         if (this.zinv == null) {
             this.zinv = this.z.modInverse(this.curve.q);
         }
@@ -3833,7 +3833,7 @@
         return this.curve.fromBigInteger(r);
     };
 
-    ec.PointFp.prototype.equals = function(other) {
+    ec.PointFp.prototype.equals = function (other) {
         if (other == this) return true;
         if (this.isInfinity()) return other.isInfinity();
         if (other.isInfinity()) return this.isInfinity();
@@ -3848,16 +3848,16 @@
         return v.equals(BigInteger.ZERO);
     };
 
-    ec.PointFp.prototype.isInfinity = function() {
+    ec.PointFp.prototype.isInfinity = function () {
         if ((this.x == null) && (this.y == null)) return true;
         return this.z.equals(BigInteger.ZERO) && !this.y.toBigInteger().equals(BigInteger.ZERO);
     };
 
-    ec.PointFp.prototype.negate = function() {
+    ec.PointFp.prototype.negate = function () {
         return new ec.PointFp(this.curve, this.x, this.y.negate(), this.z);
     };
 
-    ec.PointFp.prototype.add = function(b) {
+    ec.PointFp.prototype.add = function (b) {
         if (this.isInfinity()) return b;
         if (b.isInfinity()) return this;
 
@@ -3899,7 +3899,7 @@
             z3);
     };
 
-    ec.PointFp.prototype.twice = function() {
+    ec.PointFp.prototype.twice = function () {
         if (this.isInfinity()) return this;
         if (this.y.toBigInteger().signum() == 0) return this.curve.getInfinity();
 
@@ -3934,7 +3934,7 @@
 
     // Simple NAF (Non-Adjacent Form) multiplication algorithm
     // TODO: modularize the multiplication algorithm
-    ec.PointFp.prototype.multiply = function(k) {
+    ec.PointFp.prototype.multiply = function (k) {
         if (this.isInfinity()) return this;
         if (k.signum() == 0) return this.curve.getInfinity();
 
@@ -3960,7 +3960,7 @@
     };
 
     // Compute this*j + x*k (simultaneous multiplication)
-    ec.PointFp.prototype.multiplyTwo = function(j, x, k) {
+    ec.PointFp.prototype.multiplyTwo = function (j, x, k) {
         var i;
         if (j.bitLength() > k.bitLength())
             i = j.bitLength() - 1;
@@ -3990,7 +3990,7 @@
 
     // patched by bitaddress.org and Casascius for use with Bitcoin.ECKey
     // patched by coretechs to support compressed public keys
-    ec.PointFp.prototype.getEncoded = function(compressed) {
+    ec.PointFp.prototype.getEncoded = function (compressed) {
         var x = this.getX().toBigInteger();
         var y = this.getY().toBigInteger();
         var len = 32; // integerToBytes will zero pad if integer is less than 32 bytes. 32 bytes length is required by the Bitcoin protocol.
@@ -4010,7 +4010,7 @@
         return enc;
     };
 
-    ec.PointFp.decodeFrom = function(curve, enc) {
+    ec.PointFp.decodeFrom = function (curve, enc) {
         var type = enc[0];
         var dataLen = enc.length - 1;
 
@@ -4030,7 +4030,7 @@
         return new ec.PointFp(curve, curve.fromBigInteger(x), curve.fromBigInteger(y));
     };
 
-    ec.PointFp.prototype.add2D = function(b) {
+    ec.PointFp.prototype.add2D = function (b) {
         if (this.isInfinity()) return b;
         if (b.isInfinity()) return this;
 
@@ -4053,7 +4053,7 @@
         return new ec.PointFp(this.curve, x3, y3);
     };
 
-    ec.PointFp.prototype.twice2D = function() {
+    ec.PointFp.prototype.twice2D = function () {
         if (this.isInfinity()) return this;
         if (this.y.toBigInteger().signum() == 0) {
             // if y1 == 0, then (x1, y1) == (x1, -y1)
@@ -4071,7 +4071,7 @@
         return new ec.PointFp(this.curve, x3, y3);
     };
 
-    ec.PointFp.prototype.multiply2D = function(k) {
+    ec.PointFp.prototype.multiply2D = function (k) {
         if (this.isInfinity()) return this;
         if (k.signum() == 0) return this.curve.getInfinity();
 
@@ -4096,7 +4096,7 @@
         return R;
     };
 
-    ec.PointFp.prototype.isOnCurve = function() {
+    ec.PointFp.prototype.isOnCurve = function () {
         var x = this.getX().toBigInteger();
         var y = this.getY().toBigInteger();
         var a = this.curve.getA().toBigInteger();
@@ -4107,7 +4107,7 @@
         return lhs.equals(rhs);
     };
 
-    ec.PointFp.prototype.toString = function() {
+    ec.PointFp.prototype.toString = function () {
         return '(' + this.getX().toBigInteger().toString() + ',' + this.getY().toBigInteger().toString() +
             ')';
     };
@@ -4117,7 +4117,7 @@
      *
      * See SEC 1, section 3.2.2.1: Elliptic Curve Public Key Validation Primitive
      */
-    ec.PointFp.prototype.validate = function() {
+    ec.PointFp.prototype.validate = function () {
         var n = this.curve.getQ();
 
         // Check Q != O
@@ -4154,7 +4154,7 @@
 
     // ----------------
     // ECCurveFp constructor
-    ec.CurveFp = function(q, a, b) {
+    ec.CurveFp = function (q, a, b) {
         this.q = q;
         this.a = this.fromBigInteger(a);
         this.b = this.fromBigInteger(b);
@@ -4162,38 +4162,38 @@
         this.reducer = new Barrett(this.q);
     }
 
-    ec.CurveFp.prototype.getQ = function() {
+    ec.CurveFp.prototype.getQ = function () {
         return this.q;
     };
 
-    ec.CurveFp.prototype.getA = function() {
+    ec.CurveFp.prototype.getA = function () {
         return this.a;
     };
 
-    ec.CurveFp.prototype.getB = function() {
+    ec.CurveFp.prototype.getB = function () {
         return this.b;
     };
 
-    ec.CurveFp.prototype.equals = function(other) {
+    ec.CurveFp.prototype.equals = function (other) {
         if (other == this) return true;
         return (this.q.equals(other.q) && this.a.equals(other.a) && this.b.equals(other.b));
     };
 
-    ec.CurveFp.prototype.getInfinity = function() {
+    ec.CurveFp.prototype.getInfinity = function () {
         return this.infinity;
     };
 
-    ec.CurveFp.prototype.fromBigInteger = function(x) {
+    ec.CurveFp.prototype.fromBigInteger = function (x) {
         return new ec.FieldElementFp(this.q, x);
     };
 
-    ec.CurveFp.prototype.reduce = function(x) {
+    ec.CurveFp.prototype.reduce = function (x) {
         this.reducer.reduce(x);
     };
 
     // for now, work with hex strings because they're easier in JS
     // compressed support added by bitaddress.org
-    ec.CurveFp.prototype.decodePointHex = function(s) {
+    ec.CurveFp.prototype.decodePointHex = function (s) {
         var firstByte = parseInt(s.substr(0, 2), 16);
         switch (firstByte) { // first byte
             case 0:
@@ -4220,7 +4220,7 @@
         }
     };
 
-    ec.CurveFp.prototype.encodePointHex = function(p) {
+    ec.CurveFp.prototype.encodePointHex = function (p) {
         if (p.isInfinity()) return "00";
         var xHex = p.getX().toBigInteger().toString(16);
         var yHex = p.getY().toBigInteger().toString(16);
@@ -4242,7 +4242,7 @@
      * Number yTilde
      * BigInteger X1
      */
-    ec.CurveFp.prototype.decompressPoint = function(yTilde, X1) {
+    ec.CurveFp.prototype.decompressPoint = function (yTilde, X1) {
         var x = this.fromBigInteger(X1);
         var alpha = x.multiply(x.square().add(this.getA())).add(this.getB());
         var beta = alpha.sqrt();
@@ -4258,11 +4258,11 @@
     };
 
 
-    ec.fromHex = function(s) {
+    ec.fromHex = function (s) {
         return new BigInteger(s, 16);
     };
 
-    ec.integerToBytes = function(i, len) {
+    ec.integerToBytes = function (i, len) {
         var bytes = i.toByteArrayUnsigned();
         if (len < bytes.length) {
             bytes = bytes.slice(bytes.length - len);
@@ -4277,29 +4277,29 @@
     // Named EC curves
     // ----------------
     // X9ECParameters constructor
-    ec.X9Parameters = function(curve, g, n, h) {
+    ec.X9Parameters = function (curve, g, n, h) {
         this.curve = curve;
         this.g = g;
         this.n = n;
         this.h = h;
     }
-    ec.X9Parameters.prototype.getCurve = function() {
+    ec.X9Parameters.prototype.getCurve = function () {
         return this.curve;
     };
-    ec.X9Parameters.prototype.getG = function() {
+    ec.X9Parameters.prototype.getG = function () {
         return this.g;
     };
-    ec.X9Parameters.prototype.getN = function() {
+    ec.X9Parameters.prototype.getN = function () {
         return this.n;
     };
-    ec.X9Parameters.prototype.getH = function() {
+    ec.X9Parameters.prototype.getH = function () {
         return this.h;
     };
 
     // secp256k1 is the Curve used by Bitcoin
     ec.secNamedCurves = {
         // used by Bitcoin
-        "secp256k1": function() {
+        "secp256k1": function () {
             // p = 2^256 - 2^32 - 2^9 - 2^8 - 2^7 - 2^6 - 2^4 - 1
             var p = ec.fromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F");
             var a = BigInteger.ZERO;
@@ -4315,16 +4315,16 @@
     };
 
     // secp256k1 called by Bitcoin's ECKEY
-    ec.getSECCurveByName = function(name) {
+    ec.getSECCurveByName = function (name) {
         if (ec.secNamedCurves[name] == undefined) return null;
         return ec.secNamedCurves[name]();
     }
 })(typeof global !== "undefined" ? global : window);
 
 //bitTrx.js
-(function(GLOBAL) {
+(function (GLOBAL) {
 
-    var bitjs = GLOBAL.bitjs = function() {};
+    var bitjs = GLOBAL.bitjs = function () { };
 
     function ascii_to_hexa(str) {
         var arr1 = [];
@@ -4341,7 +4341,7 @@
     bitjs.compressed = false;
 
     /* provide a privkey and return an WIF  */
-    bitjs.privkey2wif = function(h) {
+    bitjs.privkey2wif = function (h) {
         var r = Crypto.util.hexToBytes(h);
 
         if (bitjs.compressed == true) {
@@ -4360,7 +4360,7 @@
     }
 
     /* convert a wif key back to a private key */
-    bitjs.wif2privkey = function(wif) {
+    bitjs.wif2privkey = function (wif) {
         var compressed = false;
         var decode = B58.decode(wif);
         var key = decode.slice(0, decode.length - 4);
@@ -4376,7 +4376,7 @@
     }
 
     /* convert a wif to a pubkey */
-    bitjs.wif2pubkey = function(wif) {
+    bitjs.wif2pubkey = function (wif) {
         var compressed = bitjs.compressed;
         var r = bitjs.wif2privkey(wif);
         bitjs.compressed = r['compressed'];
@@ -4389,7 +4389,7 @@
     }
 
     /* convert a wif to a address */
-    bitjs.wif2address = function(wif) {
+    bitjs.wif2address = function (wif) {
         var r = bitjs.wif2pubkey(wif);
         return {
             'address': bitjs.pubkey2address(r['pubkey']),
@@ -4398,7 +4398,7 @@
     }
 
     /* generate a public key from a private key */
-    bitjs.newPubkey = function(hash) {
+    bitjs.newPubkey = function (hash) {
         var privateKeyBigInt = BigInteger.fromByteArrayUnsigned(Crypto.util.hexToBytes(hash));
         var curve = EllipticCurve.getSECCurveByName("secp256k1");
 
@@ -4424,7 +4424,7 @@
     }
 
     /* provide a public key and return address */
-    bitjs.pubkey2address = function(h, byte) {
+    bitjs.pubkey2address = function (h, byte) {
         var r = ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(h), {
             asBytes: true
         }));
@@ -4438,7 +4438,7 @@
         return B58.encode(r.concat(checksum));
     }
 
-    bitjs.transaction = function() {
+    bitjs.transaction = function () {
         var btrx = {};
         btrx.version = 2; //flochange look at this version
         btrx.inputs = [];
@@ -4447,7 +4447,7 @@
         btrx.floData = ""; //flochange .. look at this
 
 
-        btrx.addinput = function(txid, index, scriptPubKey, sequence) {
+        btrx.addinput = function (txid, index, scriptPubKey, sequence) {
             var o = {};
             o.outpoint = {
                 'hash': txid,
@@ -4459,7 +4459,7 @@
             return this.inputs.push(o);
         }
 
-        btrx.addoutput = function(address, value) {
+        btrx.addoutput = function (address, value) {
             var o = {};
             var buf = [];
             var addrDecoded = btrx.addressDecode(address);
@@ -4475,14 +4475,14 @@
         }
 
 
-        btrx.addflodata = function(txcomments) { // flochange - this whole function needs to be done
+        btrx.addflodata = function (txcomments) { // flochange - this whole function needs to be done
             this.floData = txcomments;
             return this.floData; //flochange .. returning the txcomments -- check if the function return will assign
         }
 
 
         // Only standard addresses
-        btrx.addressDecode = function(address) {
+        btrx.addressDecode = function (address) {
             var bytes = B58.decode(address);
             var front = bytes.slice(0, bytes.length - 4);
             var back = bytes.slice(bytes.length - 4);
@@ -4497,7 +4497,7 @@
         }
 
         /* generate the transaction hash to sign from a transaction input */
-        btrx.transactionHash = function(index, sigHashType) {
+        btrx.transactionHash = function (index, sigHashType) {
 
             var clone = bitjs.clone(this);
             var shType = sigHashType || 1;
@@ -4579,7 +4579,7 @@
         }
 
         /* generate a signature from a transaction hash */
-        btrx.transactionSig = function(index, wif, sigHashType, txhash) {
+        btrx.transactionSig = function (index, wif, sigHashType, txhash) {
 
             function serializeSig(r, s) {
                 var rBa = r.toByteArraySigned();
@@ -4635,7 +4635,7 @@
         }
 
         // https://tools.ietf.org/html/rfc6979#section-3.2
-        btrx.deterministicK = function(wif, hash, badrs) {
+        btrx.deterministicK = function (wif, hash, badrs) {
             // if r or s were invalid when this function was used in signing,
             // we do not want to actually compute r, s here for efficiency, so,
             // we can increment badrs. explained at end of RFC 6979 section 3.2
@@ -4718,7 +4718,7 @@
         };
 
         /* sign a "standard" input */
-        btrx.signinput = function(index, wif, sigHashType) {
+        btrx.signinput = function (index, wif, sigHashType) {
             var key = bitjs.wif2pubkey(wif);
             var shType = sigHashType || 1;
             var signature = this.transactionSig(index, wif, shType);
@@ -4734,7 +4734,7 @@
         }
 
         /* sign inputs */
-        btrx.sign = function(wif, sigHashType) {
+        btrx.sign = function (wif, sigHashType) {
             var shType = sigHashType || 1;
             for (var i = 0; i < this.inputs.length; i++) {
                 this.signinput(i, wif, shType);
@@ -4744,7 +4744,7 @@
 
 
         /* serialize a transaction */
-        btrx.serialize = function() {
+        btrx.serialize = function () {
             var buffer = [];
             buffer = buffer.concat(bitjs.numToBytes(parseInt(this.version), 4));
 
@@ -4797,7 +4797,7 @@
 
     }
 
-    bitjs.numToBytes = function(num, bytes) {
+    bitjs.numToBytes = function (num, bytes) {
         if (typeof bytes === "undefined") bytes = 8;
         if (bytes == 0) {
             return [];
@@ -4808,7 +4808,7 @@
         }
     }
 
-    bitjs.numToByteArray = function(num) {
+    bitjs.numToByteArray = function (num) {
         if (num <= 256) {
             return [num];
         } else {
@@ -4816,7 +4816,7 @@
         }
     }
 
-    bitjs.numToVarInt = function(num) {
+    bitjs.numToVarInt = function (num) {
         if (num < 253) {
             return [num];
         } else if (num < 65536) {
@@ -4828,14 +4828,14 @@
         }
     }
 
-    bitjs.bytesToNum = function(bytes) {
+    bitjs.bytesToNum = function (bytes) {
         if (bytes.length == 0) return 0;
         else return bytes[0] + 256 * bitjs.bytesToNum(bytes.slice(1));
     }
 
     /* clone an object */
-    bitjs.clone = function(obj) {
-        if (obj == null || typeof(obj) != 'object') return obj;
+    bitjs.clone = function (obj) {
+        if (obj == null || typeof (obj) != 'object') return obj;
         var temp = new obj.constructor();
 
         for (var key in obj) {
@@ -4859,7 +4859,7 @@
          *
          * Ported to JavaScript by Stefan Thomas.
          */
-        encode: function(input) {
+        encode: function (input) {
             var bi = BigInteger.fromByteArrayUnsigned(input);
             var chars = [];
 
@@ -4888,7 +4888,7 @@
          *
          * Ported to JavaScript by Stefan Thomas.
          */
-        decode: function(input) {
+        decode: function (input) {
             var bi = BigInteger.valueOf(0);
             var leadingZerosNum = 0;
             for (var i = input.length - 1; i >= 0; i--) {
@@ -4916,7 +4916,7 @@
 })(typeof global !== "undefined" ? global : window);
 
 //Bitcoin.js
-(function(GLOBAL) {
+(function (GLOBAL) {
     /*
         Copyright (c) 2011 Stefan Thomas
     
@@ -4942,7 +4942,7 @@
          *
          * Ported to JavaScript by Stefan Thomas.
          */
-        encode: function(input) {
+        encode: function (input) {
             var bi = BigInteger.fromByteArrayUnsigned(input);
             var chars = [];
 
@@ -4971,7 +4971,7 @@
          *
          * Ported to JavaScript by Stefan Thomas.
          */
-        decode: function(input) {
+        decode: function (input) {
             var bi = BigInteger.valueOf(0);
             var leadingZerosNum = 0;
             for (var i = input.length - 1; i >= 0; i--) {
@@ -4996,7 +4996,7 @@
     };
 
     //https://raw.github.com/bitcoinjs/bitcoinjs-lib/09e8c6e184d6501a0c2c59d73ca64db5c0d3eb95/src/address.js
-    Bitcoin.Address = function(bytes) {
+    Bitcoin.Address = function (bytes) {
         if (GLOBAL.cryptocoin == "FLO")
             this.version = 0x23; // FLO mainnet public address
         else if (GLOBAL.cryptocoin == "FLO_TEST")
@@ -5014,7 +5014,7 @@
      *
      * Returns the address as a base58-encoded string in the standardized format.
      */
-    Bitcoin.Address.prototype.toString = function() {
+    Bitcoin.Address.prototype.toString = function () {
         // Get a copy of the hash
         var hash = this.hash.slice(0);
 
@@ -5029,14 +5029,14 @@
         return Bitcoin.Base58.encode(bytes);
     };
 
-    Bitcoin.Address.prototype.getHashBase64 = function() {
+    Bitcoin.Address.prototype.getHashBase64 = function () {
         return Crypto.util.bytesToBase64(this.hash);
     };
 
     /**
      * Parse a Bitcoin address contained in a string.
      */
-    Bitcoin.Address.decodeString = function(string, version) {
+    Bitcoin.Address.decodeString = function (string, version) {
         var bytes = Bitcoin.Base58.decode(string);
         var hash = bytes.slice(0, 21);
         var checksum = Crypto.SHA256(Crypto.SHA256(hash, {
@@ -5059,7 +5059,7 @@
         return hash;
     };
     //https://raw.github.com/bitcoinjs/bitcoinjs-lib/e90780d3d3b8fc0d027d2bcb38b80479902f223e/src/ecdsa.js
-    Bitcoin.ECDSA = (function() {
+    Bitcoin.ECDSA = (function () {
         var ecparams = EllipticCurve.getSECCurveByName("secp256k1");
         var rng = new SecureRandom();
 
@@ -5092,12 +5092,12 @@
         };
 
         var ECDSA = {
-            getBigRandom: function(limit) {
+            getBigRandom: function (limit) {
                 return new BigInteger(limit.bitLength(), rng)
                     .mod(limit.subtract(BigInteger.ONE))
                     .add(BigInteger.ONE);
             },
-            sign: function(hash, priv) {
+            sign: function (hash, priv) {
                 var d = priv;
                 var n = ecparams.getN();
                 var e = BigInteger.fromByteArrayUnsigned(hash);
@@ -5114,7 +5114,7 @@
                 return ECDSA.serializeSig(r, s);
             },
 
-            verify: function(hash, sig, pubkey) {
+            verify: function (hash, sig, pubkey) {
                 var r, s;
                 if (Bitcoin.Util.isArray(sig)) {
                     var obj = ECDSA.parseSig(sig);
@@ -5140,7 +5140,7 @@
                 return ECDSA.verifyRaw(e, r, s, Q);
             },
 
-            verifyRaw: function(e, r, s, Q) {
+            verifyRaw: function (e, r, s, Q) {
                 var n = ecparams.getN();
                 var G = ecparams.getG();
 
@@ -5173,7 +5173,7 @@
              *
              * Takes two BigIntegers representing r and s and returns a byte array.
              */
-            serializeSig: function(r, s) {
+            serializeSig: function (r, s) {
                 var rBa = r.toByteArraySigned();
                 var sBa = s.toByteArraySigned();
 
@@ -5202,7 +5202,7 @@
              *   s: BigInteger
              * }
              */
-            parseSig: function(sig) {
+            parseSig: function (sig) {
                 var cursor;
                 if (sig[0] != 0x30)
                     throw new Error("Signature not a valid DERSequence");
@@ -5231,7 +5231,7 @@
                 };
             },
 
-            parseSigCompact: function(sig) {
+            parseSigCompact: function (sig) {
                 if (sig.length !== 65) {
                     throw "Signature has the wrong length";
                 }
@@ -5262,7 +5262,7 @@
              *
              * http://www.secg.org/download/aid-780/sec1-v2.pdf
              */
-            recoverPubKey: function(r, s, hash, i) {
+            recoverPubKey: function (r, s, hash, i) {
                 // The recovery parameter i has two bits.
                 i = i & 3;
 
@@ -5333,14 +5333,14 @@
              * This function simply tries all four cases and returns the value
              * that resulted in a successful pubkey recovery.
              */
-            calcPubkeyRecoveryParam: function(address, r, s, hash) {
+            calcPubkeyRecoveryParam: function (address, r, s, hash) {
                 for (var i = 0; i < 4; i++) {
                     try {
                         var pubkey = Bitcoin.ECDSA.recoverPubKey(r, s, hash, i);
                         if (pubkey.getBitcoinAddress().toString() == address) {
                             return i;
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 throw "Unable to find valid recovery factor";
             }
@@ -5348,11 +5348,11 @@
 
         return ECDSA;
     })();
-    Bitcoin.KeyPool = (function() {
-        var KeyPool = function() {
+    Bitcoin.KeyPool = (function () {
+        var KeyPool = function () {
             this.keyArray = [];
 
-            this.push = function(item) {
+            this.push = function (item) {
                 if (item == null || item.priv == null) return;
                 var doAdd = true;
                 // prevent duplicates from being added to the array
@@ -5366,24 +5366,24 @@
                 if (doAdd) this.keyArray.push(item);
             };
 
-            this.reset = function() {
+            this.reset = function () {
                 this.keyArray = [];
             };
 
-            this.getArray = function() {
+            this.getArray = function () {
                 // copy array
                 return this.keyArray.slice(0);
             };
 
-            this.setArray = function(ka) {
+            this.setArray = function (ka) {
                 this.keyArray = ka;
             };
 
-            this.length = function() {
+            this.length = function () {
                 return this.keyArray.length;
             };
 
-            this.toString = function() {
+            this.toString = function () {
                 var keyPoolString = "# = " + this.length() + "\n";
                 var pool = this.getArray();
                 for (var index in pool) {
@@ -5404,17 +5404,17 @@
         return new KeyPool();
     })();
 
-    Bitcoin.Bip38Key = (function() {
-        var Bip38 = function(address, encryptedKey) {
+    Bitcoin.Bip38Key = (function () {
+        var Bip38 = function (address, encryptedKey) {
             this.address = address;
             this.priv = encryptedKey;
         };
 
-        Bip38.prototype.getBitcoinAddress = function() {
+        Bip38.prototype.getBitcoinAddress = function () {
             return this.address;
         };
 
-        Bip38.prototype.toString = function() {
+        Bip38.prototype.toString = function () {
             return this.priv;
         };
 
@@ -5422,12 +5422,12 @@
     })();
 
     //https://raw.github.com/pointbiz/bitcoinjs-lib/9b2f94a028a7bc9bed94e0722563e9ff1d8e8db8/src/eckey.js
-    Bitcoin.ECKey = (function() {
+    Bitcoin.ECKey = (function () {
         var ECDSA = Bitcoin.ECDSA;
         var KeyPool = Bitcoin.KeyPool;
         var ecparams = EllipticCurve.getSECCurveByName("secp256k1");
 
-        var ECKey = function(input) {
+        var ECKey = function (input) {
             if (!input) {
                 // Generate new key
                 var n = ecparams.getN();
@@ -5511,7 +5511,7 @@
         /**
          * Set whether the public key should be returned compressed or not.
          */
-        ECKey.prototype.setError = function(err) {
+        ECKey.prototype.setError = function (err) {
             this.error = err;
             this.priv = null;
             return this;
@@ -5520,7 +5520,7 @@
         /**
          * Set whether the public key should be returned compressed or not.
          */
-        ECKey.prototype.setCompressed = function(v) {
+        ECKey.prototype.setCompressed = function (v) {
             this.compressed = !!v;
             if (this.pubPoint) this.pubPoint.compressed = this.compressed;
             return this;
@@ -5529,7 +5529,7 @@
         /*
          * Return public key as a byte array in DER encoding
          */
-        ECKey.prototype.getPub = function() {
+        ECKey.prototype.getPub = function () {
             if (this.compressed) {
                 if (this.pubComp) return this.pubComp;
                 return this.pubComp = this.getPubPoint().getEncoded(1);
@@ -5542,7 +5542,7 @@
         /**
          * Return public point as ECPoint object.
          */
-        ECKey.prototype.getPubPoint = function() {
+        ECKey.prototype.getPubPoint = function () {
             if (!this.pubPoint) {
                 this.pubPoint = ecparams.getG().multiply(this.priv);
                 this.pubPoint.compressed = this.compressed;
@@ -5550,7 +5550,7 @@
             return this.pubPoint;
         };
 
-        ECKey.prototype.getPubKeyHex = function() {
+        ECKey.prototype.getPubKeyHex = function () {
             if (this.compressed) {
                 if (this.pubKeyHexComp) return this.pubKeyHexComp;
                 return this.pubKeyHexComp = Crypto.util.bytesToHex(this.getPub()).toString().toUpperCase();
@@ -5566,7 +5566,7 @@
          * This is calculated as RIPE160(SHA256([encoded pubkey])) and returned as
          * a byte array.
          */
-        ECKey.prototype.getPubKeyHash = function() {
+        ECKey.prototype.getPubKeyHash = function () {
             if (this.compressed) {
                 if (this.pubKeyHashComp) return this.pubKeyHashComp;
                 return this.pubKeyHashComp = Bitcoin.Util.sha256ripe160(this.getPub());
@@ -5576,7 +5576,7 @@
             }
         };
 
-        ECKey.prototype.getBitcoinAddress = function() {
+        ECKey.prototype.getBitcoinAddress = function () {
             var hash = this.getPubKeyHash();
             var addr = new Bitcoin.Address(hash);
             return addr.toString();
@@ -5585,7 +5585,7 @@
         /*
          * Takes a public point as a hex string or byte array
          */
-        ECKey.prototype.setPub = function(pub) {
+        ECKey.prototype.setPub = function (pub) {
             // byte array
             if (Bitcoin.Util.isArray(pub)) {
                 pub = Crypto.util.bytesToHex(pub).toString().toUpperCase();
@@ -5597,7 +5597,7 @@
         };
 
         // Sipa Private Key Wallet Import Format
-        ECKey.prototype.getBitcoinWalletImportFormat = function() {
+        ECKey.prototype.getBitcoinWalletImportFormat = function () {
             var bytes = this.getBitcoinPrivateKeyByteArray();
             if (bytes == null) return "";
             bytes.unshift(ECKey.privateKeyPrefix); // prepend 0x80 byte
@@ -5613,16 +5613,16 @@
         };
 
         // Private Key Hex Format
-        ECKey.prototype.getBitcoinHexFormat = function() {
+        ECKey.prototype.getBitcoinHexFormat = function () {
             return Crypto.util.bytesToHex(this.getBitcoinPrivateKeyByteArray()).toString().toUpperCase();
         };
 
         // Private Key Base64 Format
-        ECKey.prototype.getBitcoinBase64Format = function() {
+        ECKey.prototype.getBitcoinBase64Format = function () {
             return Crypto.util.bytesToBase64(this.getBitcoinPrivateKeyByteArray());
         };
 
-        ECKey.prototype.getBitcoinPrivateKeyByteArray = function() {
+        ECKey.prototype.getBitcoinPrivateKeyByteArray = function () {
             if (this.priv == null) return null;
             // Get a copy of private key as a byte array
             var bytes = this.priv.toByteArrayUnsigned();
@@ -5631,7 +5631,7 @@
             return bytes;
         };
 
-        ECKey.prototype.toString = function(format) {
+        ECKey.prototype.toString = function (format) {
             format = format || "";
             if (format.toString().toLowerCase() == "base64" || format.toString().toLowerCase() == "b64") {
                 return this.getBitcoinBase64Format();
@@ -5644,18 +5644,18 @@
             }
         };
 
-        ECKey.prototype.sign = function(hash) {
+        ECKey.prototype.sign = function (hash) {
             return ECDSA.sign(hash, this.priv);
         };
 
-        ECKey.prototype.verify = function(hash, sig) {
+        ECKey.prototype.verify = function (hash, sig) {
             return ECDSA.verify(hash, sig, this.getPub());
         };
 
         /**
          * Parse a wallet import format private key contained in a string.
          */
-        ECKey.decodeWalletImportFormat = function(privStr) {
+        ECKey.decodeWalletImportFormat = function (privStr) {
             var bytes = Bitcoin.Base58.decode(privStr);
             var hash = bytes.slice(0, 33);
             var checksum = Crypto.SHA256(Crypto.SHA256(hash, {
@@ -5680,7 +5680,7 @@
         /**
          * Parse a compressed wallet import format private key contained in a string.
          */
-        ECKey.decodeCompressedWalletImportFormat = function(privStr) {
+        ECKey.decodeCompressedWalletImportFormat = function (privStr) {
             var bytes = Bitcoin.Base58.decode(privStr);
             var hash = bytes.slice(0, 34);
             var checksum = Crypto.SHA256(Crypto.SHA256(hash, {
@@ -5703,13 +5703,13 @@
         };
 
         // 64 characters [0-9A-F]
-        ECKey.isHexFormat = function(key) {
+        ECKey.isHexFormat = function (key) {
             key = key.toString();
             return /^[A-Fa-f0-9]{64}$/.test(key);
         };
 
         // 51 characters base58, always starts with a '5'
-        ECKey.isWalletImportFormat = function(key) {
+        ECKey.isWalletImportFormat = function (key) {
             key = key.toString();
             return (ECKey.privateKeyPrefix == 0x80) ?
                 (/^5[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{50}$/.test(key)) :
@@ -5717,7 +5717,7 @@
         };
 
         // 52 characters base58
-        ECKey.isCompressedWalletImportFormat = function(key) {
+        ECKey.isCompressedWalletImportFormat = function (key) {
             key = key.toString();
             return (ECKey.privateKeyPrefix == 0x80) ?
                 (/^[LK][123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(key)) :
@@ -5725,19 +5725,19 @@
         };
 
         // 44 characters
-        ECKey.isBase64Format = function(key) {
+        ECKey.isBase64Format = function (key) {
             key = key.toString();
             return (/^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=+\/]{44}$/.test(key));
         };
 
         // 99 characters, 1=1, if using dice convert 6 to 0
-        ECKey.isBase6Format = function(key) {
+        ECKey.isBase6Format = function (key) {
             key = key.toString();
             return (/^[012345]{99}$/.test(key));
         };
 
         // 22, 26 or 30 characters, always starts with an 'S'
-        ECKey.isMiniFormat = function(key) {
+        ECKey.isMiniFormat = function (key) {
             key = key.toString();
             var validChars22 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21}$/.test(key);
             var validChars26 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{25}$/.test(key);
@@ -5757,13 +5757,13 @@
         /**
          * Cross-browser compatibility version of Array.isArray.
          */
-        isArray: Array.isArray || function(o) {
+        isArray: Array.isArray || function (o) {
             return Object.prototype.toString.call(o) === '[object Array]';
         },
         /**
          * Create an array of a certain length filled with a specific value.
          */
-        makeFilledArray: function(len, val) {
+        makeFilledArray: function (len, val) {
             var array = [];
             var i = 0;
             while (i < len) {
@@ -5778,7 +5778,7 @@
          *
          * Returns a byte array.
          */
-        numToVarInt: function(i) {
+        numToVarInt: function (i) {
             if (i < 0xfd) {
                 // unsigned char
                 return [i];
@@ -5796,7 +5796,7 @@
         /**
          * Parse a Bitcoin value byte array, returning a BigInteger.
          */
-        valueToBigInt: function(valueBuffer) {
+        valueToBigInt: function (valueBuffer) {
             if (valueBuffer instanceof BigInteger) return valueBuffer;
 
             // Prepend zero byte to prevent interpretation as negative integer
@@ -5814,7 +5814,7 @@
          * 900.99998888
          * 34.00
          */
-        formatValue: function(valueBuffer) {
+        formatValue: function (valueBuffer) {
             var value = this.valueToBigInt(valueBuffer).toString();
             var integerPart = value.length > 8 ? value.substr(0, value.length - 8) : '0';
             var decimalPart = value.length > 8 ? value.substr(value.length - 8) : value;
@@ -5830,7 +5830,7 @@
          * the parsed value back to the user to make sure we understood his input
          * correctly.
          */
-        parseValue: function(valueString) {
+        parseValue: function (valueString) {
             // TODO: Detect other number formats (e.g. comma as decimal separator)
             var valueComp = valueString.split('.');
             var integralPart = valueComp[0];
@@ -5848,7 +5848,7 @@
          * Takes an arbitrary byte array as inputs and returns the hash as a byte
          * array.
          */
-        sha256ripe160: function(data) {
+        sha256ripe160: function (data) {
             return ripemd160(Crypto.SHA256(data, {
                 asBytes: true
             }), {
@@ -5856,7 +5856,7 @@
             });
         },
         // double sha256
-        dsha256: function(data) {
+        dsha256: function (data) {
             return Crypto.SHA256(Crypto.SHA256(data, {
                 asBytes: true
             }), {
@@ -5864,7 +5864,7 @@
             });
         },
         // duck typing method
-        hasMethods: function(obj /*, method list as strings */ ) {
+        hasMethods: function (obj /*, method list as strings */) {
             var i = 1,
                 methodName;
             while ((methodName = arguments[i++])) {
@@ -5878,15 +5878,15 @@
 })(typeof global !== "undefined" ? global : window);
 
 //ellipticCurveEncryption.js
-(function(GLOBAL) {
-    (function(ellipticCurveType) {
+(function (GLOBAL) {
+    (function (ellipticCurveType) {
 
         //Defining Elliptic Encryption Object  
-        var ellipticEncryption = GLOBAL.ellipticCurveEncryption = function() {};
+        var ellipticEncryption = GLOBAL.ellipticCurveEncryption = function () { };
 
         ellipticEncryption.rng = new SecureRandom();
 
-        ellipticEncryption.getCurveParameters = function(curveName) {
+        ellipticEncryption.getCurveParameters = function (curveName) {
 
             //Default is secp256k1
             curveName = typeof curveName !== 'undefined' ? curveName : "secp256k1";
@@ -5914,38 +5914,38 @@
 
         ellipticEncryption.selectedCurve = ellipticEncryption.getCurveParameters(ellipticCurveType);
 
-        ellipticEncryption.get_curve = function() {
+        ellipticEncryption.get_curve = function () {
             return new EllipticCurve.CurveFp(new BigInteger(this.selectedCurve.Q),
                 new BigInteger(this.selectedCurve.A),
                 new BigInteger(this.selectedCurve.B));
         }
 
-        ellipticEncryption.get_G = function(curve) {
+        ellipticEncryption.get_G = function (curve) {
             return new EllipticCurve.PointFp(curve,
                 curve.fromBigInteger(new BigInteger(this.selectedCurve.GX)),
                 curve.fromBigInteger(new BigInteger(this.selectedCurve.GY)));
         }
 
-        ellipticEncryption.pick_rand = function() {
+        ellipticEncryption.pick_rand = function () {
             var n = new BigInteger(this.selectedCurve.N);
             var n1 = n.subtract(BigInteger.ONE);
             var r = new BigInteger(n.bitLength(), this.rng);
             return r.mod(n1).add(BigInteger.ONE);
         }
 
-        ellipticEncryption.senderRandom = function() {
+        ellipticEncryption.senderRandom = function () {
             var r = this.pick_rand();
             return r.toString();
         };
 
-        ellipticEncryption.receiverRandom = function() {
+        ellipticEncryption.receiverRandom = function () {
 
             //This is receivers private key. For now we will use random. CHANGE IT LATER
             var r = this.pick_rand();
             return r.toString();
         }
 
-        ellipticEncryption.senderPublicString = function(senderPrivateKey) {
+        ellipticEncryption.senderPublicString = function (senderPrivateKey) {
 
             var senderKeyECData = {};
 
@@ -5961,7 +5961,7 @@
 
         //In real life ellipticEncryption.receiverPublicString is the public key of the receiver.
         //you don't have to run receiverRandom and the bottom function 
-        ellipticEncryption.receiverPublicString = function(receiverPublicKey) {
+        ellipticEncryption.receiverPublicString = function (receiverPublicKey) {
 
             var receiverKeyECData = {};
 
@@ -5975,7 +5975,7 @@
             return receiverKeyECData;
         }
 
-        ellipticEncryption.senderSharedKeyDerivation = function(receiverPublicStringXValue,
+        ellipticEncryption.senderSharedKeyDerivation = function (receiverPublicStringXValue,
             receiverPublicStringYValue, senderPrivateKey) {
 
             var senderDerivedKey = {};
@@ -5992,7 +5992,7 @@
             return senderDerivedKey;
         }
 
-        ellipticEncryption.receiverSharedKeyDerivation = function(senderPublicStringXValue,
+        ellipticEncryption.receiverSharedKeyDerivation = function (senderPublicStringXValue,
             senderPublicStringYValue, receiverPrivateKey) {
 
             var receiverDerivedKey = {};
@@ -6013,7 +6013,7 @@
 })(typeof global !== "undefined" ? global : window);
 
 //secrets.js
-(function(GLOBAL) {
+(function (GLOBAL) {
     //Shamir Secret Share by Alexander Stetsyuk - released under MIT License
 
     var SecretShare = GLOBAL.shamirSecretShare = {};
@@ -6041,7 +6041,7 @@
     var config = {};
 
     /** @expose **/
-    SecretShare.getConfig = function() {
+    SecretShare.getConfig = function () {
         return {
             'bits': config.bits,
             'unsafePRNG': config.unsafePRNG
@@ -6050,7 +6050,7 @@
 
     function init(bits) {
         if (bits && (typeof bits !== 'number' || bits % 1 !== 0 || bits < defaults.minBits || bits >
-                defaults.maxBits)) {
+            defaults.maxBits)) {
             throw new Error('Number of bits must be an integer between ' + defaults.minBits + ' and ' +
                 defaults.maxBits + ', inclusive.')
         }
@@ -6113,7 +6113,7 @@
 
         // node.js crypto.randomBytes()
         if (typeof require === 'function') {
-            return function(bits) {
+            return function (bits) {
                 var bytes = Math.ceil(bits / 8),
                     str = null;
 
@@ -6126,9 +6126,9 @@
 
         // browsers with window.crypto.getRandomValues()
         if (GLOBAL['crypto'] && typeof GLOBAL['crypto']['getRandomValues'] === 'function' && typeof GLOBAL[
-                'Uint32Array'] === 'function') {
+            'Uint32Array'] === 'function') {
             crypto = GLOBAL['crypto'];
-            return function(bits) {
+            return function (bits) {
                 var elems = Math.ceil(bits / 32),
                     str = null,
                     arr = new GLOBAL['Uint32Array'](elems);
@@ -6149,7 +6149,7 @@
 
         var bitsPerNum = 32;
         var max = Math.pow(2, bitsPerNum) - 1;
-        return function(bits) {
+        return function (bits) {
             var elems = Math.ceil(bits / bitsPerNum);
             var arr = [],
                 str = null;
@@ -6174,7 +6174,7 @@
 
     // Set the PRNG to use. If no RNG function is supplied, pick a default using getRNG()
     /** @expose **/
-    SecretShare.setRNG = function(rng, alert) {
+    SecretShare.setRNG = function (rng, alert) {
         if (!isInited()) {
             this.init();
         }
@@ -6183,7 +6183,7 @@
 
         // test the RNG (5 times)
         if (typeof rng !== 'function' || typeof rng(config.bits) !== 'string' || !parseInt(rng(config.bits),
-                2) || rng(config.bits).length > config.bits || rng(config.bits).length < config.bits) {
+            2) || rng(config.bits).length > config.bits || rng(config.bits).length < config.bits) {
             throw new Error(
                 "Random number generator is invalid. Supply an RNG of the form function(bits){} that returns a string containing 'bits' number of random 1's and 0's."
             )
@@ -6201,7 +6201,7 @@
 
     // Generates a random bits-length number string using the PRNG
     /** @expose **/
-    SecretShare.random = function(bits) {
+    SecretShare.random = function (bits) {
         if (!isSetRNG()) {
             this.setRNG();
         }
@@ -6221,7 +6221,7 @@
     // requiring `threshold` number of shares to reconstruct the secret.
     // Optionally, zero-pads the secret to a length that is a multiple of padLength before sharing.
     /** @expose **/
-    SecretShare.share = function(secret, numShares, threshold, padLength, withoutPrefix) {
+    SecretShare.share = function (secret, numShares, threshold, padLength, withoutPrefix) {
         if (!isInited()) {
             this.init();
         }
@@ -6292,7 +6292,7 @@
     // Note: no error-checking at this stage! If `secrets` is NOT
     // a NUMBER less than 2^bits-1, the output will be incorrect!
     /** @expose **/
-    SecretShare._getShares = function(secret, numShares, threshold) {
+    SecretShare._getShares = function (secret, numShares, threshold) {
         var shares = [];
         var coeffs = [secret];
 
@@ -6339,7 +6339,7 @@
 
         var bits = parseInt(share[0], 36);
         if (bits && (typeof bits !== 'number' || bits % 1 !== 0 || bits < defaults.minBits || bits >
-                defaults.maxBits)) {
+            defaults.maxBits)) {
             throw new Error('Number of bits must be an integer between ' + defaults.minBits + ' and ' +
                 defaults.maxBits + ', inclusive.')
         }
@@ -6414,14 +6414,14 @@
 
     // Combine `shares` Array into the original secret
     /** @expose **/
-    SecretShare.combine = function(shares) {
+    SecretShare.combine = function (shares) {
         return combine(0, shares);
     };
 
     // Generate a new share with id `id` (a number between 1 and 2^bits-1)
     // `id` can be a Number or a String in the default radix (16)
     /** @expose **/
-    SecretShare.newShare = function(id, shares) {
+    SecretShare.newShare = function (id, shares) {
         if (typeof id === 'string') {
             id = parseInt(id, config.radix);
         }
@@ -6460,7 +6460,7 @@
                     product = -1; // fix for a zero product term, after which the sum should be sum^0 = sum, not sum^1
                     break;
                 }
-                product = (product + config.logs[at ^ x[j]] - config.logs[x[i] ^ x[j]] + config.max /* to make sure it's not negative */ ) %
+                product = (product + config.logs[at ^ x[j]] - config.logs[x[i] ^ x[j]] + config.max /* to make sure it's not negative */) %
                     config.max;
             }
 
@@ -6527,7 +6527,7 @@
     // Each character of the input string is represented by
     // `bytesPerChar` bytes in the output string.
     /** @expose **/
-    SecretShare.str2hex = function(str, bytesPerChar) {
+    SecretShare.str2hex = function (str, bytesPerChar) {
         if (typeof str !== 'string') {
             throw new Error('Input must be a character string.');
         }
@@ -6561,7 +6561,7 @@
 
     // Converts a given HEX number string to a UTF16 character string.
     /** @expose **/
-    SecretShare.hex2str = function(str, bytesPerChar) {
+    SecretShare.hex2str = function (str, bytesPerChar) {
         if (typeof str !== 'string') {
             throw new Error('Input must be a hexadecimal string.');
         }
@@ -6588,7 +6588,7 @@
 
 
 /* FLO Crypto Operators*/
-(function(GLOBAL) {
+(function (GLOBAL) {
     const floCrypto = GLOBAL.floCrypto = {
 
         util: {
@@ -6598,17 +6598,17 @@
 
             asciiAlternatives: `‘ '\n’ '\n“ "\n” "\n– --\n— ---\n≥ >=\n≤ <=\n≠ !=\n× *\n÷ /\n← <-\n→ ->\n↔ <->\n⇒ =>\n⇐ <=\n⇔ <=>`,
 
-            exponent1: function() {
+            exponent1: function () {
                 return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
             },
 
-            calculateY: function(x) {
+            calculateY: function (x) {
                 let p = this.p;
                 let exp = this.exponent1();
                 // x is x value of public key in BigInteger format without 02 or 03 or 04 prefix
                 return x.modPow(BigInteger("3"), p).add(BigInteger("7")).mod(p).modPow(exp, p)
             },
-            getUncompressedPublicKey: function(compressedPublicKey) {
+            getUncompressedPublicKey: function (compressedPublicKey) {
                 const p = this.p;
                 // Fetch x from compressedPublicKey
                 let pubKeyBytes = Crypto.util.hexToBytes(compressedPublicKey);
@@ -6631,7 +6631,7 @@
                 };
             },
 
-            getSenderPublicKeyString: function() {
+            getSenderPublicKeyString: function () {
                 let privateKey = ellipticCurveEncryption.senderRandom();
                 var senderPublicKeyString = ellipticCurveEncryption.senderPublicString(privateKey);
                 return {
@@ -6640,28 +6640,28 @@
                 }
             },
 
-            deriveSharedKeySender: function(receiverCompressedPublicKey, senderPrivateKey) {
+            deriveSharedKeySender: function (receiverCompressedPublicKey, senderPrivateKey) {
                 let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
                 var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
                     receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
                 return senderDerivedKey;
             },
 
-            deriveReceiverSharedKey: function(senderPublicKeyString, receiverPrivateKey) {
+            deriveReceiverSharedKey: function (senderPublicKeyString, receiverPrivateKey) {
                 return ellipticCurveEncryption.receiverSharedKeyDerivation(
                     senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
             },
 
-            getReceiverPublicKeyString: function(privateKey) {
+            getReceiverPublicKeyString: function (privateKey) {
                 return ellipticCurveEncryption.receiverPublicString(privateKey);
             },
 
-            deriveSharedKeyReceiver: function(senderPublicKeyString, receiverPrivateKey) {
+            deriveSharedKeyReceiver: function (senderPublicKeyString, receiverPrivateKey) {
                 return ellipticCurveEncryption.receiverSharedKeyDerivation(
                     senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
             },
 
-            wifToDecimal: function(pk_wif, isPubKeyCompressed = false) {
+            wifToDecimal: function (pk_wif, isPubKeyCompressed = false) {
                 let pk = Bitcoin.Base58.decode(pk_wif)
                 pk.shift()
                 pk.splice(-4, 4)
@@ -6678,14 +6678,14 @@
         },
 
         //generate a random Interger within range
-        randInt: function(min, max) {
+        randInt: function (min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
             return Math.floor(Math.random() * (max - min + 1)) + min;
         },
 
         //generate a random String within length (options : alphaNumeric chars only)
-        randString: function(length, alphaNumeric = true) {
+        randString: function (length, alphaNumeric = true) {
             var result = '';
             if (alphaNumeric)
                 var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -6698,7 +6698,7 @@
         },
 
         //Encrypt Data using public-key
-        encryptData: function(data, receiverCompressedPublicKey) {
+        encryptData: function (data, receiverCompressedPublicKey) {
             var senderECKeyData = this.util.getSenderPublicKeyString();
             var senderDerivedKey = this.util.deriveSharedKeySender(receiverCompressedPublicKey, senderECKeyData
                 .privateKey);
@@ -6711,7 +6711,7 @@
         },
 
         //Decrypt Data using private-key
-        decryptData: function(data, myPrivateKey) {
+        decryptData: function (data, myPrivateKey) {
             var receiverECKeyData = {};
             if (typeof myPrivateKey !== "string") throw new Error("No private key found.");
 
@@ -6722,7 +6722,7 @@
 
             var receiverDerivedKey = this.util.deriveReceiverSharedKey(data.senderPublicKeyString,
                 receiverECKeyData
-                .privateKey);
+                    .privateKey);
 
             let receiverKey = receiverDerivedKey.XValue + receiverDerivedKey.YValue;
             let decryptMsg = Crypto.AES.decrypt(data.secret, receiverKey);
@@ -6730,7 +6730,7 @@
         },
 
         //Sign data using private-key
-        signData: function(data, privateKeyHex) {
+        signData: function (data, privateKeyHex) {
             var key = new Bitcoin.ECKey(privateKeyHex);
             key.setCompressed(true);
 
@@ -6746,7 +6746,7 @@
         },
 
         //Verify signatue of the data using public-key
-        verifySign: function(data, signatureHex, publicKeyHex) {
+        verifySign: function (data, signatureHex, publicKeyHex) {
             var msgHash = Crypto.SHA256(data);
             var messageHashBigInteger = new BigInteger(msgHash);
 
@@ -6761,7 +6761,7 @@
         },
 
         //Generates a new flo ID and returns private-key, public-key and floID
-        generateNewID: function() {
+        generateNewID: function () {
             try {
                 var key = new Bitcoin.ECKey(false);
                 key.setCompressed(true);
@@ -6776,7 +6776,7 @@
         },
 
         //Returns public-key from private-key
-        getPubKeyHex: function(privateKeyHex) {
+        getPubKeyHex: function (privateKeyHex) {
             if (!privateKeyHex)
                 return null;
             var key = new Bitcoin.ECKey(privateKeyHex);
@@ -6787,7 +6787,7 @@
         },
 
         //Returns flo-ID from public-key or private-key
-        getFloID: function(keyHex) {
+        getFloID: function (keyHex) {
             if (!keyHex)
                 return null;
             try {
@@ -6801,7 +6801,7 @@
         },
 
         //Verify the private-key for the given public-key or flo-ID
-        verifyPrivKey: function(privateKeyHex, pubKey_floID, isfloID = true) {
+        verifyPrivKey: function (privateKeyHex, pubKey_floID, isfloID = true) {
             if (!privateKeyHex || !pubKey_floID)
                 return false;
             try {
@@ -6821,7 +6821,7 @@
         },
 
         //Check if the given Address is valid or not
-        validateAddr: function(inpAddr) {
+        validateAddr: function (inpAddr) {
             if (!inpAddr)
                 return false;
             try {
@@ -6833,7 +6833,7 @@
         },
 
         //Split the str using shamir's Secret and Returns the shares 
-        createShamirsSecretShares: function(str, total_shares, threshold_limit) {
+        createShamirsSecretShares: function (str, total_shares, threshold_limit) {
             try {
                 if (str.length > 0) {
                     var strHex = shamirSecretShare.str2hex(str);
@@ -6847,12 +6847,12 @@
         },
 
         //Verifies the shares and str
-        verifyShamirsSecret: function(sharesArray, str) {
+        verifyShamirsSecret: function (sharesArray, str) {
             return (str && this.retrieveShamirSecret(sharesArray) === str)
         },
 
         //Returns the retrived secret by combining the shamirs shares
-        retrieveShamirSecret: function(sharesArray) {
+        retrieveShamirSecret: function (sharesArray) {
             try {
                 if (sharesArray.length > 0) {
                     var comb = shamirSecretShare.combine(sharesArray.slice(0, sharesArray.length));
@@ -6865,7 +6865,7 @@
             }
         },
 
-        validateASCII: function(string, bool = true) {
+        validateASCII: function (string, bool = true) {
             if (typeof string !== "string")
                 return null;
             if (bool) {
@@ -6883,8 +6883,8 @@
                     if (x < 32 || x > 127)
                         if (x in invalids)
                             invalids[string[i]].push(i)
-                    else
-                        invalids[string[i]] = [i];
+                        else
+                            invalids[string[i]] = [i];
                 }
                 if (Object.keys(invalids).length)
                     return invalids;
@@ -6893,7 +6893,7 @@
             }
         },
 
-        convertToASCII: function(string, mode = 'soft-remove') {
+        convertToASCII: function (string, mode = 'soft-remove') {
             let chars = this.validateASCII(string, false);
             if (chars === true)
                 return string;
@@ -6904,9 +6904,9 @@
             this.util.asciiAlternatives.split('\n').forEach(a => refAlt[a[0]] = a.slice(2));
             mode = mode.toLowerCase();
             if (mode === "hard-unicode")
-                convertor = (c) => `\\u${('000'+c.charCodeAt().toString(16)).slice(-4)}`;
+                convertor = (c) => `\\u${('000' + c.charCodeAt().toString(16)).slice(-4)}`;
             else if (mode === "soft-unicode")
-                convertor = (c) => refAlt[c] || `\\u${('000'+c.charCodeAt().toString(16)).slice(-4)}`;
+                convertor = (c) => refAlt[c] || `\\u${('000' + c.charCodeAt().toString(16)).slice(-4)}`;
             else if (mode === "hard-remove")
                 convertor = c => "";
             else if (mode === "soft-remove")
@@ -6918,7 +6918,7 @@
             return result;
         },
 
-        revertUnicode: function(string) {
+        revertUnicode: function (string) {
             return string.replace(/\\u[\dA-F]{4}/gi,
                 m => String.fromCharCode(parseInt(m.replace(/\\u/g, ''), 16)));
         }
@@ -6928,13 +6928,13 @@
 
 /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
 //floBlockchainAPI v2.2.1a
-(function(GLOBAL) {
+(function (GLOBAL) {
     const floBlockchainAPI = GLOBAL.floBlockchainAPI = {
 
         util: {
             serverList: floGlobals.apiURL[floGlobals.blockchain].slice(0),
             curPos: floCrypto.randInt(0, floGlobals.apiURL[floGlobals.blockchain].length - 1),
-            fetch_retry: function(apicall, rm_flosight) {
+            fetch_retry: function (apicall, rm_flosight) {
                 return new Promise((resolve, reject) => {
                     let i = this.serverList.indexOf(rm_flosight)
                     if (i != -1) this.serverList.splice(i, 1);
@@ -6944,7 +6944,7 @@
                         .catch(error => reject(error));
                 })
             },
-            fetch_api: function(apicall) {
+            fetch_api: function (apicall) {
                 return new Promise((resolve, reject) => {
                     if (this.serverList.length === 0)
                         reject("No floSight server working");
@@ -6967,13 +6967,13 @@
                 })
             },
 
-            current: function() {
+            current: function () {
                 return this.serverList[this.curPos];
             }
         },
 
         //Promised function to get data from API
-        promisedAPI: function(apicall) {
+        promisedAPI: function (apicall) {
             return new Promise((resolve, reject) => {
                 //console.log(apicall);
                 this.util.fetch_api(apicall)
@@ -6983,7 +6983,7 @@
         },
 
         //Get balance for the given Address
-        getBalance: function(addr) {
+        getBalance: function (addr) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addr/${addr}/balance`)
                     .then(balance => resolve(parseFloat(balance)))
@@ -6992,7 +6992,7 @@
         },
 
         //Write Data into blockchain
-        writeData: function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID, strict_utxo = true) {
+        writeData: function (senderAddr, data, privKey, receiverAddr = floGlobals.adminID, strict_utxo = true) {
             return new Promise((resolve, reject) => {
                 if (typeof data != "string")
                     data = JSON.stringify(data);
@@ -7003,7 +7003,7 @@
         },
 
         //Send Tx to blockchain 
-        sendTx: function(senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
+        sendTx: function (senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateASCII(floData))
                     return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
@@ -7065,7 +7065,7 @@
         },
 
         //merge all UTXOs of a given floID into a single UTXO
-        mergeUTXOs: function(floID, privKey, floData = '') {
+        mergeUTXOs: function (floID, privKey, floData = '') {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateAddr(floID))
                     return reject(`Invalid floID`);
@@ -7099,7 +7099,7 @@
          * @param  {boolean} preserveRatio (optional) preserve ratio or equal contribution
          * @return {Promise}
          */
-        writeDataMultiple: function(senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
+        writeDataMultiple: function (senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
             return new Promise((resolve, reject) => {
                 if (!Array.isArray(senderPrivKeys))
                     return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array");
@@ -7131,7 +7131,7 @@
          * @param  {string} floData FLO data of the txn
          * @return {Promise}
          */
-        sendTxMultiple: function(senderPrivKeys, receivers, floData = '') {
+        sendTxMultiple: function (senderPrivKeys, receivers, floData = '') {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateASCII(floData))
                     return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
@@ -7286,7 +7286,7 @@
         },
 
         //Broadcast signed Tx in blockchain using API
-        broadcastTx: function(signedTxHash) {
+        broadcastTx: function (signedTxHash) {
             return new Promise((resolve, reject) => {
                 if (signedTxHash.length < 1)
                     return reject("Empty Signature");
@@ -7306,7 +7306,7 @@
             })
         },
 
-        getTx: function(txid) {
+        getTx: function (txid) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/tx/${txid}`)
                     .then(response => resolve(response))
@@ -7315,7 +7315,7 @@
         },
 
         //Read Txs of Address between from and to
-        readTxs: function(addr, from, to) {
+        readTxs: function (addr, from, to) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=${from}&to=${to}`)
                     .then(response => resolve(response))
@@ -7324,7 +7324,7 @@
         },
 
         //Read All Txs of Address (newest first)
-        readAllTxs: function(addr) {
+        readAllTxs: function (addr) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
                     this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${response.totalItems}0`)
@@ -7346,7 +7346,7 @@
         sender      : flo-id(s) of sender
         receiver    : flo-id(s) of receiver
         */
-        readData: function(addr, options = {}) {
+        readData: function (addr, options = {}) {
             options.limit = options.limit || 0;
             options.ignoreOld = options.ignoreOld || 0;
             if (typeof options.sender === "string") options.sender = [options.sender];
@@ -7354,7 +7354,7 @@
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
                     var newItems = response.totalItems - options.ignoreOld;
-                    this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems*2}`).then(response => {
+                    this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems * 2}`).then(response => {
                         if (options.limit <= 0)
                             options.limit = response.items.length;
                         var filteredData = [];
@@ -7442,7 +7442,7 @@
 
 
 /* Token Operator to send/receive tokens from blockchain using API calls*/
-(function(GLOBAL) {
+(function (GLOBAL) {
     const tokenAPI = GLOBAL.tokenAPI = {
         util: {
             parseTxData: tx => {
@@ -7457,7 +7457,7 @@
                 return result;
             }
         },
-        fetch_api: function(apicall) {
+        fetch_api: function (apicall) {
             return new Promise((resolve, reject) => {
                 console.log(floGlobals.tokenURL + apicall);
                 fetch(floGlobals.tokenURL + apicall).then(response => {
@@ -7468,14 +7468,14 @@
                 }).catch(error => reject(error))
             })
         },
-        getBalance: function(floID, token = floGlobals.currency) {
+        getBalance: function (floID, token = floGlobals.currency) {
             return new Promise((resolve, reject) => {
                 this.fetch_api(`api/v1.0/getFloAddressBalance?token=${token}&floAddress=${floID}`)
                     .then(result => resolve(result.balance || 0))
                     .catch(error => reject(error))
             })
         },
-        getTx: function(txID) {
+        getTx: function (txID) {
             return new Promise((resolve, reject) => {
                 this.fetch_api(`api/v1.0/getTransactionDetails/${txID}`).then(res => {
                     if (res.result === "error")
@@ -7489,7 +7489,7 @@
                 }).catch(error => reject(error))
             })
         },
-        sendToken: function(privKey, amount, receiverID, message = "", token = floGlobals.currency) {
+        sendToken: function (privKey, amount, receiverID, message = "", token = floGlobals.currency) {
             return new Promise((resolve, reject) => {
                 let senderID = floCrypto.getFloID(privKey);
                 if (typeof amount !== "number" || amount <= 0)
@@ -7503,7 +7503,7 @@
                 }).catch(error => reject(error))
             });
         },
-        getAllTxs: function(floID, token = floGlobals.currency) {
+        getAllTxs: function (floID, token = floGlobals.currency) {
             return new Promise((resolve, reject) => {
                 this.fetch_api(`api/v1.0/getFloAddressTransactions?token=${token}&floAddress=${floID}`)
                     .then(result => resolve(result))
@@ -7524,11 +7524,11 @@ if (!window.indexedDB)
 
 const compactIDB = {
 
-    setDefaultDB: function(dbName) {
+    setDefaultDB: function (dbName) {
         this.defaultDB = dbName;
     },
 
-    upgradeDB: function(dbName, createList = null, deleteList = null) {
+    upgradeDB: function (dbName, createList = null, deleteList = null) {
         return new Promise((resolve, reject) => {
             this.getDBversion(dbName).then(version => {
                 var idb = indexedDB.open(dbName, version + 1);
@@ -7557,7 +7557,7 @@ const compactIDB = {
         })
     },
 
-    initDB: function(dbName, objectStores = {}) {
+    initDB: function (dbName, objectStores = {}) {
         return new Promise((resolve, reject) => {
             if (!(objectStores instanceof Object))
                 return reject('ObjectStores must be an object or array')
@@ -7585,14 +7585,14 @@ const compactIDB = {
                     resolve("Initiated IndexedDB");
                 else
                     this.upgradeDB(dbName, a_obs, d_obs)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
                 db.close();
             }
         });
     },
 
-    openDB: function(dbName = this.defaultDB) {
+    openDB: function (dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             var idb = indexedDB.open(dbName);
             idb.onerror = (event) => reject("Error in opening IndexedDB");
@@ -7605,7 +7605,7 @@ const compactIDB = {
         });
     },
 
-    deleteDB: function(dbName = this.defaultDB) {
+    deleteDB: function (dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             var deleteReq = indexedDB.deleteDatabase(dbName);;
             deleteReq.onerror = (event) => reject("Error deleting database!");
@@ -7613,7 +7613,7 @@ const compactIDB = {
         });
     },
 
-    getDBversion: function(dbName = this.defaultDB) {
+    getDBversion: function (dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             this.openDB(dbName).then(db => {
                 resolve(db.version)
@@ -7622,7 +7622,7 @@ const compactIDB = {
         })
     },
 
-    writeData: function(obsName, data, key = false, dbName = this.defaultDB) {
+    writeData: function (obsName, data, key = false, dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             this.openDB(dbName).then(db => {
                 var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
@@ -7636,7 +7636,7 @@ const compactIDB = {
         });
     },
 
-    addData: function(obsName, data, key = false, dbName = this.defaultDB) {
+    addData: function (obsName, data, key = false, dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             this.openDB(dbName).then(db => {
                 var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
@@ -7650,7 +7650,7 @@ const compactIDB = {
         });
     },
 
-    removeData: function(obsName, key, dbName = this.defaultDB) {
+    removeData: function (obsName, key, dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             this.openDB(dbName).then(db => {
                 var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
@@ -7664,7 +7664,7 @@ const compactIDB = {
         });
     },
 
-    clearData: function(obsName, dbName = this.defaultDB) {
+    clearData: function (obsName, dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             this.openDB(dbName).then(db => {
                 var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
@@ -7676,7 +7676,7 @@ const compactIDB = {
         });
     },
 
-    readData: function(obsName, key, dbName = this.defaultDB) {
+    readData: function (obsName, key, dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             this.openDB(dbName).then(db => {
                 var obs = db.transaction(obsName, "readonly").objectStore(obsName);
@@ -7690,7 +7690,7 @@ const compactIDB = {
         });
     },
 
-    readAllData: function(obsName, dbName = this.defaultDB) {
+    readAllData: function (obsName, dbName = this.defaultDB) {
         return new Promise((resolve, reject) => {
             this.openDB(dbName).then(db => {
                 var obs = db.transaction(obsName, "readonly").objectStore(obsName);
@@ -7731,7 +7731,7 @@ const compactIDB = {
         })
     },*/
 
-    searchData: function(obsName, options = {}, dbName = this.defaultDB) {
+    searchData: function (obsName, options = {}, dbName = this.defaultDB) {
         options.lowerKey = options.atKey || options.lowerKey || 0
         options.upperKey = options.atKey || options.upperKey || false
         options.patternEval = options.patternEval || ((k, v) => {
@@ -7786,7 +7786,7 @@ const floCloudAPI = {
                     return nodeIdNewInt8Array;
                 },
 
-                addNode: function(floID, KB) {
+                addNode: function (floID, KB) {
                     let decodedId = this.decodeID(floID);
                     const contact = {
                         id: decodedId,
@@ -7795,27 +7795,27 @@ const floCloudAPI = {
                     KB.add(contact)
                 },
 
-                removeNode: function(floID, KB) {
+                removeNode: function (floID, KB) {
                     let decodedId = this.decodeID(floID);
                     KB.remove(decodedId)
                 },
 
-                isPresent: function(floID, KB) {
+                isPresent: function (floID, KB) {
                     let kArray = KB.toArray().map(k => k.floID);
                     return kArray.includes(floID)
                 },
 
-                distanceOf: function(floID, KB) {
+                distanceOf: function (floID, KB) {
                     let decodedId = this.decodeID(floID);
                     return KB.distance(KB.localNodeId, decodedId);
                 },
 
-                closestOf: function(floID, n, KB) {
+                closestOf: function (floID, n, KB) {
                     let decodedId = this.decodeID(floID);
                     return KB.closest(decodedId, n)
                 },
 
-                constructKB: function(list, refID) {
+                constructKB: function (list, refID) {
                     const KBoptions = {
                         localNodeId: this.decodeID(refID)
                     };
@@ -7826,15 +7826,15 @@ const floCloudAPI = {
                 }
             },
 
-            launch: function() {
+            launch: function () {
                 return new Promise((resolve, reject) => {
                     try {
                         let superNodeList = Object.keys(floGlobals.supernodes);
                         let masterID = floGlobals.SNStorageID;
                         this.SNKB = this.util.constructKB(superNodeList, masterID);
                         this.SNCO = superNodeList.map(sn => [this.util.distanceOf(sn, this.SNKB),
-                                sn
-                            ])
+                            sn
+                        ])
                             .sort((a, b) => a[0] - b[0])
                             .map(a => a[1])
                         resolve('Supernode KBucket formed');
@@ -7844,7 +7844,7 @@ const floCloudAPI = {
                 });
             },
 
-            innerNodes: function(id1, id2) {
+            innerNodes: function (id1, id2) {
                 if (!this.SNCO.includes(id1) || !this.SNCO.includes(id2))
                     throw Error('Given nodes are not supernode');
                 let iNodes = []
@@ -7856,7 +7856,7 @@ const floCloudAPI = {
                 return iNodes
             },
 
-            outterNodes: function(id1, id2) {
+            outterNodes: function (id1, id2) {
                 if (!this.SNCO.includes(id1) || !this.SNCO.includes(id2))
                     throw Error('Given nodes are not supernode');
                 let oNodes = []
@@ -7868,7 +7868,7 @@ const floCloudAPI = {
                 return oNodes
             },
 
-            prevNode: function(id, N = 1) {
+            prevNode: function (id, N = 1) {
                 let n = N || this.SNCO.length;
                 if (!this.SNCO.includes(id))
                     throw Error('Given node is not supernode');
@@ -7883,7 +7883,7 @@ const floCloudAPI = {
                 return (N == 1 ? pNodes[0] : pNodes)
             },
 
-            nextNode: function(id, N = 1) {
+            nextNode: function (id, N = 1) {
                 let n = N || this.SNCO.length;
                 if (!this.SNCO.includes(id))
                     throw Error('Given node is not supernode');
@@ -7899,7 +7899,7 @@ const floCloudAPI = {
                 return (N == 1 ? nNodes[0] : nNodes)
             },
 
-            closestNode: function(id, N = 1) {
+            closestNode: function (id, N = 1) {
                 let decodedId = this.util.decodeID(id);
                 let n = N || this.SNCO.length;
                 let cNodes = this.SNKB.closest(decodedId, n)
@@ -7946,7 +7946,7 @@ const floCloudAPI = {
             })
         },
 
-        fetch_API: function(snID, data) {
+        fetch_API: function (snID, data) {
             return new Promise((resolve, reject) => {
                 if (this.inactive.has(snID))
                     return reject(`${snID} is not active`);
@@ -7964,7 +7964,7 @@ const floCloudAPI = {
             })
         },
 
-        fetch_ActiveAPI: function(snID, data, reverse = false) {
+        fetch_ActiveAPI: function (snID, data, reverse = false) {
             return new Promise((resolve, reject) => {
                 if (this.inactive.size === this.kBucket.SNCO.length)
                     return reject('Cloud offline');
@@ -7985,7 +7985,7 @@ const floCloudAPI = {
             })
         },
 
-        singleRequest: function(floID, data_obj, method = "POST") {
+        singleRequest: function (floID, data_obj, method = "POST") {
             return new Promise((resolve, reject) => {
                 let data;
                 if (method === "POST")
@@ -7998,8 +7998,8 @@ const floCloudAPI = {
                 this.fetch_ActiveAPI(floID, data).then(response => {
                     if (response.ok)
                         response.json()
-                        .then(result => resolve(result))
-                        .catch(error => reject(error))
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
                     else response.text()
                         .then(result => reject(response.status + ": " + result)) //Error Message from Node
                         .catch(error => reject(error))
@@ -8007,7 +8007,7 @@ const floCloudAPI = {
             })
         },
 
-        liveRequest: function(floID, request, callback) {
+        liveRequest: function (floID, request, callback) {
             let self = this;
             const filterData = typeof request.status !== 'undefined' ?
                 data => {
@@ -8062,21 +8062,21 @@ const floCloudAPI = {
             });
         },
 
-        encodeMessage: function(message) {
+        encodeMessage: function (message) {
             return btoa(unescape(encodeURIComponent(JSON.stringify(message))))
         },
 
-        decodeMessage: function(message) {
+        decodeMessage: function (message) {
             return JSON.parse(decodeURIComponent(escape(atob(message))))
         },
 
-        filterKey: function(type, options) {
+        filterKey: function (type, options) {
             return type + (options.comment ? ':' + options.comment : '') +
                 '|' + (options.group || options.receiverID || floGlobals.adminID) +
                 '|' + (options.application || floGlobals.application);
         },
 
-        lastCommit: function(method, objName) {
+        lastCommit: function (method, objName) {
             switch (method) {
                 case "GET":
                     return JSON.parse(this.lastCommit[objName]);
@@ -8085,7 +8085,7 @@ const floCloudAPI = {
             }
         },
 
-        updateObject: function(objectName, dataSet) {
+        updateObject: function (objectName, dataSet) {
             try {
                 console.log(dataSet)
                 let vcList = Object.keys(dataSet).sort();
@@ -8110,7 +8110,7 @@ const floCloudAPI = {
             }
         },
 
-        storeGeneral: function(fk, dataSet) {
+        storeGeneral: function (fk, dataSet) {
             try {
                 console.log(dataSet)
                 if (typeof floGlobals.generalData[fk] !== "object")
@@ -8127,7 +8127,7 @@ const floCloudAPI = {
             }
         },
 
-        objectifier: function(data) {
+        objectifier: function (data) {
             if (!Array.isArray(data))
                 data = [data];
             return Object.fromEntries(data.map(d => {
@@ -8138,7 +8138,7 @@ const floCloudAPI = {
     },
 
     //set status as online for myFloID
-    setStatus: function(options = {}) {
+    setStatus: function (options = {}) {
         return new Promise((resolve, reject) => {
             let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
             var request = {
@@ -8157,7 +8157,7 @@ const floCloudAPI = {
     },
 
     //request status of floID(s) in trackList
-    requestStatus: function(trackList, options = {}) {
+    requestStatus: function (trackList, options = {}) {
         return new Promise((resolve, reject) => {
             if (!Array.isArray(trackList))
                 trackList = [trackList];
@@ -8174,7 +8174,7 @@ const floCloudAPI = {
     },
 
     //send any message to supernode cloud storage
-    sendApplicationData: function(message, type, options = {}) {
+    sendApplicationData: function (message, type, options = {}) {
         return new Promise((resolve, reject) => {
             var data = {
                 senderID: myFloID,
@@ -8196,7 +8196,7 @@ const floCloudAPI = {
     },
 
     //request any data from supernode cloud
-    requestApplicationData: function(type, options = {}) {
+    requestApplicationData: function (type, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
                 receiverID: options.receiverID || floGlobals.adminID,
@@ -8228,7 +8228,7 @@ const floCloudAPI = {
     },
 
     //(NEEDS UPDATE) delete data from supernode cloud (received only)
-    deleteApplicationData: function(vectorClocks, options = {}) {
+    deleteApplicationData: function (vectorClocks, options = {}) {
         return new Promise((resolve, reject) => {
             var delreq = {
                 requestorID: myFloID,
@@ -8254,7 +8254,7 @@ const floCloudAPI = {
     },
 
     //(NEEDS UPDATE) edit comment of data in supernode cloud (mutable comments only)
-    editApplicationData: function(vectorClock, newComment, oldData, options = {}) {
+    editApplicationData: function (vectorClock, newComment, oldData, options = {}) {
         return new Promise((resolve, reject) => {
             let p0
             if (!oldData) {
@@ -8284,8 +8284,8 @@ const floCloudAPI = {
                 }
                 d.comment = data.edit.comment;
                 let hashcontent = ["receiverID", "time", "application", "type", "message",
-                        "comment"
-                    ]
+                    "comment"
+                ]
                     .map(x => d[x]).join("|")
                 data.edit.sign = floCrypto.signData(hashcontent, myPrivKey)
                 this.util.singleRequest(data.receiverID, data)
@@ -8296,7 +8296,7 @@ const floCloudAPI = {
     },
 
     //tag data in supernode cloud (subAdmin access only)
-    tagApplicationData: function(vectorClock, tag, options = {}) {
+    tagApplicationData: function (vectorClock, tag, options = {}) {
         return new Promise((resolve, reject) => {
             if (!floGlobals.subAdmins.includes(myFloID))
                 return reject("Only subAdmins can tag data")
@@ -8317,7 +8317,7 @@ const floCloudAPI = {
     },
 
     //note data in supernode cloud (receiver only or subAdmin allowed if receiver is adminID)
-    noteApplicationData: function(vectorClock, note, options = {}) {
+    noteApplicationData: function (vectorClock, note, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
                 receiverID: options.receiverID || floGlobals.adminID,
@@ -8336,7 +8336,7 @@ const floCloudAPI = {
     },
 
     //send general data
-    sendGeneralData: function(message, type, options = {}) {
+    sendGeneralData: function (message, type, options = {}) {
         return new Promise((resolve, reject) => {
             if (options.encrypt) {
                 let encryptionKey = options.encrypt === true ?
@@ -8353,7 +8353,7 @@ const floCloudAPI = {
     },
 
     //request general data
-    requestGeneralData: function(type, options = {}) {
+    requestGeneralData: function (type, options = {}) {
         return new Promise((resolve, reject) => {
             var fk = this.util.filterKey(type, options)
             floGlobals.lastVC[fk] = parseInt(floGlobals.lastVC[fk]) || 0;
@@ -8377,7 +8377,7 @@ const floCloudAPI = {
     },
 
     //request an object data from supernode cloud
-    requestObjectData: function(objectName, options = {}) {
+    requestObjectData: function (objectName, options = {}) {
         return new Promise((resolve, reject) => {
             options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] + 1;
             options.senderID = [false, null].includes(options.senderID) ? null :
@@ -8414,7 +8414,7 @@ const floCloudAPI = {
         })
     },
 
-    closeRequest: function(requestID) {
+    closeRequest: function (requestID) {
         return new Promise((resolve, reject) => {
             let conn = this.util.liveRequest[requestID]
             if (!conn)
@@ -8428,7 +8428,7 @@ const floCloudAPI = {
     },
 
     //reset or initialize an object and send it to cloud
-    resetObjectData: function(objectName, options = {}) {
+    resetObjectData: function (objectName, options = {}) {
         return new Promise((resolve, reject) => {
             let message = {
                 reset: floGlobals.appObjects[objectName]
@@ -8442,7 +8442,7 @@ const floCloudAPI = {
     },
 
     //update the diff and send it to cloud
-    updateObjectData: function(objectName, options = {}) {
+    updateObjectData: function (objectName, options = {}) {
         return new Promise((resolve, reject) => {
             let message = {
                 diff: findDiff(this.util.lastCommit("GET", objectName), floGlobals.appObjects[
@@ -8466,7 +8466,7 @@ function BuildKBucket(options = {}) {
     this.arbiter = options.arbiter || this.arbiter
     this.metadata = Object.assign({}, options.metadata)
 
-    this.createNode = function() {
+    this.createNode = function () {
         return {
             contacts: [],
             dontSplit: false,
@@ -8475,12 +8475,12 @@ function BuildKBucket(options = {}) {
         }
     }
 
-    this.ensureInt8 = function(name, val) {
+    this.ensureInt8 = function (name, val) {
         if (!(val instanceof Uint8Array))
             throw new TypeError(name + ' is not a Uint8Array')
     }
 
-    this.arrayEquals = function(array1, array2) {
+    this.arrayEquals = function (array1, array2) {
         if (array1 === array2)
             return true
         if (array1.length !== array2.length)
@@ -8494,11 +8494,11 @@ function BuildKBucket(options = {}) {
     this.ensureInt8('option.localNodeId as parameter 1', this.localNodeId)
     this.root = this.createNode()
 
-    this.arbiter = function(incumbent, candidate) {
+    this.arbiter = function (incumbent, candidate) {
         return incumbent.vectorClock > candidate.vectorClock ? incumbent : candidate
     }
 
-    this.distance = function(firstId, secondId) {
+    this.distance = function (firstId, secondId) {
         let distance = 0
         let i = 0
         const min = Math.min(firstId.length, secondId.length)
@@ -8509,7 +8509,7 @@ function BuildKBucket(options = {}) {
         return distance
     }
 
-    this.add = function(contact) {
+    this.add = function (contact) {
         this.ensureInt8('contact.id', (contact || {}).id)
         let bitIndex = 0
         let node = this.root
@@ -8530,7 +8530,7 @@ function BuildKBucket(options = {}) {
         return this.add(contact)
     }
 
-    this.closest = function(id, n = Infinity) {
+    this.closest = function (id, n = Infinity) {
         this.ensureInt8('id', id)
         if ((!Number.isInteger(n) && n !== Infinity) || n <= 0)
             throw new TypeError('n is not positive number')
@@ -8551,7 +8551,7 @@ function BuildKBucket(options = {}) {
             .map(a => a[1])
     }
 
-    this.count = function() {
+    this.count = function () {
         let count = 0
         for (const nodes = [this.root]; nodes.length > 0;) {
             const node = nodes.pop()
@@ -8563,7 +8563,7 @@ function BuildKBucket(options = {}) {
         return count
     }
 
-    this._determineNode = function(node, id, bitIndex) {
+    this._determineNode = function (node, id, bitIndex) {
         const bytesDescribedByBitIndex = bitIndex >> 3
         const bitIndexWithinByte = bitIndex % 8
         if ((id.length <= bytesDescribedByBitIndex) && (bitIndexWithinByte !== 0))
@@ -8574,7 +8574,7 @@ function BuildKBucket(options = {}) {
         return node.left
     }
 
-    this.get = function(id) {
+    this.get = function (id) {
         this.ensureInt8('id', id)
         let bitIndex = 0
         let node = this.root
@@ -8584,14 +8584,14 @@ function BuildKBucket(options = {}) {
         return index >= 0 ? node.contacts[index] : null
     }
 
-    this._indexOf = function(node, id) {
+    this._indexOf = function (node, id) {
         for (let i = 0; i < node.contacts.length; ++i)
             if (this.arrayEquals(node.contacts[i].id, id))
                 return i
         return -1
     }
 
-    this.remove = function(id) {
+    this.remove = function (id) {
         this.ensureInt8('the id as parameter 1', id)
         let bitIndex = 0
         let node = this.root
@@ -8603,7 +8603,7 @@ function BuildKBucket(options = {}) {
         return this
     }
 
-    this._split = function(node, bitIndex) {
+    this._split = function (node, bitIndex) {
         node.left = this.createNode()
         node.right = this.createNode()
         for (const contact of node.contacts)
@@ -8614,7 +8614,7 @@ function BuildKBucket(options = {}) {
         otherNode.dontSplit = true
     }
 
-    this.toArray = function() {
+    this.toArray = function () {
         let result = []
         for (const nodes = [this.root]; nodes.length > 0;) {
             const node = nodes.pop()
@@ -8626,7 +8626,7 @@ function BuildKBucket(options = {}) {
         return result
     }
 
-    this._update = function(node, index, contact) {
+    this._update = function (node, index, contact) {
         if (!this.arrayEquals(node.contacts[index].id, contact.id))
             throw new Error('wrong index for _update')
         const incumbent = node.contacts[index]
@@ -8642,7 +8642,7 @@ Functions:
 findDiff(original, updatedObj) returns an object with the added, deleted and updated differences  
 mergeDiff(original, allDiff) returns a new object from original object merged with all differences (allDiff is returned object of findDiff)
 */
-(function() {
+(function () {
     const isDate = d => d instanceof Date;
     const isEmpty = o => Object.keys(o).length === 0;
     const isObject = o => o != null && typeof o === 'object';
@@ -8856,7 +8856,7 @@ mergeDiff(original, allDiff) returns a new object from original object merged wi
                 delete obj[key]; // null, remove it
         });
         if (obj.constructor.toString().indexOf("Array") != -1) {
-            obj = obj.filter(function(el) {
+            obj = obj.filter(function (el) {
                 return el != null;
             });
         }
@@ -8882,7 +8882,7 @@ const floDapps = {
 
     util: {
 
-        initIndexedDB: function() {
+        initIndexedDB: function () {
             return new Promise((resolve, reject) => {
                 var obs_g = {
                     //general
@@ -8920,7 +8920,7 @@ const floDapps = {
             })
         },
 
-        initUserDB: function(floID) {
+        initUserDB: function (floID) {
             return new Promise((resolve, reject) => {
                 var obs = {
                     contacts: {},
@@ -8933,7 +8933,7 @@ const floDapps = {
             })
         },
 
-        loadUserDB: function(floID) {
+        loadUserDB: function (floID) {
             return new Promise((resolve, reject) => {
                 var loadData = ["contacts", "pubKeys", "messages"]
                 var promises = []
@@ -8949,7 +8949,7 @@ const floDapps = {
 
         startUpFunctions: {
 
-            readSupernodeListFromAPI: function() {
+            readSupernodeListFromAPI: function () {
                 return new Promise((resolve, reject) => {
                     compactIDB.readData("lastTx", floGlobals.SNStorageID, "floDapps").then(lastTx => {
                         floBlockchainAPI.readData(floGlobals.SNStorageID, {
@@ -8976,7 +8976,7 @@ const floDapps = {
                 })
             },
 
-            readAppConfigFromAPI: function() {
+            readAppConfigFromAPI: function () {
                 return new Promise((resolve, reject) => {
                     compactIDB.readData("lastTx", `${floGlobals.application}|${floGlobals.adminID}`, "floDapps").then(lastTx => {
                         floBlockchainAPI.readData(floGlobals.adminID, {
@@ -9011,7 +9011,7 @@ const floDapps = {
                 })
             },
 
-            loadDataFromAppIDB: function() {
+            loadDataFromAppIDB: function () {
                 return new Promise((resolve, reject) => {
                     var loadData = ["appObjects", "generalData", "lastVC"]
                     var promises = []
@@ -9026,9 +9026,9 @@ const floDapps = {
             }
         },
 
-        getCredentials: function() {
+        getCredentials: function () {
 
-            const defaultInput = function(type) {
+            const defaultInput = function (type) {
                 return new Promise((resolve, reject) => {
                     let inputVal = prompt(`Enter ${type}: `)
                     if (inputVal === null)
@@ -9040,7 +9040,7 @@ const floDapps = {
 
             const inputFn = this.getCredentials.privKeyInput || defaultInput;
 
-            const readSharesFromIDB = function(indexArr) {
+            const readSharesFromIDB = function (indexArr) {
                 return new Promise((resolve, reject) => {
                     var promises = []
                     for (var i = 0; i < indexArr.length; i++)
@@ -9058,7 +9058,7 @@ const floDapps = {
                 })
             }
 
-            const writeSharesToIDB = function(shares, i = 0, resultIndexes = []) {
+            const writeSharesToIDB = function (shares, i = 0, resultIndexes = []) {
                 return new Promise(resolve => {
                     if (i >= shares.length)
                         return resolve(resultIndexes)
@@ -9074,7 +9074,7 @@ const floDapps = {
                 })
             }
 
-            const getPrivateKeyCredentials = function() {
+            const getPrivateKeyCredentials = function () {
                 return new Promise((resolve, reject) => {
                     var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
                     if (indexArr) {
@@ -9114,7 +9114,7 @@ const floDapps = {
                 })
             }
 
-            const checkIfPinRequired = function(key) {
+            const checkIfPinRequired = function (key) {
                 return new Promise((resolve, reject) => {
                     if (key.length == 52)
                         resolve(key)
@@ -9148,14 +9148,14 @@ const floDapps = {
             })
         },
 
-        startUpLog: function(status, log) {
+        startUpLog: function (status, log) {
             if (status)
                 console.log(log)
             else
                 console.error(log)
         },
 
-        callStartUpFunction: function(fname) {
+        callStartUpFunction: function (fname) {
             return new Promise((resolve, reject) => {
                 this.startUpFunctions[fname]().then(result => {
                     this.callStartUpFunction.completed += 1
@@ -9170,7 +9170,7 @@ const floDapps = {
         }
     },
 
-    launchStartUp: function() {
+    launchStartUp: function () {
         return new Promise((resolve, reject) => {
             this.util.initIndexedDB().then(log => {
                 console.log(log)
@@ -9220,26 +9220,26 @@ const floDapps = {
         })
     },
 
-    addStartUpFunction: function(fname, fn) {
+    addStartUpFunction: function (fname, fn) {
         if (fname in this.util.startUpFunctions)
             throw (`Function ${fname} already defined`)
         this.util.startUpFunctions[fname] = fn;
     },
 
-    setMidStartup: function(fn) {
+    setMidStartup: function (fn) {
         if (fn instanceof Function)
             this.launchStartUp.midFunction = fn;
     },
 
-    setCustomStartupLogger: function(logger) {
+    setCustomStartupLogger: function (logger) {
         this.util.startUpLog = logger;
     },
 
-    setCustomPrivKeyInput: function(customFn) {
+    setCustomPrivKeyInput: function (customFn) {
         this.util.getCredentials.privKeyInput = customFn
     },
 
-    setAppObjectStores: function(appObs) {
+    setAppObjectStores: function (appObs) {
         this.util.initIndexedDB.appObs = appObs
     },
 
@@ -9297,7 +9297,7 @@ const floDapps = {
                     try {
                         if (d[v].message instanceof Object && "secret" in d[v].message)
                             d[v].message = floCrypto.decryptData(d[v].message, myPrivKey)
-                    } catch (error) {}
+                    } catch (error) { }
                     compactIDB.writeData("messages", d[v], v, `floDapps#${myFloID}`)
                     floGlobals.messages[v] = d[v]
                 }
@@ -9329,12 +9329,12 @@ const floDapps = {
                 reject('Access Denied for Admin privilege')
             else
                 floBlockchainAPI.writeData(floID, JSON.stringify(floData), adminPrivKey)
-                .then(result => resolve(['Updated App Configuration', result]))
-                .catch(error => reject(error))
+                    .then(result => resolve(['Updated App Configuration', result]))
+                    .catch(error => reject(error))
         })
     },
 
-    clearCredentials: function() {
+    clearCredentials: function () {
         return new Promise((resolve, reject) => {
             compactIDB.clearData('credentials', floGlobals.application).then(result => {
                 localStorage.removeItem(`${floGlobals.application}#privKey`)
@@ -9344,7 +9344,7 @@ const floDapps = {
         })
     },
 
-    deleteUserData: function(credentials = false) {
+    deleteUserData: function (credentials = false) {
         return new Promise((resolve, reject) => {
             let p = []
             p.push(compactIDB.deleteDB(`floDapps#${myFloID}`))
@@ -9356,7 +9356,7 @@ const floDapps = {
         })
     },
 
-    deleteAppData: function() {
+    deleteAppData: function () {
         return new Promise((resolve, reject) => {
             compactIDB.deleteDB(floGlobals.application).then(result => {
                 localStorage.removeItem(`${floGlobals.application}#privKey`)
@@ -9368,7 +9368,7 @@ const floDapps = {
         })
     },
 
-    securePrivKey: function(pwd) {
+    securePrivKey: function (pwd) {
         return new Promise((resolve, reject) => {
             let indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
             if (!indexArr)
@@ -9388,8 +9388,8 @@ const floDapps = {
         })
     },
 
-    verifyPin: function(pin = null) {
-        const readSharesFromIDB = function(indexArr) {
+    verifyPin: function (pin = null) {
+        const readSharesFromIDB = function (indexArr) {
             return new Promise((resolve, reject) => {
                 var promises = []
                 for (var i = 0; i < indexArr.length; i++)
@@ -9434,7 +9434,7 @@ const floDapps = {
 
     },
 
-    getNextGeneralData: function(type, vectorClock = null, options = {}) {
+    getNextGeneralData: function (type, vectorClock = null, options = {}) {
         var fk = floCloudAPI.util.filterKey(type, options)
         vectorClock = vectorClock || this.getNextGeneralData[fk] || '0';
         var filteredResult = {}
@@ -9463,10 +9463,10 @@ const floDapps = {
                                 let tmp = floCrypto.decryptData(data.message, key)
                                 data.message = JSON.parse(tmp)
                                 break;
-                            } catch (error) {}
+                            } catch (error) { }
                         }
                     }
-                } catch (error) {}
+                } catch (error) { }
             }
         }
         this.getNextGeneralData[fk] = Object.keys(filteredResult).sort().pop();
@@ -9474,7 +9474,7 @@ const floDapps = {
     },
 
     syncData: {
-        oldDevice: function() {
+        oldDevice: function () {
             return new Promise((resolve, reject) => {
                 let sync = {
                     contacts: floGlobals.contacts,
