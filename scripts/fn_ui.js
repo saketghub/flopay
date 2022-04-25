@@ -285,12 +285,12 @@ userUI.renderMoneyRequests = function (requests, error = null) {
 
 userUI.payRequest = function (reqID) {
     let { message: { amount, remark }, senderID } = User.moneyRequests[reqID];
-    getConfirmation('Pay?', { message: `Do you want to pay ${request.message.amount} to ${request.senderID}?`, confirmText: 'Pay' }).then(confirmation => {
+    getConfirmation('Pay?', { message: `Do you want to pay ${amount} to ${senderID}?`, confirmText: 'Pay' }).then(confirmation => {
         if (confirmation) {
             User.sendToken(senderID, amount, "|" + remark).then(txid => {
                 console.warn(`Sent ${amount} to ${senderID}`, txid);
                 notify(`Sent ${formatAmount(amount)} to ${getFloIdTitle(senderID)}. It may take a few mins to reflect in their wallet`, 'success');
-                User.decideRequest(request, 'PAID: ' + txid)
+                User.decideRequest(User.moneyRequests[reqID], 'PAID: ' + txid)
                     .then(result => console.log(result))
                     .catch(error => console.error(error))
             }).catch(error => console.error(error));
@@ -498,11 +498,14 @@ const render = {
         return clone;
     },
     transactionMessage(details) {
-        const { tokenAmount, time, sender, receiver } = tokenAPI.util.parseTxData(details)
+        const { tokenAmount, time, sender, receiver, flodata } = tokenAPI.util.parseTxData(details)
         let messageType = sender === receiver ? 'self' : sender === myFloID ? 'sent' : 'received';
         const clone = getRef('transaction_message_template').content.cloneNode(true).firstElementChild;
         clone.classList.add(messageType);
         clone.querySelector('.transaction-message__amount').textContent = formatAmount(tokenAmount);
+        if (flodata.split('|')[1]) {
+            clone.querySelector('.transaction-message__remark').textContent = flodata.split('|')[1];
+        }
         clone.querySelector('.transaction-message__time').textContent = getFormattedTime(time * 1000);
         return clone;
     },

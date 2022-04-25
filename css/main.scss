@@ -791,7 +791,7 @@ ul {
   }
   & > :last-child {
     padding: 0.5rem 1.5rem;
-    background-color: rgba(var(--text-color), 0.03);
+    border-top: solid thin rgba(var(--text-color), 0.2);
     button {
       padding: 0.8rem 2rem;
       border-radius: 1rem;
