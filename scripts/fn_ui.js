@@ -693,7 +693,11 @@ function executeUserAction() {
 function changeUpi() {
     const upiId = getRef('upi_id').value.trim();
     Cashier.updateUPI(upiId).then(() => {
+        getRef('my_upi_id').classList.remove('hide')
+        getRef('my_upi_id').value = upiId;
+        getRef('change_upi_button').textContent = 'Change UPI ID';
         notify('UPI ID updated successfully', 'success');
+        hidePopup()
     }).catch(err => {
         notify(err, 'error');
     });
