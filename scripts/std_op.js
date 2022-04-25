@@ -7496,7 +7496,7 @@
                     return reject("Invalid amount");
                 this.getBalance(senderID, token).then(bal => {
                     if (amount > bal)
-                        return reject("Insufficiant token balance");
+                        return reject(`Insufficiant ${token} balance`);
                     floBlockchainAPI.writeData(senderID, `send ${amount} ${token}# ${message}`, privKey, receiverID)
                         .then(txid => resolve(txid))
                         .catch(error => reject(error))

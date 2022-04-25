@@ -39,6 +39,7 @@ User.init = function () {
         }));
         */
         promises.push(User.getCashierUPI());
+        promises.push(organizeSyncedData('savedUserData'));
         Promise.all(promises)
             .then(result => resolve(result))
             .catch(error => reject(error))
@@ -85,8 +86,10 @@ User.findCashier = function () {
             online.push(c);
     if (!online.length)
         return null;
-    else
-        return online[floCrypto.randInt(0, online.length)];
+    else {
+        const random = floCrypto.randInt(0, online.length - 1)
+        return online[random];
+    }
 }
 
 User.cashToToken = function (cashier, amount, upiTxID) {
@@ -166,6 +169,7 @@ Cashier.init = function () {
             callback: UI_RENDER_FN
         }));
         */
+        promises.push(User.getCashierUPI());
         Promise.all(promises)
             .then(result => resolve(result))
             .catch(error => reject(error))
