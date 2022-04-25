@@ -713,7 +713,7 @@ function getSignedIn() {
             showPage('loading');
         };
     });
-
+}
 function signOut() {
     getConfirmation('Sign out?', 'You are about to sign out of the app, continue?', 'Stay', 'Leave')
         .then(async (res) => {
