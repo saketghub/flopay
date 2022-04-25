@@ -437,9 +437,9 @@
                 <h4 id="contact__title"></h4>
             </div>
             <ul id="contact__transactions"></ul>
-            <div class="flex">
-                <button class="button flex-1">Pay</button>
-                <button class="button flex-1">Request</button>
+            <div class="flex gap-0-5">
+                <button class="button justify-right" onclick="showTokenTransfer('request')">Request</button>
+                <button class="button" onclick="showTokenTransfer('send')">Pay</button>
             </div>
         </section>
         <section id="requests" class="inner-page hide">
@@ -805,7 +805,7 @@
                 </div>
             </section>
         </section>
-        <nav id="main_navbar" class="hide">
+        <nav id="main_navbar" class="hide nav-hidden">
             <ul>
                 <li>
                     <a href="#/home" class="nav-item interact">
@@ -946,10 +946,10 @@
         <section class="grid gap-2">
             <h4 id="token_transfer__title"></h4>
             <sm-form>
-                <sm-input id="tt_flo_id" placeholder="FLO ID" error-text="Invalid FLO ID" data-flo-id animate required
-                    autofocus>
+                <sm-input id="token_transfer__receiver" placeholder="FLO ID" error-text="Invalid FLO ID" data-flo-id
+                    animate required autofocus>
                 </sm-input>
-                <sm-input id="tt_amount" type="number" placeholder="0" required min="1">
+                <sm-input id="token_transfer__amount" type="number" placeholder="0" required min="1">
                     <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                         height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                         <g>

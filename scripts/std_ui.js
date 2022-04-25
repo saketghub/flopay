@@ -325,6 +325,7 @@ async function showPage(targetPage, options = {}) {
             break;
         case 'contact':
             getRef('contact__title').textContent = getFloIdTitle(params.floId)
+            getRef('contact__transactions').innerHTML = '<sm-spinner></sm-spinner>'
             Promise.all([
                 tokenAPI.fetch_api(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${myFloID}&destFloAddress=${params.floId}`),
                 tokenAPI.fetch_api(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${params.floId}&destFloAddress=${myFloID}`)])

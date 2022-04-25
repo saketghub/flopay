@@ -552,8 +552,9 @@ ul {
   padding: 1.5rem;
 }
 #main_card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   height: 100%;
   width: 100%;
   transition: background-color 0.3s;
@@ -778,8 +779,8 @@ ul {
   padding: 1rem;
 }
 #contact {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   padding: 0;
   height: 100%;
   & > * {
@@ -788,14 +789,30 @@ ul {
   & > :first-child {
     padding-top: 0;
   }
+  & > :last-child {
+    padding: 0.5rem 1.5rem;
+    background-color: rgba(var(--text-color), 0.03);
+    button {
+      padding: 0.8rem 2rem;
+      border-radius: 1rem;
+      color: var(--accent-color);
+      background-color: rgba(var(--foreground-color), 1);
+    }
+  }
 }
 #contact__transactions {
+  position: relative;
   display: grid;
   gap: 0.5rem;
   overflow-y: auto;
   flex: 1;
-  padding: 0 max(1rem, 8vw);
+  padding: 0 max(1rem, 8vw) 1rem max(1rem, 8vw);
   align-content: flex-start;
+  sm-spinner {
+    position: absolute;
+    justify-self: center;
+    align-self: center;
+  }
 }
 .transaction-message {
   background-color: rgba(var(--text-color), 0.06);
@@ -1121,8 +1138,8 @@ ul {
   #main_card {
     height: calc(100vh - 3rem);
     width: calc(100vw - 3rem);
+    grid-template-areas: "header" ".";
     &:not(.nav-hidden) {
-      display: grid;
       grid-template-columns: auto 1fr;
       grid-template-rows: auto 1fr;
       grid-template-areas: "nav header" "nav .";

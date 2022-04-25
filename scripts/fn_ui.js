@@ -541,18 +541,6 @@ function buttonLoader(id, show) {
     }
 }
 
-let currentUserAction;
-function showTokenTransfer(type) {
-    getRef('tt_button').textContent = type;
-    currentUserAction = type;
-    if (type === 'send') {
-        getRef('token_transfer__title').textContent = 'Send money to FLO ID';
-    } else {
-        getRef('token_transfer__title').textContent = 'Request money from FLO ID';
-    }
-    showPopup('token_transfer_popup');
-}
-
 function getArrayOfSavedIds() {
     const arr = [];
     for (const key in floGlobals.savedIds) {
@@ -666,9 +654,30 @@ function insertElementAlphabetically(name, elementToInsert) {
     }
 }
 
+let currentUserAction;
+function showTokenTransfer(type) {
+    getRef('tt_button').textContent = type;
+    currentUserAction = type;
+    if (type === 'send') {
+        getRef('token_transfer__title').textContent = 'Send money to FLO ID';
+    } else {
+        getRef('token_transfer__title').textContent = 'Request money from FLO ID';
+    }
+    if (pagesData.lastPage === 'contact') {
+        getRef('token_transfer__receiver').value = pagesData.params.floId;
+        getRef('token_transfer__receiver').readOnly = true;
+    } else {
+        getRef('token_transfer__receiver').readOnly = false;
+    }
+    showPopup('token_transfer_popup');
+    if (pagesData.lastPage === 'contact') {
+        getRef('token_transfer__amount').focusIn();
+    }
+}
+
 function executeUserAction() {
-    const floID = getRef('tt_flo_id').value.trim(),
-        amount = parseFloat(getRef('tt_amount').value),
+    const floID = getRef('token_transfer__receiver').value.trim(),
+        amount = parseFloat(getRef('token_transfer__amount').value),
         remark = getRef('tt_remark').value.trim();
     if (currentUserAction === 'send') {
         userUI.sendMoneyToUser(floID, amount, remark);
