@@ -399,11 +399,11 @@ ul {
 }
 
 .observe-empty-state:empty {
-  display: none;
+  display: none !important;
 }
 
 .observe-empty-state:not(:empty) + .empty-state {
-  display: none;
+  display: none !important;
 }
 
 .bullet-point {
@@ -454,6 +454,7 @@ ul {
   display: flex;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  min-height: 8rem;
 }
 .page__header .grid {
   margin-top: auto;

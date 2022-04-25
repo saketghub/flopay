@@ -497,8 +497,8 @@ async function showPage(targetPage, options = {}) {
         let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
         const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
         if (currentActiveElement) {
+            getRef('main_card').classList.remove('nav-hidden')
             if (getRef('main_navbar').classList.contains('hide')) {
-                getRef('main_card').classList.remove('nav-hidden')
                 getRef('main_navbar').classList.remove('hide-away')
                 getRef('main_navbar').classList.remove('hide')
                 getRef('main_navbar').animate([
@@ -554,8 +554,8 @@ async function showPage(targetPage, options = {}) {
             previousActiveElement.classList.remove('nav-item--active');
             currentActiveElement.classList.add('nav-item--active')
         } else {
+            getRef('main_card').classList.add('nav-hidden')
             if (!getRef('main_navbar').classList.contains('hide')) {
-                getRef('main_card').classList.add('nav-hidden')
                 getRef('main_navbar').classList.add('hide-away')
                 getRef('main_navbar').animate([
                     {
