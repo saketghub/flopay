@@ -23,7 +23,7 @@
                 FLO: ['https://flosight.duckdns.org/', 'https://livenet.flocha.in/'],
                 FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
             },
-            adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
+            adminID: "FH64hLqB71e6i11rnZZW7hvzoH8daCwy1J",
             sendAmt: 0.001,
             fee: 0.0005,
 
@@ -37,7 +37,7 @@
 
             //for cloud apps
             subAdmins: [],
-            application: "TEST_MODE",
+            application: "blockchainUPI",
             appObjects: {},
             generalData: {},
             lastVC: {}
@@ -1277,6 +1277,7 @@
                 floGlobals.savedUserData = {
                     upiIds: {}
                 }
+
                 console.log(`Welcome ${myFloID}`);
                 getRef('logged_in_user_id').value = myFloID;
                 floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
@@ -1297,6 +1298,7 @@
                     }).catch(error => console.error(error))
                 } else {
                     userUI.renderSavedIds()
+
                     userUI.renderCashierRequests(User.cashierRequests);
                     userUI.renderMoneyRequests(User.moneyRequests);
                     User.init().then(result => {

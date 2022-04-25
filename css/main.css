@@ -64,7 +64,6 @@ a {
 a:focus-visible {
   box-shadow: 0 0 0 0.1rem rgba(var(--text-color), 1) inset;
 }
-
 a.button {
   padding: 0.4rem 0.6rem;
   border-radius: 0.3rem;
