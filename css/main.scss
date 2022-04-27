@@ -717,6 +717,16 @@ ul {
     fill: var(--accent-color);
   }
 }
+#cashier_status {
+  font-size: 0.9rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background-color: rgb(240, 230, 140, 0.8);
+  color: rgba(0, 0, 0, 0.8);
+  .icon {
+    fill: rgba(0, 0, 0, 0.8);
+  }
+}
 
 #saved_ids_list {
   display: grid;

@@ -92,9 +92,8 @@ document.addEventListener('popupopened', async e => {
     const frag = document.createDocumentFragment()
     switch (e.target.id) {
         case 'saved_ids_popup':
-            const allSavedIds = await getArrayOfSavedIds()
-            allSavedIds.forEach(({ floID, name }) => {
-                frag.append(render.savedIdPickerCard(floID, name))
+            getArrayOfSavedIds().forEach(({ floID, details }) => {
+                frag.append(render.savedIdPickerCard(floID, details))
             })
             getRef('saved_ids_picker_list').innerHTML = ''
             getRef('saved_ids_picker_list').append(frag)
