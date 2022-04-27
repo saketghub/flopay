@@ -514,7 +514,20 @@ const render = {
         clone.dataset.upiId = upiId;
         clone.querySelector('.saved-upi__id').textContent = upiId;
         return clone;
-    }
+    },
+    savedIdPickerCard(floID, { title }) {
+        return createElement('li', {
+            className: 'saved-id grid interact',
+            attributes: { 'tabindex': '0', 'data-flo-id': floID },
+            innerHTML: `
+                            <div class="saved-id__initials">${title[0]}</div>
+                            <div class="grid gap-0-5">
+                                <h4 class="saved-id__title">${title}</h4>
+                                <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
+                            </div>
+                            `
+        })
+    },
 };
 
 function buttonLoader(id, show) {
@@ -562,18 +575,21 @@ userUI.renderSavedIds = async function () {
     })
     getRef('saved_ids_list').append(frag);
 }
-async function saveId() {
+async function saveFloId() {
     const floID = getRef('flo_id_to_save').value.trim();
     if (floGlobals.savedIds.hasOwnProperty(floID))
         return notify('This FLO ID is already saved', 'error');
     const title = getRef('flo_id_title_to_save').value.trim();
     floGlobals.savedIds[floID] = { title }
+    buttonLoader('save_flo_id_button', true);
     syncUserData('savedIds', floGlobals.savedIds).then(() => {
         insertElementAlphabetically(title, render.savedId(floID, { title }))
         notify(`Saved ${floID}`, 'success');
         hidePopup();
     }).catch(error => {
         notify(error, 'error');
+    }).finally(() => {
+        buttonLoader('save_flo_id_button', false);
     })
 }
 delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
@@ -657,6 +673,40 @@ function insertElementAlphabetically(name, elementToInsert) {
     }
 }
 
+getRef('search_saved_ids_picker').addEventListener('input', debounce(async e => {
+    const frag = document.createDocumentFragment()
+    const searchKey = e.target.value.trim();
+    let allSavedIds = getArrayOfSavedIds();
+    if (searchKey !== '') {
+        const fuse = new Fuse(allSavedIds, { keys: ['floID', 'details.title'] })
+        allSavedIds = fuse.search(searchKey).map(v => v.item)
+    }
+    allSavedIds.forEach(({ floID, details }) => {
+        frag.append(render.savedIdPickerCard(floID, details))
+    })
+    getRef('saved_ids_picker_list').innerHTML = '';
+    getRef('saved_ids_picker_list').append(frag);
+    if (searchKey !== '') {
+        const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+        if (potentialTarget) {
+            potentialTarget.classList.add('highlight')
+        }
+    }
+}, 100))
+getRef('search_saved_ids_picker').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+        const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+        if (potentialTarget) {
+            potentialTarget.click()
+        }
+    }
+})
+delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
+    getRef('token_transfer__receiver').value = e.delegateTarget.dataset.floId
+    getRef('token_transfer__receiver').focusIn()
+    hidePopup()
+})
+
 let currentUserAction;
 function showTokenTransfer(type) {
     getRef('tt_button').textContent = type;
@@ -669,8 +719,10 @@ function showTokenTransfer(type) {
     if (pagesData.lastPage === 'contact') {
         getRef('token_transfer__receiver').value = pagesData.params.floId;
         getRef('token_transfer__receiver').readOnly = true;
+        getRef('token_transfer__receiver').querySelector('button').classList.add('hide');
     } else {
         getRef('token_transfer__receiver').readOnly = false;
+        getRef('token_transfer__receiver').querySelector('button').classList.remove('hide');
     }
     showPopup('token_transfer_popup');
     if (pagesData.lastPage === 'contact') {

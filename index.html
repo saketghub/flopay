@@ -43,6 +43,7 @@
             lastVC: {}
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6" defer></script>
 </head>
 
 <body onload="onLoadStartUp()" class="hide">
@@ -349,6 +350,13 @@
                     <h5>Balance</h5>
                     <h1 class="h1" id="rupee_balance"></h1>
                 </div>
+                <div id="cashier_status" class="hide flex align-center">
+                    <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                    </svg>
+                    <span>Cashier is currently offline. Please check back again after a while.</span>
+                </div>
                 <div class="flex">
                     <button class="wallet-action" onclick="showPopup('topup_wallet_popup')">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -546,7 +554,10 @@
                 autofocus>
             </sm-input>
             <sm-input id="flo_id_title_to_save" placeholder="Title" animate required></sm-input>
-            <button class="button button--primary cta" onclick="saveId()" type="submit">Save</button>
+            <div class="multi-state-button">
+                <button id="save_flo_id_button" class="button button--primary cta" onclick="saveFloId()"
+                    type="submit">Save</button>
+            </div>
         </sm-form>
     </sm-popup>
     <sm-popup id="edit_saved_popup">
@@ -599,6 +610,15 @@
             <sm-form>
                 <sm-input id="token_transfer__receiver" placeholder="FLO ID" error-text="Invalid FLO ID" data-flo-id
                     animate required autofocus>
+                    <button slot="right" class="icon-only" onclick="showPopup('saved_ids_popup')"
+                        title="Select from saved IDs">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                        </svg>
+                    </button>
                 </sm-input>
                 <sm-input id="token_transfer__amount" type="number" placeholder="0" required min="1">
                     <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
@@ -618,6 +638,28 @@
                 <button id="tt_button" class="button button--primary cta" onclick="executeUserAction()"
                     type="submit">Send</button>
             </sm-form>
+        </section>
+    </sm-popup>
+    <sm-popup id="saved_ids_popup">
+        <header slot="header" class="popup__header">
+            <div class="grid gap-1">
+                <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+                <sm-input id="search_saved_ids_picker" placeholder="Search"></sm-input>
+            </div>
+        </header>
+        <section class="grid gap-1">
+            <ul id="saved_ids_picker_list" class="observe-empty-state grid gap-0-5 h-100" style="overflow-y: auto;">
+            </ul>
+            <div class="empty-state">
+                <h4>No saved FLO IDs</h4>
+            </div>
         </section>
     </sm-popup>
     <sm-popup id="topup_wallet_popup">
@@ -661,7 +703,7 @@
                     <p id="topup_wallet__details"></p>
                 </div>
                 <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
-                <p>After sending money, please enter the UPI transaction ID of completed transfer.</p>
+                <p>After sending money, please enter the transaction ID of completed transaction.</p>
                 <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
                     error-text="Please enter UPI transaction ID of money you sent to continue."
                     placeholder="UPI transaction ID" autofocus animate required></sm-input>
