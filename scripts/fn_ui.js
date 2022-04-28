@@ -152,30 +152,6 @@ delegate(getRef('saved_upi_ids_list'), 'click', '.saved-upi', e => {
     }
 });
 
-userUI.sendMoneyToUser = function (floID, amount, remark) {
-    getConfirmation('Confirm', { message: `Do you want to SEND ${amount} to ${floID}?` }).then(confirmation => {
-        if (confirmation) {
-            User.sendToken(floID, amount, "|" + remark).then(txid => {
-                console.warn(`Sent ${amount} to ${floID}`, txid);
-                notify(`Sent ${amount} to ${floID}. It may take a few mins to reflect in their wallet`, 'success');
-                hidePopup()
-            }).catch(error => console.error(error));
-        }
-    })
-}
-
-userUI.requestMoneyFromUser = function (floID, amount, remark) {
-    getConfirmation('Confirm', { message: `Do you want to REQUEST ${amount} from ${floID}?` }).then(confirmation => {
-        if (confirmation) {
-            User.requestToken(floID, amount, remark).then(result => {
-                console.log(`Requested ${amount} from ${floID}`, result);
-                notify(`Requested ${amount} from ${floID}`, 'success');
-                hidePopup()
-            }).catch(error => console.error(error));
-        }
-    })
-}
-
 userUI.renderCashierRequests = function (requests, error = null) {
     if (error)
         return console.error(error);
@@ -709,7 +685,7 @@ delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
 
 let currentUserAction;
 function showTokenTransfer(type) {
-    getRef('tt_button').textContent = type;
+    getRef('token_transfer__button').textContent = type;
     currentUserAction = type;
     if (type === 'send') {
         getRef('token_transfer__title').textContent = 'Send money to FLO ID';
@@ -730,13 +706,44 @@ function showTokenTransfer(type) {
     }
 }
 
+
+userUI.sendMoneyToUser = function (floID, amount, remark) {
+    getConfirmation('Confirm', { message: `Do you want to send ${amount} to ${getFloIdTitle(floID)}?`, confirmText: 'send' }).then(confirmation => {
+        if (confirmation) {
+            buttonLoader('token_transfer__button', true);
+            User.sendToken(floID, amount, "|" + remark).then(txid => {
+                console.warn(`Sent ${amount} to ${floID}`, txid);
+                notify(`Sent ${amount} to ${getFloIdTitle(floID)}. It may take a few mins to reflect in their wallet`, 'success');
+                hidePopup()
+            }).catch(error => notify(error, 'error'))
+                .finally(() => {
+                    buttonLoader('token_transfer__button', false);
+                })
+        }
+    })
+}
+
+userUI.requestMoneyFromUser = function (floID, amount, remark) {
+    getConfirmation('Confirm', { message: `Do you want to request ${amount} from ${getFloIdTitle(floID)}?`, confirmText: 'request' }).then(confirmation => {
+        if (confirmation) {
+            buttonLoader('token_transfer__button', true);
+            User.requestToken(floID, amount, remark).then(result => {
+                console.log(`Requested ${amount} from ${floID}`, result);
+                notify(`Requested ${amount} from ${getFloIdTitle(floID)}`, 'success');
+                hidePopup()
+            }).catch(error => notify(error, 'error'))
+                .finally(() => {
+                    buttonLoader('token_transfer__button', false);
+                })
+        }
+    })
+}
 function executeUserAction() {
     const floID = getRef('token_transfer__receiver').value.trim(),
         amount = parseFloat(getRef('token_transfer__amount').value),
-        remark = getRef('tt_remark').value.trim();
+        remark = getRef('token_transfer__remark').value.trim();
     if (currentUserAction === 'send') {
         userUI.sendMoneyToUser(floID, amount, remark);
-
     } else {
         userUI.requestMoneyFromUser(floID, amount, remark);
     }
