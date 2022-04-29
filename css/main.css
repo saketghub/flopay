@@ -123,7 +123,7 @@ button:not(:disabled) {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  padding: 1rem;
+  padding: 0.8rem 1rem;
 }
 
 .icon-only {
@@ -339,6 +339,10 @@ ul {
 
 .align-self-center {
   align-self: center;
+}
+
+.align-self-end {
+  align-self: end;
 }
 
 .justify-self-center {
@@ -904,6 +908,68 @@ ul {
 .transaction-message__time {
   opacity: 0.8;
   font-size: 0.8rem;
+}
+
+#history .page__header {
+  margin-bottom: 0;
+}
+
+#history_applied_filters_wrapper {
+  padding-bottom: 1rem;
+  background-color: rgba(var(--background-color), 1);
+  z-index: 1;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
+
+.applied-filter {
+  display: flex;
+  align-items: center;
+  padding-left: 0.8rem;
+  border-radius: 0.3rem;
+  border: solid thin rgba(var(--text-color), 0.2);
+  text-transform: capitalize;
+}
+.applied-filter button {
+  padding: 0.6rem;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.75rem;
+  border: solid thin rgba(var(--text-color), 0.2);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.category-chip:focus {
+  outline: solid var(--accent-color);
+}
+.category-chip input {
+  display: none;
+}
+.category-chip span {
+  transition: transform 0.2s;
+  transform: translateX(-0.8rem);
+}
+.category-chip .icon {
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  margin-right: 0.3rem;
+  fill: var(--accent-color);
+  transform: translateX(0.5rem);
+}
+.category-chip input:checked ~ .icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+.category-chip input:checked ~ span {
+  color: var(--accent-color);
+  transform: translateX(0);
 }
 
 #wallet_history_wrapper {
