@@ -288,12 +288,24 @@
                 </div>
             </section>
         </section>
-        <section id="history" class="inner-page hide grid gap-1">
+        <section id="history" class="inner-page hide grid gap-1-5">
             <div class="page__header">
                 <div class="grid">
                     <h4>Payments</h4>
                     <h1>history</h1>
                 </div>
+                <button class="button button--small align-self-end" onclick="showPopup('payments_filters_popup')">
+                    <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                    </svg>
+                    Filters
+                </button>
+            </div>
+            <div id="history_applied_filters_wrapper" class="flex align-center hide gap-1">
+                <h5>Applied filters</h5>
+                <div id="history_applied_filters" class="flex gap-0-5"></div>
             </div>
             <ul id="payments_history" class="observe-empty-state"></ul>
             <div class=" empty-state gap-1 justify-center text-center">
@@ -663,6 +675,61 @@
                 <h4>No saved FLO IDs</h4>
             </div>
         </section>
+    </sm-popup>
+    <sm-popup id="payments_filters_popup">
+        <header slot="header" class="popup__header">
+            <div class="grid gap-1">
+                <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+                <h3>Filters</h3>
+            </div>
+        </header>
+        <div id="history_filters_container" class="grid gap-2">
+            <div class="grid gap-1" id="payments_type_filter">
+                <h5>
+                    Payments type
+                </h5>
+                <div class="flex gap-0-5">
+                    <label class="category-chip interact">
+                        <input type="radio" name="category" value="all" checked autocomplete="off" />
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                        </svg>
+                        <span class="checkmark">All</span>
+                    </label>
+                    <label class="category-chip interact">
+                        <input type="radio" name="category" value="sent" autocomplete="off" />
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                        </svg>
+                        <span class="checkmark">Sent</span>
+                    </label>
+                    <label class="category-chip interact">
+                        <input type="radio" name="category" value="received" autocomplete="off" />
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                        </svg>
+                        <span class="checkmark">Received</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex align-center space-between">
+                <button class="button" onclick="resetPaymentsFilters()">Reset</button>
+                <button class="button button--primary cta" onclick="applyPaymentsFilters()">Filter</button>
+            </div>
+        </div>
     </sm-popup>
     <sm-popup id="topup_wallet_popup">
         <header slot="header" class="popup__header">

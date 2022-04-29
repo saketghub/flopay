@@ -504,6 +504,33 @@ const render = {
                             `
         })
     },
+    paymentsHistory() {
+        let paymentTransactions = []
+        if (paymentsHistoryLoader)
+            paymentsHistoryLoader.clear()
+        getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
+        tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
+            for (const transactionId in transactions) {
+                paymentTransactions.push({
+                    ...tokenAPI.util.parseTxData(transactions[transactionId]),
+                    txid: transactionId
+                })
+            }
+            const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+            if (filter !== 'all') {
+                let propToCheck = filter === 'sent' ? 'sender' : 'receiver';
+                paymentTransactions = paymentTransactions.filter(v => v[propToCheck] === myFloID)
+            }
+            if (paymentsHistoryLoader) {
+                paymentsHistoryLoader.update(paymentTransactions);
+            } else {
+                paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
+            }
+            paymentsHistoryLoader.init();
+        }).catch(e => {
+            console.error(e)
+        })
+    }
 };
 
 function buttonLoader(id, show) {
@@ -748,6 +775,93 @@ function executeUserAction() {
         userUI.requestMoneyFromUser(floID, amount, remark);
     }
 }
+
+function toggleFilters() {
+    const animOptions = {
+        duration: 200,
+        easing: 'ease',
+        fill: 'forwards',
+    }
+    if (getRef('history_applied_filters_wrapper').classList.contains('hide') && getRef('history_applied_filters').children.length > 0) {
+        getRef('history_applied_filters_wrapper').classList.remove('hide')
+        const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
+        getRef('history_applied_filters_wrapper').animate([
+            {
+                transform: `translateY(-1.5rem)`,
+                opacity: 0
+            },
+            {
+                transform: `translateY(0)`,
+                opacity: 1
+            },
+        ], animOptions)
+        getRef('payments_history').animate([
+            { transform: `translateY(-${filtersContainerDimensions.height}px)` },
+            { transform: `translateY(0)` },
+        ], animOptions)
+    } else if (!getRef('history_applied_filters_wrapper').classList.contains('hide') && getRef('history_applied_filters').children.length === 0) {
+        getRef('history_applied_filters_wrapper').animate([
+            {
+                transform: `translateY(0)`,
+                opacity: 1
+            },
+            {
+                transform: `translateY(-1.5rem)`,
+                opacity: 0
+            },
+        ], animOptions)
+            .onfinish = () => {
+                getRef('history_applied_filters_wrapper').classList.add('hide')
+            }
+        const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
+        const historyDimensions = getRef('payments_history').getBoundingClientRect();
+        getRef('payments_history').animate([
+            { transform: `translateY(0)` },
+            { transform: `translateY(-${historyDimensions.top - filtersContainerDimensions.top}px)` },
+        ], animOptions).onfinish = (e) => {
+            e.target.commitStyles()
+            e.target.cancel()
+            getRef('payments_history').style.transform = '';
+        }
+        getRef('payments_type_filter').querySelector('input[value="all"]').checked = true;
+    }
+}
+
+function applyPaymentsFilters() {
+    const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+    getRef('history_applied_filters').innerHTML = ``;
+    if (filter !== 'all') {
+        getRef('history_applied_filters').append(
+            createElement('span', {
+                attributes: { 'data-filter': 'type', 'data-value': filter },
+                className: 'applied-filter',
+                innerHTML: `
+                    <span class="applied-filter__title">${filter}</span>
+                    <button class="remove-filter">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                    </button>
+                `
+            })
+        );
+    }
+    toggleFilters()
+    render.paymentsHistory()
+    hidePopup()
+}
+function resetPaymentsFilters() {
+    getRef('payments_type_filter').querySelector('input[value="all"]').checked = true;
+    render.paymentsHistory()
+    hidePopup()
+    toggleFilters()
+}
+
+delegate(getRef('history_applied_filters'), 'click', '.remove-filter', e => {
+    const filter = e.delegateTarget.parentNode.dataset.filter
+    const filterValue = e.delegateTarget.parentNode.dataset.value
+    e.delegateTarget.parentNode.remove()
+    render.paymentsHistory()
+    toggleFilters()
+})
 
 function changeUpi() {
     const upiId = getRef('upi_id').value.trim();

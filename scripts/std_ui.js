@@ -341,26 +341,7 @@ async function showPage(targetPage, options = {}) {
                 })
             break;
         case 'history':
-            const paymentTransactions = []
-            if (paymentsHistoryLoader)
-                paymentsHistoryLoader.clear()
-            getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
-            tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
-                for (const transactionId in transactions) {
-                    paymentTransactions.push({
-                        ...tokenAPI.util.parseTxData(transactions[transactionId]),
-                        txid: transactionId
-                    })
-                }
-                if (paymentsHistoryLoader) {
-                    paymentsHistoryLoader.update(paymentTransactions);
-                } else {
-                    paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
-                }
-                paymentsHistoryLoader.init();
-            }).catch(e => {
-                console.error(e)
-            })
+            render.paymentsHistory()
             break;
         case 'requests':
             const paymentRequests = [];
@@ -643,6 +624,9 @@ class LazyLoader {
         this.render = this.render.bind(this)
         this.init = this.init.bind(this)
         this.clear = this.clear.bind(this)
+    }
+    get elements() {
+        return this.arrayOfElements
     }
     init() {
         this.intersectionObserver = new IntersectionObserver((entries, observer) => {
