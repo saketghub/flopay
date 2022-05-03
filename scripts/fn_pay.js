@@ -162,6 +162,10 @@ User.decideRequest = function (request, note) {
 const Cashier = {};
 
 Cashier.init = function () {
+    delegate(getRef('cashier_request_list'), 'click', '.process-cashier-request', e => {
+        const requestID = e.delegateTarget.closest('.cashier-request').id;
+        cashierUI.completeRequest(requestID)
+    })
     return new Promise((resolve, reject) => {
         let promises = [];
         //Requests from user to cashier(self) for token-cash exchange

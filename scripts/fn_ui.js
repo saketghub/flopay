@@ -321,15 +321,16 @@ cashierUI.completeRequest = function (reqID) {
 }
 
 function completeCashToTokenRequest(request) {
-    Cashier.checkIfUpiTxIsValid(request.message.upi_txid).then(_ => {
-        let confirmation = confirm(`Check if you have received UPI transfer\ntxid:${request.message.upi_txid}\namount:${request.message.amount}`);
+    const { message: { upi_txid, amount }, vectorClock, senderID } = request;
+    Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
+        let confirmation = confirm(`Check if you have received UPI transfer\ntxid:${upi_txid}\namount:${amount}`);
         if (!confirmation)
             return alert("Cancelled");
-        User.sendToken(request.senderID, request.message.amount, 'for cash-to-token').then(txid => {
-            console.warn(`${request.message.amount} cash-to-token for ${request.senderID}`, txid);
+        User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
+            console.warn(`${amount} cash-to-token for ${senderID}`, txid);
             Cashier.finishRequest(request, txid).then(result => {
                 console.log(result);
-                console.info('Completed cash-to-token request:', request.vectorClock);
+                console.info('Completed cash-to-token request:', vectorClock);
                 alert("Completed request");
             }).catch(error => console.error(error))
         }).catch(error => console.error(error))
@@ -339,7 +340,7 @@ function completeCashToTokenRequest(request) {
         if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
             Cashier.rejectRequest(request, error[1]).then(result => {
                 console.log(result);
-                console.info('Rejected cash-to-token request:', request.vectorClock);
+                console.info('Rejected cash-to-token request:', vectorClock);
             }).catch(error => console.error(error))
     })
 }
@@ -427,7 +428,7 @@ const render = {
         if (status)
             clone.querySelector('.cashier-request__status').textContent = status;
         else
-            clone.querySelector('.cashier-request__status').innerHTML = `<button class="button" onclick="cashierUI.completeRequest('${vectorClock}')">Process</button>`;
+            clone.querySelector('.cashier-request__status').innerHTML = `<button class="button process-cashier-request">Process</button>`;
         return clone;
     },
     walletRequestCard(details) {
@@ -530,6 +531,14 @@ const render = {
         }).catch(e => {
             console.error(e)
         })
+    },
+    async savedIds() {
+        const frag = document.createDocumentFragment();
+        await organizeSyncedData('savedIds');
+        getArrayOfSavedIds().forEach(({ floID, details }) => {
+            frag.append(render.savedId(floID, details));
+        })
+        getRef('saved_ids_list').append(frag);
     }
 };
 
@@ -569,14 +578,6 @@ function getArrayOfSavedIds() {
         });
     }
     return arr.sort((a, b) => a.details.title.localeCompare(b.details.title));
-}
-userUI.renderSavedIds = async function () {
-    const frag = document.createDocumentFragment();
-    await organizeSyncedData('savedIds');
-    getArrayOfSavedIds().forEach(({ floID, details }) => {
-        frag.append(render.savedId(floID, details));
-    })
-    getRef('saved_ids_list').append(frag);
 }
 async function saveFloId() {
     const floID = getRef('flo_id_to_save').value.trim();
