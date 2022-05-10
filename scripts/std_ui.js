@@ -647,7 +647,6 @@ class LazyLoader {
                             this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
                         else
                             this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
-
                     }
                 }
             })
