@@ -156,30 +156,6 @@ delegate(getRef('saved_upi_ids_list'), 'click', '.saved-upi', e => {
     }
 });
 
-userUI.sendMoneyToUser = function (floID, amount, remark) {
-    getConfirmation('Confirm', { message: `Do you want to SEND ${amount} to ${floID}?` }).then(confirmation => {
-        if (confirmation) {
-            User.sendToken(floID, amount, "|" + remark).then(txid => {
-                console.warn(`Sent ${amount} to ${floID}`, txid);
-                notify(`Sent ${amount} to ${floID}. It may take a few mins to reflect in their wallet`, 'success');
-                hidePopup()
-            }).catch(error => console.error(error));
-        }
-    })
-}
-
-userUI.requestMoneyFromUser = function (floID, amount, remark) {
-    getConfirmation('Confirm', { message: `Do you want to REQUEST ${amount} from ${floID}?` }).then(confirmation => {
-        if (confirmation) {
-            User.requestToken(floID, amount, remark).then(result => {
-                console.log(`Requested ${amount} from ${floID}`, result);
-                notify(`Requested ${amount} from ${floID}`, 'success');
-                hidePopup()
-            }).catch(error => console.error(error));
-        }
-    })
-}
-
 userUI.renderCashierRequests = function (requests, error = null) {
     if (error)
         return console.error(error);
@@ -289,12 +265,12 @@ userUI.renderMoneyRequests = function (requests, error = null) {
 
 userUI.payRequest = function (reqID) {
     let { message: { amount, remark }, senderID } = User.moneyRequests[reqID];
-    getConfirmation('Pay?', { message: `Do you want to pay ${request.message.amount} to ${request.senderID}?`, confirmText: 'Pay' }).then(confirmation => {
+    getConfirmation('Pay?', { message: `Do you want to pay ${amount} to ${senderID}?`, confirmText: 'Pay' }).then(confirmation => {
         if (confirmation) {
             User.sendToken(senderID, amount, "|" + remark).then(txid => {
                 console.warn(`Sent ${amount} to ${senderID}`, txid);
                 notify(`Sent ${formatAmount(amount)} to ${getFloIdTitle(senderID)}. It may take a few mins to reflect in their wallet`, 'success');
-                User.decideRequest(request, 'PAID: ' + txid)
+                User.decideRequest(User.moneyRequests[reqID], 'PAID: ' + txid)
                     .then(result => console.log(result))
                     .catch(error => console.error(error))
             }).catch(error => console.error(error));
@@ -349,15 +325,16 @@ cashierUI.completeRequest = function (reqID) {
 }
 
 function completeCashToTokenRequest(request) {
-    Cashier.checkIfUpiTxIsValid(request.message.upi_txid).then(_ => {
-        let confirmation = confirm(`Check if you have received UPI transfer\ntxid:${request.message.upi_txid}\namount:${request.message.amount}`);
+    const { message: { upi_txid, amount }, vectorClock, senderID } = request;
+    Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
+        let confirmation = confirm(`Check if you have received UPI transfer\ntxid:${upi_txid}\namount:${amount}`);
         if (!confirmation)
             return alert("Cancelled");
-        User.sendToken(request.senderID, request.message.amount, 'for cash-to-token').then(txid => {
-            console.warn(`${request.message.amount} cash-to-token for ${request.senderID}`, txid);
+        User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
+            console.warn(`${amount} cash-to-token for ${senderID}`, txid);
             Cashier.finishRequest(request, txid).then(result => {
                 console.log(result);
-                console.info('Completed cash-to-token request:', request.vectorClock);
+                console.info('Completed cash-to-token request:', vectorClock);
                 alert("Completed request");
             }).catch(error => console.error(error))
         }).catch(error => console.error(error))
@@ -367,7 +344,7 @@ function completeCashToTokenRequest(request) {
         if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
             Cashier.rejectRequest(request, error[1]).then(result => {
                 console.log(result);
-                console.info('Rejected cash-to-token request:', request.vectorClock);
+                console.info('Rejected cash-to-token request:', vectorClock);
             }).catch(error => console.error(error))
     })
 }
@@ -455,7 +432,7 @@ const render = {
         if (status)
             clone.querySelector('.cashier-request__status').textContent = status;
         else
-            clone.querySelector('.cashier-request__status').innerHTML = `<button class="button" onclick="cashierUI.completeRequest('${vectorClock}')">Process</button>`;
+            clone.querySelector('.cashier-request__status').innerHTML = `<button class="button process-cashier-request">Process</button>`;
         return clone;
     },
     walletRequestCard(details) {
@@ -502,11 +479,14 @@ const render = {
         return clone;
     },
     transactionMessage(details) {
-        const { tokenAmount, time, sender, receiver } = tokenAPI.util.parseTxData(details)
+        const { tokenAmount, time, sender, receiver, flodata } = tokenAPI.util.parseTxData(details)
         let messageType = sender === receiver ? 'self' : sender === myFloID ? 'sent' : 'received';
         const clone = getRef('transaction_message_template').content.cloneNode(true).firstElementChild;
         clone.classList.add(messageType);
         clone.querySelector('.transaction-message__amount').textContent = formatAmount(tokenAmount);
+        if (flodata.split('|')[1]) {
+            clone.querySelector('.transaction-message__remark').textContent = flodata.split('|')[1];
+        }
         clone.querySelector('.transaction-message__time').textContent = getFormattedTime(time * 1000);
         return clone;
     },
@@ -515,6 +495,54 @@ const render = {
         clone.dataset.upiId = upiId;
         clone.querySelector('.saved-upi__id').textContent = upiId;
         return clone;
+    },
+    savedIdPickerCard(floID, { title }) {
+        return createElement('li', {
+            className: 'saved-id grid interact',
+            attributes: { 'tabindex': '0', 'data-flo-id': floID },
+            innerHTML: `
+                            <div class="saved-id__initials">${title[0]}</div>
+                            <div class="grid gap-0-5">
+                                <h4 class="saved-id__title">${title}</h4>
+                                <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
+                            </div>
+                            `
+        })
+    },
+    paymentsHistory() {
+        let paymentTransactions = []
+        if (paymentsHistoryLoader)
+            paymentsHistoryLoader.clear()
+        getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
+        tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
+            for (const transactionId in transactions) {
+                paymentTransactions.push({
+                    ...tokenAPI.util.parseTxData(transactions[transactionId]),
+                    txid: transactionId
+                })
+            }
+            const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+            if (filter !== 'all') {
+                let propToCheck = filter === 'sent' ? 'sender' : 'receiver';
+                paymentTransactions = paymentTransactions.filter(v => v[propToCheck] === myFloID)
+            }
+            if (paymentsHistoryLoader) {
+                paymentsHistoryLoader.update(paymentTransactions);
+            } else {
+                paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
+            }
+            paymentsHistoryLoader.init();
+        }).catch(e => {
+            console.error(e)
+        })
+    },
+    async savedIds() {
+        const frag = document.createDocumentFragment();
+        await organizeSyncedData('savedIds');
+        getArrayOfSavedIds().forEach(({ floID, details }) => {
+            frag.append(render.savedId(floID, details));
+        })
+        getRef('saved_ids_list').append(frag);
     }
 };
 
@@ -555,26 +583,21 @@ function getArrayOfSavedIds() {
     }
     return arr.sort((a, b) => a.details.title.localeCompare(b.details.title));
 }
-userUI.renderSavedIds = async function () {
-    const frag = document.createDocumentFragment();
-    await organizeSyncedData('savedIds');
-    getArrayOfSavedIds().forEach(({ floID, details }) => {
-        frag.append(render.savedId(floID, details));
-    })
-    getRef('saved_ids_list').append(frag);
-}
-async function saveId() {
+async function saveFloId() {
     const floID = getRef('flo_id_to_save').value.trim();
     if (floGlobals.savedIds.hasOwnProperty(floID))
         return notify('This FLO ID is already saved', 'error');
     const title = getRef('flo_id_title_to_save').value.trim();
     floGlobals.savedIds[floID] = { title }
+    buttonLoader('save_flo_id_button', true);
     syncUserData('savedIds', floGlobals.savedIds).then(() => {
         insertElementAlphabetically(title, render.savedId(floID, { title }))
         notify(`Saved ${floID}`, 'success');
         hidePopup();
     }).catch(error => {
         notify(error, 'error');
+    }).finally(() => {
+        buttonLoader('save_flo_id_button', false);
     })
 }
 delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
@@ -658,9 +681,43 @@ function insertElementAlphabetically(name, elementToInsert) {
     }
 }
 
+getRef('search_saved_ids_picker').addEventListener('input', debounce(async e => {
+    const frag = document.createDocumentFragment()
+    const searchKey = e.target.value.trim();
+    let allSavedIds = getArrayOfSavedIds();
+    if (searchKey !== '') {
+        const fuse = new Fuse(allSavedIds, { keys: ['floID', 'details.title'] })
+        allSavedIds = fuse.search(searchKey).map(v => v.item)
+    }
+    allSavedIds.forEach(({ floID, details }) => {
+        frag.append(render.savedIdPickerCard(floID, details))
+    })
+    getRef('saved_ids_picker_list').innerHTML = '';
+    getRef('saved_ids_picker_list').append(frag);
+    if (searchKey !== '') {
+        const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+        if (potentialTarget) {
+            potentialTarget.classList.add('highlight')
+        }
+    }
+}, 100))
+getRef('search_saved_ids_picker').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+        const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+        if (potentialTarget) {
+            potentialTarget.click()
+        }
+    }
+})
+delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
+    getRef('token_transfer__receiver').value = e.delegateTarget.dataset.floId
+    getRef('token_transfer__receiver').focusIn()
+    hidePopup()
+})
+
 let currentUserAction;
 function showTokenTransfer(type) {
-    getRef('tt_button').textContent = type;
+    getRef('token_transfer__button').textContent = type;
     currentUserAction = type;
     if (type === 'send') {
         getRef('token_transfer__title').textContent = 'Send money to FLO ID';
@@ -670,8 +727,10 @@ function showTokenTransfer(type) {
     if (pagesData.lastPage === 'contact') {
         getRef('token_transfer__receiver').value = pagesData.params.floId;
         getRef('token_transfer__receiver').readOnly = true;
+        getRef('token_transfer__receiver').querySelector('button').classList.add('hide');
     } else {
         getRef('token_transfer__receiver').readOnly = false;
+        getRef('token_transfer__receiver').querySelector('button').classList.remove('hide');
     }
     showPopup('token_transfer_popup');
     if (pagesData.lastPage === 'contact') {
@@ -679,22 +738,142 @@ function showTokenTransfer(type) {
     }
 }
 
+
+userUI.sendMoneyToUser = function (floID, amount, remark) {
+    getConfirmation('Confirm', { message: `Do you want to send ${amount} to ${getFloIdTitle(floID)}?`, confirmText: 'send' }).then(confirmation => {
+        if (confirmation) {
+            buttonLoader('token_transfer__button', true);
+            User.sendToken(floID, amount, "|" + remark).then(txid => {
+                console.warn(`Sent ${amount} to ${floID}`, txid);
+                notify(`Sent ${amount} to ${getFloIdTitle(floID)}. It may take a few mins to reflect in their wallet`, 'success');
+                hidePopup()
+            }).catch(error => notify(error, 'error'))
+                .finally(() => {
+                    buttonLoader('token_transfer__button', false);
+                })
+        }
+    })
+}
+
+userUI.requestMoneyFromUser = function (floID, amount, remark) {
+    getConfirmation('Confirm', { message: `Do you want to request ${amount} from ${getFloIdTitle(floID)}?`, confirmText: 'request' }).then(confirmation => {
+        if (confirmation) {
+            buttonLoader('token_transfer__button', true);
+            User.requestToken(floID, amount, remark).then(result => {
+                console.log(`Requested ${amount} from ${floID}`, result);
+                notify(`Requested ${amount} from ${getFloIdTitle(floID)}`, 'success');
+                hidePopup()
+            }).catch(error => notify(error, 'error'))
+                .finally(() => {
+                    buttonLoader('token_transfer__button', false);
+                })
+        }
+    })
+}
 function executeUserAction() {
     const floID = getRef('token_transfer__receiver').value.trim(),
         amount = parseFloat(getRef('token_transfer__amount').value),
-        remark = getRef('tt_remark').value.trim();
+        remark = getRef('token_transfer__remark').value.trim();
     if (currentUserAction === 'send') {
         userUI.sendMoneyToUser(floID, amount, remark);
-
     } else {
         userUI.requestMoneyFromUser(floID, amount, remark);
     }
 }
 
+function toggleFilters() {
+    const animOptions = {
+        duration: 200,
+        easing: 'ease',
+        fill: 'forwards',
+    }
+    if (getRef('history_applied_filters_wrapper').classList.contains('hide') && getRef('history_applied_filters').children.length > 0) {
+        getRef('history_applied_filters_wrapper').classList.remove('hide')
+        const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
+        getRef('history_applied_filters_wrapper').animate([
+            {
+                transform: `translateY(-1.5rem)`,
+                opacity: 0
+            },
+            {
+                transform: `translateY(0)`,
+                opacity: 1
+            },
+        ], animOptions)
+        getRef('payments_history').animate([
+            { transform: `translateY(-${filtersContainerDimensions.height}px)` },
+            { transform: `translateY(0)` },
+        ], animOptions)
+    } else if (!getRef('history_applied_filters_wrapper').classList.contains('hide') && getRef('history_applied_filters').children.length === 0) {
+        getRef('history_applied_filters_wrapper').animate([
+            {
+                transform: `translateY(0)`,
+                opacity: 1
+            },
+            {
+                transform: `translateY(-1.5rem)`,
+                opacity: 0
+            },
+        ], animOptions)
+            .onfinish = () => {
+                getRef('history_applied_filters_wrapper').classList.add('hide')
+            }
+        const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
+        const historyDimensions = getRef('payments_history').getBoundingClientRect();
+        getRef('payments_history').animate([
+            { transform: `translateY(0)` },
+            { transform: `translateY(-${historyDimensions.top - filtersContainerDimensions.top}px)` },
+        ], animOptions).onfinish = (e) => {
+            e.target.commitStyles()
+            e.target.cancel()
+            getRef('payments_history').style.transform = '';
+        }
+        getRef('payments_type_filter').querySelector('input[value="all"]').checked = true;
+    }
+}
+
+function applyPaymentsFilters() {
+    const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+    getRef('history_applied_filters').innerHTML = ``;
+    if (filter !== 'all') {
+        getRef('history_applied_filters').append(
+            createElement('button', {
+                attributes: { 'data-filter': 'type', 'data-value': filter, title: 'Remove filter' },
+                className: 'applied-filter',
+                innerHTML: `
+                    <span class="applied-filter__title">${filter}</span>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                `
+            })
+        );
+    }
+    toggleFilters()
+    render.paymentsHistory()
+    hidePopup()
+}
+function resetPaymentsFilters() {
+    getRef('payments_type_filter').querySelector('input[value="all"]').checked = true;
+    render.paymentsHistory()
+    hidePopup()
+    toggleFilters()
+}
+
+delegate(getRef('history_applied_filters'), 'click', '.applied-filter', e => {
+    const filter = e.delegateTarget.dataset.filter
+    const filterValue = e.delegateTarget.dataset.value
+    e.delegateTarget.remove()
+    render.paymentsHistory()
+    toggleFilters()
+})
+
 function changeUpi() {
     const upiId = getRef('upi_id').value.trim();
     Cashier.updateUPI(upiId).then(() => {
+        getRef('my_upi_id').classList.remove('hide')
+        getRef('my_upi_id').value = upiId;
+        getRef('change_upi_button').textContent = 'Change UPI ID';
         notify('UPI ID updated successfully', 'success');
+        hidePopup()
     }).catch(err => {
         notify(err, 'error');
     });

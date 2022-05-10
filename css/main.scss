@@ -117,7 +117,7 @@ button {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  padding: 1rem;
+  padding: 0.8rem 1rem;
 }
 .icon-only {
   padding: 0.5rem;
@@ -310,6 +310,9 @@ ul {
 .align-self-center {
   align-self: center;
 }
+.align-self-end {
+  align-self: end;
+}
 
 .justify-self-center {
   justify-self: center;
@@ -374,11 +377,11 @@ ul {
 }
 
 .observe-empty-state:empty {
-  display: none;
+  display: none !important;
 }
 
 .observe-empty-state:not(:empty) + .empty-state {
-  display: none;
+  display: none !important;
 }
 
 .bullet-point {
@@ -424,6 +427,7 @@ ul {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1.5rem;
+    min-height: 8rem;
     .grid {
       margin-top: auto;
     }
@@ -730,6 +734,16 @@ ul {
     fill: rgba(var(--text-color), 1);
   }
 }
+#cashier_status {
+  font-size: 0.9rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background-color: rgb(240, 230, 140, 0.8);
+  color: rgba(0, 0, 0, 0.8);
+  .icon {
+    fill: rgba(0, 0, 0, 0.8);
+  }
+}
 
 #saved_ids_list {
   display: grid;
@@ -805,7 +819,7 @@ ul {
   }
   & > :last-child {
     padding: 0.5rem 1.5rem;
-    background-color: rgba(var(--text-color), 0.03);
+    border-top: solid thin rgba(var(--text-color), 0.2);
     button {
       padding: 0.8rem 2rem;
       border-radius: 1rem;
@@ -855,6 +869,73 @@ ul {
   &__time {
     opacity: 0.8;
     font-size: 0.8rem;
+  }
+}
+
+#history {
+  .page__header {
+    margin-bottom: 0;
+  }
+}
+#history_applied_filters_wrapper {
+  padding: 0.2rem 0 0.5rem 0;
+  background-color: rgba(var(--background-color), 1);
+  z-index: 1;
+  position: sticky;
+  top: 0;
+}
+.applied-filter {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.6rem 0.5rem 0.8rem;
+  border-radius: 1rem;
+  border: solid thin rgba(var(--text-color), 0.2);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  button {
+    padding: 0.6rem;
+  }
+  .icon {
+    margin-left: 0.3rem;
+  }
+}
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  border: solid thin rgba(var(--text-color), 0.2);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  &:focus {
+    outline: solid var(--accent-color);
+  }
+  input {
+    display: none;
+  }
+  span {
+    transition: transform 0.2s;
+    transform: translateX(-0.8rem);
+  }
+  .icon {
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    margin-right: 0.3rem;
+    fill: var(--accent-color);
+    transform: translateX(0.5rem);
+  }
+  input:checked ~ .icon {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  input:checked ~ span {
+    color: var(--accent-color);
+    transform: translateX(0);
   }
 }
 

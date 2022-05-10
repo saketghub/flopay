@@ -10,12 +10,12 @@ let paymentRequestsLoader = null;
 //Checks for internet connection status
 if (!navigator.onLine)
     notify(
-        "There seems to be a problem connecting to the internet, Please check you internet connection.",
+        "There seems to be a problem connecting to the internet. Please check your internet connection.",
         "error"
     );
 window.addEventListener("offline", () => {
     notify(
-        "There seems to be a problem connecting to the internet, Please check you internet connection.",
+        "There seems to be a problem connecting to the internet. Please check your internet connection.",
         "error",
         { pinned: true }
     );
@@ -92,9 +92,8 @@ document.addEventListener('popupopened', async e => {
     const frag = document.createDocumentFragment()
     switch (e.target.id) {
         case 'saved_ids_popup':
-            const allSavedIds = await getArrayOfSavedIds()
-            allSavedIds.forEach(({ floID, name }) => {
-                frag.append(render.savedIdPickerCard(floID, name))
+            getArrayOfSavedIds().forEach(({ floID, details }) => {
+                frag.append(render.savedIdPickerCard(floID, details))
             })
             getRef('saved_ids_picker_list').innerHTML = ''
             getRef('saved_ids_picker_list').append(frag)
@@ -342,26 +341,7 @@ async function showPage(targetPage, options = {}) {
                 })
             break;
         case 'history':
-            const paymentTransactions = []
-            if (paymentsHistoryLoader)
-                paymentsHistoryLoader.clear()
-            getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
-            tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
-                for (const transactionId in transactions) {
-                    paymentTransactions.push({
-                        ...tokenAPI.util.parseTxData(transactions[transactionId]),
-                        txid: transactionId
-                    })
-                }
-                if (paymentsHistoryLoader) {
-                    paymentsHistoryLoader.update(paymentTransactions);
-                } else {
-                    paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
-                }
-                paymentsHistoryLoader.init();
-            }).catch(e => {
-                console.error(e)
-            })
+            render.paymentsHistory()
             break;
         case 'requests':
             const paymentRequests = [];
@@ -497,8 +477,8 @@ async function showPage(targetPage, options = {}) {
         let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
         const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
         if (currentActiveElement) {
+            getRef('main_card').classList.remove('nav-hidden')
             if (getRef('main_navbar').classList.contains('hide')) {
-                getRef('main_card').classList.remove('nav-hidden')
                 getRef('main_navbar').classList.remove('hide-away')
                 getRef('main_navbar').classList.remove('hide')
                 getRef('main_navbar').animate([
@@ -554,8 +534,8 @@ async function showPage(targetPage, options = {}) {
             previousActiveElement.classList.remove('nav-item--active');
             currentActiveElement.classList.add('nav-item--active')
         } else {
+            getRef('main_card').classList.add('nav-hidden')
             if (!getRef('main_navbar').classList.contains('hide')) {
-                getRef('main_card').classList.add('nav-hidden')
                 getRef('main_navbar').classList.add('hide-away')
                 getRef('main_navbar').animate([
                     {
@@ -645,6 +625,9 @@ class LazyLoader {
         this.init = this.init.bind(this)
         this.clear = this.clear.bind(this)
     }
+    get elements() {
+        return this.arrayOfElements
+    }
     init() {
         this.intersectionObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
@@ -664,7 +647,6 @@ class LazyLoader {
                             this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
                         else
                             this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
-
                     }
                 }
             })
