@@ -369,7 +369,7 @@
                     </svg>
                     <span>Cashier is currently offline. Please check back again after a while.</span>
                 </div>
-                <div class="flex">
+                <div class="flex user-element">
                     <button class="wallet-action" onclick="showPopup('topup_wallet_popup')">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
@@ -399,7 +399,7 @@
                     </button>
                 </div>
             </div>
-            <div id="wallet_history_wrapper" class="grid gap-1-5">
+            <div id="wallet_history_wrapper" class="grid gap-1-5 user-element">
                 <div class="hide grid gap-1">
                     <h4>Pending transactions</h4>
                     <ul id="pending_wallet_transactions" class="grid gap-0-5"></ul>
@@ -1066,8 +1066,7 @@
                         showPage(window.location.hash, { firstLoad: true })
                     }).catch(error => console.error(error))
                 } else {
-                    userUI.renderSavedIds()
-
+                    render.savedIds()
                     userUI.renderCashierRequests(User.cashierRequests);
                     userUI.renderMoneyRequests(User.moneyRequests);
                     User.init().then(result => {
