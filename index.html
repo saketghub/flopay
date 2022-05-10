@@ -790,24 +790,22 @@
                     <h4>Confirm</h4>
                     <p id="topup_wallet__details"></p>
                 </div>
-                  <div class="grid gap-1 justify-center text-center">
-                      <div class="grid gap-0-5">
-                          <p>Scan QR code</p>
-                          <div id="topup_wallet__qr_code"></div>
-                      </div>
-                      <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
-                      <a href="upi://pay?pa=UPIID@oksbi&amp;cu=INR">Pay Now !</a>
-                  </div>
-                  <p>After sending money, please enter the transaction ID of completed transaction.</p>
-              <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
-              <p>After sending money, please enter the transaction ID of completed transaction.</p>
-              <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
-                  error-text="Please enter UPI transaction ID of money you sent to continue."
-                  placeholder="UPI transaction ID" autofocus animate required></sm-input>
-              <div class="multi-state-button">
-                  <button id="topup_wallet_button" class="button button--primary cta" onclick="depositMoneyToWallet()"
-                      type="submit">Confirm</button>
-              </div>
+                <div class="grid gap-1 justify-center text-center">
+                    <div class="grid gap-0-5">
+                        <p>Scan QR code</p>
+                        <div id="topup_wallet__qr_code"></div>
+                    </div>
+                    <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
+                    <a href="upi://pay?pa=UPIID@oksbi&amp;cu=INR">Pay Now !</a>
+                </div>
+                <p>After sending money, please enter the transaction ID of completed transaction.</p>
+                <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
+                    error-text="Please enter UPI transaction ID of money you sent to continue."
+                    placeholder="UPI transaction ID" autofocus animate required></sm-input>
+                <div class="multi-state-button">
+                    <button id="topup_wallet_button" class="button button--primary cta" onclick="depositMoneyToWallet()"
+                        type="submit">Confirm</button>
+                </div>
             </sm-form>
             <div class="grid gap-0-5 hide justify-center text-center">
                 <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
