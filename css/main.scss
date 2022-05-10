@@ -97,7 +97,7 @@ button {
   background-color: rgba(var(--text-color), 0.06);
   &--primary,
   &--danger {
-    color: rgba(var(--background-color), 1);
+    color: rgba(var(--background-color), 1) !important;
     .icon {
       fill: rgba(var(--background-color), 1);
     }

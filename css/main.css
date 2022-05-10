@@ -64,6 +64,7 @@ a {
 a:focus-visible {
   box-shadow: 0 0 0 0.1rem rgba(var(--text-color), 1) inset;
 }
+
 a.button {
   padding: 0.4rem 0.6rem;
   border-radius: 0.3rem;
@@ -103,7 +104,7 @@ button:not(:disabled) {
   background-color: rgba(var(--text-color), 0.06);
 }
 .button--primary, .button--danger {
-  color: rgba(var(--background-color), 1);
+  color: rgba(var(--background-color), 1) !important;
 }
 .button--primary .icon, .button--danger .icon {
   fill: rgba(var(--background-color), 1);

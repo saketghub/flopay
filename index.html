@@ -155,11 +155,11 @@
         </header>
         <section id="home" class="inner-page hide">
             <div id="user" class="hide grid user-element">
+                <div class="grid">
+                    <h5>My FLO ID</h5>
+                    <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
+                </div>
                 <div id="wallet_section" class="grid gap-1">
-                    <div class="grid">
-                        <h5>My FLO ID</h5>
-                        <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
-                    </div>
                     <h4>My wallet</h4>
                     <div class="grid gap-0-5">
                         <h5>Balance</h5>
@@ -745,7 +745,12 @@
                         <div id="topup_wallet__qr_code"></div>
                     </div>
                     <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
-                    <a href="upi://pay?pa=UPIID@oksbi&amp;cu=INR">Pay Now !</a>
+                    <div class="grid">
+                        <a id="topup_wallet__app_link" class="button button--primary">Pay with
+                            supported
+                            UPI apps</a>
+                        <p>*Requires UPI apps installed on device</p>
+                    </div>
                 </div>
                 <p>After sending money, please enter the transaction ID of completed transaction.</p>
                 <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
