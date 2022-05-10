@@ -160,7 +160,10 @@
                     <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
                 </div>
                 <div id="wallet_section" class="grid gap-1">
-                    <h4>My wallet</h4>
+                    <div class="flex align-center space-between">
+                        <h4>My wallet</h4>
+                        <a href="#/wallet" class="interact">See history</a>
+                    </div>
                     <div class="grid gap-0-5">
                         <h5>Balance</h5>
                         <h1 class="h1" id="rupee_balance"></h1>
@@ -365,7 +368,19 @@
         </section>
         <section id="wallet" class="inner-page hide">
             <div class="page__header">
-                <h1>Wallet</h1>
+                <div class="grid justify-start gap-1">
+                    <a href="#/home" class="button icon-only margin-right-0-5">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                        </svg>
+                    </a>
+                    <div class="grid">
+                        <h4>Wallet</h4>
+                        <h1>transactions</h1>
+                    </div>
+                </div>
             </div>
             <div id="wallet_history_wrapper" class="grid gap-1-5 user-element">
                 <div class="hide grid gap-1">
@@ -487,17 +502,6 @@
                             </g>
                         </svg>
                         <span class="nav-item__title">Requests</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#/wallet" class="nav-item interact" title='View payment requests'>
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0z" fill="none" />
-                            <path
-                                d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-                        </svg>
-                        <span class="nav-item__title">Wallet</span>
                     </a>
                 </li>
                 <li>
