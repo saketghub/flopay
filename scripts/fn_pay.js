@@ -31,6 +31,15 @@ User.init = function () {
                 for (let i in d)
                     cashierStatus[i] = d[i];
                 //Add any UI_fn if any
+                if (User.findCashier()) {
+                    getRef('topup_wallet_process').classList.remove('hide')
+                    getRef('withdraw_wallet_process').classList.remove('hide')
+                    document.querySelectorAll('.cashier-status').forEach(elem => elem.classList.add('hide'))
+                } else {
+                    getRef('topup_wallet_process').classList.add('hide')
+                    getRef('withdraw_wallet_process').classList.add('hide')
+                    document.querySelectorAll('.cashier-status').forEach(elem => elem.classList.remove('hide'))
+                }
             }
         }))
         /*

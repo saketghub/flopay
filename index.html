@@ -154,29 +154,44 @@
         </header>
         <section id="home" class="inner-page hide">
             <div id="user" class="hide grid user-element">
-                <div id="quick_actions_container">
-                    <button class="primary-action" onclick="showTokenTransfer('send')">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0z" fill="none" />
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                        </svg>
-                        Send rupee tokens
-                    </button>
-                    <button class="primary-action" onclick="showTokenTransfer('request')">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                            <g>
-                                <rect fill="none" height="24" width="24" />
-                            </g>
-                            <g>
+                <div id="wallet_section" class="grid gap-1">
+                    <div class="grid">
+                        <h5>My FLO ID</h5>
+                        <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
+                    </div>
+                    <h4>My wallet</h4>
+                    <div class="grid gap-0-5">
+                        <h5>Balance</h5>
+                        <h1 class="h1" id="rupee_balance"></h1>
+                    </div>
+                    <div id="wallet_actions_wrapper">
+                        <button class="wallet-action" onclick="showTokenTransfer('send')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                            </svg>
+                            Send
+                        </button>
+                        <button class="wallet-action" onclick="showTokenTransfer('request')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
                                 <path
-                                    d="M20,2H4.01c-1.1,0-2,0.9-2,2L2,22l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M12,6c1.1,0,2,0.9,2,2s-0.9,2-2,2 s-2-0.9-2-2S10.9,6,12,6z M16,14H8v-0.57c0-0.81,0.48-1.53,1.22-1.85C10.07,11.21,11.01,11,12,11c0.99,0,1.93,0.21,2.78,0.58 C15.52,11.9,16,12.62,16,13.43V14z" />
-                            </g>
-                        </svg>
-                        Request rupee tokens
-                    </button>
-                    <!-- <button class="primary-action" onclick="">
+                                    d="M11 5v5.59H7.5l4.5 4.5 4.5-4.5H13V5h-2zm-5 9c0 3.31 2.69 6 6 6s6-2.69 6-6h-2c0 2.21-1.79 4-4 4s-4-1.79-4-4H6z" />
+                            </svg>
+                            Request
+                        </button>
+                        <button class="wallet-action cashier-option" onclick="showPopup('topup_wallet_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                            </svg>
+                            Top-up
+                        </button>
+                        <button class="wallet-action cashier-option" onclick="showPopup('withdraw_wallet_popup')">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                                 height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                                 <g>
@@ -184,22 +199,17 @@
                                 </g>
                                 <g>
                                     <g>
-                                        <path d="M3,11h8V3H3V11z M5,5h4v4H5V5z" />
-                                        <path d="M3,21h8v-8H3V21z M5,15h4v4H5V15z" />
-                                        <path d="M13,3v8h8V3H13z M19,9h-4V5h4V9z" />
-                                        <rect height="2" width="2" x="19" y="19" />
-                                        <rect height="2" width="2" x="13" y="13" />
-                                        <rect height="2" width="2" x="15" y="15" />
-                                        <rect height="2" width="2" x="13" y="17" />
-                                        <rect height="2" width="2" x="15" y="19" />
-                                        <rect height="2" width="2" x="17" y="17" />
-                                        <rect height="2" width="2" x="17" y="13" />
-                                        <rect height="2" width="2" x="19" y="15" />
+                                        <rect height="7" width="3" x="4" y="10" />
+                                        <rect height="7" width="3" x="10.5" y="10" />
+                                        <rect height="3" width="20" x="2" y="19" />
+                                        <rect height="7" width="3" x="17" y="10" />
+                                        <polygon points="12,1 2,6 2,8 22,8 22,6" />
                                     </g>
                                 </g>
                             </svg>
-                            Scan FLO QR
-                        </button> -->
+                            Withdraw
+                        </button>
+                    </div>
                 </div>
                 <section class="flex direction-column h-100">
                     <div class="grid align-center gap-0-5">
@@ -618,7 +628,7 @@
                         transform="translate(-229.66231 -151.4124)" fill="#3f3d56" />
                 </svg>
             </div>
-            <div class="grid gap-1" style="width: min(24rem, 100%);">
+            <<<<<<< Updated upstream <div class="grid gap-1" style="width: min(24rem, 100%);">
                 <div class="grid gap-0-5">
                     <h5>Balance</h5>
                     <h1 class="h1" id="rupee_balance"></h1>
@@ -652,20 +662,23 @@
                         Transfer to bank
                     </button>
                 </div>
+    </div>
+    <div id="wallet_history_wrapper" class="grid gap-1-5">
+        =======
+        <div id="wallet_history_wrapper" class="grid gap-1-5 user-element">
+            >>>>>>> Stashed changes
+            <div class="hide grid gap-1">
+                <h4>Pending transactions</h4>
+                <ul id="pending_wallet_transactions" class="grid gap-0-5"></ul>
             </div>
-            <div id="wallet_history_wrapper" class="grid gap-1-5">
-                <div class="hide grid gap-1">
-                    <h4>Pending transactions</h4>
-                    <ul id="pending_wallet_transactions" class="grid gap-0-5"></ul>
-                </div>
-                <div class="grid gap-1">
-                    <h4>History</h4>
-                    <ul id="wallet_history" class="observe-empty-state grid gap-0-5"></ul>
-                    <div class=" empty-state gap-1 justify-center text-center">
-                        <h4>No transactions</h4>
-                    </div>
+            <div class="grid gap-1">
+                <h4>History</h4>
+                <ul id="wallet_history" class="observe-empty-state grid gap-0-5"></ul>
+                <div class=" empty-state gap-1 justify-center text-center">
+                    <h4>No transactions</h4>
                 </div>
             </div>
+        </div>
         </section>
         <div id="transaction" class="inner-page hide grid gap-2">
             <div class="grid gap-1 justify-start">
@@ -775,7 +788,7 @@
                 <div class="grid gap-1">
                     <div class="grid">
                         <h5>My FLO ID</h5>
-                        <sm-copy id="logged_in_user_id" style="font-size: 0.9rem;"></sm-copy>
+                        <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
                     </div>
                     <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
                 </div>
@@ -1009,15 +1022,27 @@
                     <h4>Confirm</h4>
                     <p id="topup_wallet__details"></p>
                 </div>
-                <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
-                <p>After sending money, please enter the UPI transaction ID of completed transfer.</p>
-                <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
-                    error-text="Please enter UPI transaction ID of money you sent to continue."
-                    placeholder="UPI transaction ID" autofocus animate required></sm-input>
-                <div class="multi-state-button">
-                    <button id="topup_wallet_button" class="button button--primary cta" onclick="depositMoneyToWallet()"
-                        type="submit">Confirm</button>
-                </div>
+                <<<<<<< Updated upstream <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;">
+                    </sm-copy>
+                    <p>After sending money, please enter the UPI transaction ID of completed transfer.</p>
+                    =======
+                    <div class="grid gap-1 justify-center text-center">
+                        <div class="grid gap-0-5">
+                            <p>Scan QR code</p>
+                            <div id="topup_wallet__qr_code"></div>
+                        </div>
+                        <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
+                        <a href="upi://pay?pa=UPIID@oksbi&amp;cu=INR">Pay Now !</a>
+                    </div>
+                    <p>After sending money, please enter the transaction ID of completed transaction.</p>
+                    >>>>>>> Stashed changes
+                    <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
+                        error-text="Please enter UPI transaction ID of money you sent to continue."
+                        placeholder="UPI transaction ID" autofocus animate required></sm-input>
+                    <div class="multi-state-button">
+                        <button id="topup_wallet_button" class="button button--primary cta"
+                            onclick="depositMoneyToWallet()" type="submit">Confirm</button>
+                    </div>
             </sm-form>
             <div class="grid gap-0-5 hide justify-center text-center">
                 <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
@@ -1038,6 +1063,13 @@
                 <h4>Failed to top-up wallet</h4>
                 <p id="topup_failed_reason"></p>
             </div>
+        </div>
+        <div class="cashier-status hide flex align-center">
+            <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                width="24px" fill="#000000">
+                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+            </svg>
+            <span>Cashier is currently offline. Please check back again after a while.</span>
         </div>
     </sm-popup>
     <sm-popup id="withdraw_wallet_popup">
@@ -1110,6 +1142,13 @@
                 <h4>Failed to request</h4>
                 <p id="withdrawal_failed_reason"></p>
             </div>
+        </div>
+        <div class="cashier-status hide flex align-center">
+            <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                width="24px" fill="#000000">
+                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+            </svg>
+            <span>Cashier is currently offline. Please check back again after a while.</span>
         </div>
     </sm-popup>
     <sm-popup id="save_upi_popup">
@@ -1278,7 +1317,7 @@
                     upiIds: {}
                 }
                 console.log(`Welcome ${myFloID}`);
-                getRef('logged_in_user_id').value = myFloID;
+                document.querySelectorAll('.logged-in-user-id').forEach(elem => elem.value = myFloID);
                 floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
                 tokenAPI.getBalance(myFloID).then(balance => {
                     const formattedBalance = formatAmount(balance)
