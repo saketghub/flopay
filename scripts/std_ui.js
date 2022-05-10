@@ -10,12 +10,12 @@ let paymentRequestsLoader = null;
 //Checks for internet connection status
 if (!navigator.onLine)
     notify(
-        "There seems to be a problem connecting to the internet, Please check you internet connection.",
+        "There seems to be a problem connecting to the internet. Please check your internet connection.",
         "error"
     );
 window.addEventListener("offline", () => {
     notify(
-        "There seems to be a problem connecting to the internet, Please check you internet connection.",
+        "There seems to be a problem connecting to the internet. Please check your internet connection.",
         "error",
         { pinned: true }
     );
