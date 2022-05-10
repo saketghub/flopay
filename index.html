@@ -834,11 +834,13 @@
                         </g>
                     </svg>
                 </sm-input>
-                <div class="grid gap-0-5 hide">
-                    <p>
-                        <b>Select UPI ID to receive money</b>
-                    </p>
-                    <sm-select id="select_upi_id" style="z-index: 2;"></sm-select>
+                <div class="grid gap-0-5">
+                    <div class="grid hide">
+                        <p>
+                            <b>Select UPI ID to receive money</b>
+                        </p>
+                        <sm-select id="select_upi_id" style="z-index: 2;"></sm-select>
+                    </div>
                     <button class="button button--small justify-self-start" onclick="showPopup('save_upi_popup')">
                         <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
                             viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -887,7 +889,7 @@
             <h4>Save UPI ID</h4>
         </header>
         <sm-form>
-            <sm-input id="get_upi_id" placeholder="UPI ID" pattern="[a-zA-Z0-9_]{3,}@[a-zA-Z]{3,}"
+            <sm-input id="get_upi_id" placeholder="UPI ID" pattern="[a-zA-Z0-9.\-_]{2,49}@[a-zA-Z._]{2,49}"
                 error-text="Invalid UPI ID" autofocus animate required></sm-input>
             <button class="button button--primary cta" onclick="saveUpiId()" type="submit">Save</button>
         </sm-form>
@@ -905,7 +907,7 @@
             <h4>Change UPI ID</h4>
         </header>
         <sm-form>
-            <sm-input id="upi_id" placeholder="UPI ID" pattern="[a-zA-Z0-9_]{3,}@[a-zA-Z]{3,}"
+            <sm-input id="upi_id" placeholder="UPI ID" pattern="[a-zA-Z0-9.\-_]{2,49}@[a-zA-Z._]{2,49}"
                 error-text="Invalid UPI ID" autofocus animate required></sm-input>
             <button class="button button--primary cta justify-self-start" type="submit" onclick="changeUpi()">
                 Change
