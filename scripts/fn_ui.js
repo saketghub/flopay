@@ -44,7 +44,6 @@ function continueWalletTopup() {
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
     getRef('topup_wallet__details').innerHTML = `Send <b>${formatAmount(amount)}</b> to UPI ID below`;
     getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
-    getRef('topup_wallet__app_link').href = `upi://pay?pa=${cashierUPI[cashier]}&amp;cu=INR`;
     fetch(`https://upiqr.in/api/qr?name=cashier&vpa=${cashierUPI[cashier]}`).then(res => {
         res.text().then(data => getRef('topup_wallet__qr_code').innerHTML = data)
             .catch(err => console.error(err));
