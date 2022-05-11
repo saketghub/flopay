@@ -706,6 +706,8 @@ ul {
 }
 
 #home {
+  display: flex;
+  flex-direction: column;
   padding: 0;
   position: relative;
 }
@@ -722,6 +724,7 @@ ul {
 }
 
 #wallet_section {
+  margin: 1.5rem;
   padding: 1rem;
   background: url(bg-art2.svg) no-repeat right bottom, rgba(var(--text-color), 0.03);
   background-size: contain;
