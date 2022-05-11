@@ -154,132 +154,142 @@
             <theme-toggle></theme-toggle>
         </header>
         <section id="home" class="inner-page hide">
-            <div class="grid" style="margin: 0 1.5rem;">
-                <h5>My FLO ID</h5>
-                <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
-            </div>
-            <div id="wallet_section" class="grid gap-1">
-                <div class="flex align-center space-between">
-                    <h4>My wallet</h4>
-                    <a href="#/wallet" class="interact user-element">See history</a>
+            <div class="scrolling-wrapper">
+                <div class="grid" style="margin: 0 1.5rem;">
+                    <h5>My FLO ID</h5>
+                    <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
                 </div>
-                <div class="grid gap-0-5">
-                    <h5>Balance</h5>
-                    <h1 class="h1" id="rupee_balance"></h1>
-                </div>
-                <div id="wallet_actions_wrapper" class="user-element">
-                    <button class="wallet-action" onclick="showTokenTransfer('send')">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0z" fill="none" />
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                        </svg>
-                        Send
-                    </button>
-                    <button class="wallet-action" onclick="showTokenTransfer('request')">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0z" fill="none" />
-                            <path
-                                d="M11 5v5.59H7.5l4.5 4.5 4.5-4.5H13V5h-2zm-5 9c0 3.31 2.69 6 6 6s6-2.69 6-6h-2c0 2.21-1.79 4-4 4s-4-1.79-4-4H6z" />
-                        </svg>
-                        Request
-                    </button>
-                    <button class="wallet-action cashier-option" onclick="showPopup('topup_wallet_popup')">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0z" fill="none" />
-                            <path
-                                d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-                        </svg>
-                        Top-up
-                    </button>
-                    <button class="wallet-action cashier-option" onclick="showPopup('withdraw_wallet_popup')">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                            <g>
-                                <rect fill="none" height="24" width="24" />
-                            </g>
-                            <g>
-                                <g>
-                                    <rect height="7" width="3" x="4" y="10" />
-                                    <rect height="7" width="3" x="10.5" y="10" />
-                                    <rect height="3" width="20" x="2" y="19" />
-                                    <rect height="7" width="3" x="17" y="10" />
-                                    <polygon points="12,1 2,6 2,8 22,8 22,6" />
-                                </g>
-                            </g>
-                        </svg>
-                        Withdraw
-                    </button>
-                </div>
-            </div>
-            <div id="user" class="hide grid user-element">
-                <section class="flex direction-column h-100">
-                    <div class="grid align-center gap-0-5">
-                        <div class="flex align-center">
-                            <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
-                            </svg>
-                            <h4>Saved FLO IDs</h4>
-                        </div>
-                        <p class="flex align-center">
-                            <svg class="icon margin-right-0-5" style="fill: #ffc107;" xmlns="http://www.w3.org/2000/svg"
-                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z" />
-                            </svg>
-                            <span id="saved_ids_tip">Click 'Add FLO ID' to add a new FLO ID.</span>
-                        </p>
+                <div id="wallet_section" class="grid gap-1">
+                    <div class="flex align-center space-between">
+                        <h4>My wallet</h4>
+                        <a href="#/wallet" class="interact user-element">See history</a>
                     </div>
-                    <ul id="saved_ids_list" class="observe-empty-state grid"></ul>
-                    <div class="empty-state justify-center text-center align-center h-100"
-                        style="align-content: center;">
-                        <svg class="justify-self-center" style="height: 12rem;"
-                            id="bb7dac0d-c86d-4eae-9345-05ead570be6d" data-name="Layer 1"
-                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-                            <defs>
-                                <style>
-                                    .e4b4c873-5e79-4c66-a530-269f7775150b {
-                                        fill: rgba(var(--text-color), 0.03);
-                                    }
+                    <div class="grid gap-0-5">
+                        <h5>Balance</h5>
+                        <h1 class="h1" id="rupee_balance"></h1>
+                    </div>
+                    <div id="wallet_actions_wrapper" class="user-element">
+                        <button class="wallet-action" onclick="showTokenTransfer('send')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                            </svg>
+                            Send
+                        </button>
+                        <button class="wallet-action" onclick="showTokenTransfer('request')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M11 5v5.59H7.5l4.5 4.5 4.5-4.5H13V5h-2zm-5 9c0 3.31 2.69 6 6 6s6-2.69 6-6h-2c0 2.21-1.79 4-4 4s-4-1.79-4-4H6z" />
+                            </svg>
+                            Request
+                        </button>
+                        <button class="wallet-action cashier-option" onclick="showPopup('topup_wallet_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                            </svg>
+                            Top-up
+                        </button>
+                        <button class="wallet-action cashier-option" onclick="showPopup('withdraw_wallet_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <g>
+                                    <rect fill="none" height="24" width="24" />
+                                </g>
+                                <g>
+                                    <g>
+                                        <rect height="7" width="3" x="4" y="10" />
+                                        <rect height="7" width="3" x="10.5" y="10" />
+                                        <rect height="3" width="20" x="2" y="19" />
+                                        <rect height="7" width="3" x="17" y="10" />
+                                        <polygon points="12,1 2,6 2,8 22,8 22,6" />
+                                    </g>
+                                </g>
+                            </svg>
+                            Withdraw
+                        </button>
+                    </div>
+                </div>
+                <div id="user" class="hide grid user-element">
+                    <section class="flex direction-column h-100">
+                        <div class="grid align-center gap-0-5">
+                            <div class="flex align-center">
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                </svg>
+                                <h4>Saved FLO IDs</h4>
+                            </div>
+                            <p class="flex align-center">
+                                <svg class="icon margin-right-0-5" style="fill: #ffc107;"
+                                    xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                                    fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z" />
+                                </svg>
+                                <span id="saved_ids_tip">Click 'Add FLO ID' to add a new FLO ID.</span>
+                            </p>
+                        </div>
+                        <ul id="saved_ids_list" class="observe-empty-state grid"></ul>
+                        <div class="empty-state justify-center text-center align-center h-100"
+                            style="align-content: center;">
+                            <svg class="justify-self-center" style="height: 12rem;"
+                                id="bb7dac0d-c86d-4eae-9345-05ead570be6d" data-name="Layer 1"
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+                                <defs>
+                                    <style>
+                                        .e4b4c873-5e79-4c66-a530-269f7775150b {
+                                            fill: rgba(var(--text-color), 0.03);
+                                        }
 
-                                    .f8c35eef-c260-42fc-be6f-7c8afb0beeeb {
-                                        fill: rgba(var(--text-color), 0.2);
-                                    }
+                                        .f8c35eef-c260-42fc-be6f-7c8afb0beeeb {
+                                            fill: rgba(var(--text-color), 0.2);
+                                        }
 
-                                    .ee8c2e6d-b8f3-4b81-80ab-31d470d121b9 {
-                                        fill: rgba(var(--text-color), 0.1);
-                                    }
-                                </style>
-                            </defs>
-                            <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="34.76" y="40.75" width="177.53"
-                                height="41.42" rx="4" />
-                            <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="57.21" cy="61.46" r="9.29" />
-                            <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="51.37" width="40.44"
-                                height="9.03" rx="1.92" />
-                            <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="62.79" width="80.09"
-                                height="9.03" rx="1.92" />
-                            <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="10" y="99.29" width="177.53"
-                                height="41.42" rx="4" />
-                            <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="32.45" cy="120" r="9.29" />
-                            <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="109.91" width="40.44"
-                                height="9.03" rx="1.92" />
-                            <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="121.33" width="80.09"
-                                height="9.03" rx="1.92" />
-                            <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="52.47" y="157.83" width="177.53"
-                                height="41.42" rx="4" />
-                            <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="74.93" cy="178.54" r="9.29" />
-                            <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="168.46" width="40.44"
-                                height="9.03" rx="1.92" />
-                            <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="179.87" width="80.09"
-                                height="9.03" rx="1.92" />
-                        </svg>
-                        <h4>No Saved FLO ID</h4>
+                                        .ee8c2e6d-b8f3-4b81-80ab-31d470d121b9 {
+                                            fill: rgba(var(--text-color), 0.1);
+                                        }
+                                    </style>
+                                </defs>
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="34.76" y="40.75" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="57.21" cy="61.46" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="51.37" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="62.79" width="80.09"
+                                    height="9.03" rx="1.92" />
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="10" y="99.29" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="32.45" cy="120" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="109.91" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="121.33" width="80.09"
+                                    height="9.03" rx="1.92" />
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="52.47" y="157.83" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="74.93" cy="178.54" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="168.46" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="179.87" width="80.09"
+                                    height="9.03" rx="1.92" />
+                            </svg>
+                            <h4>No Saved FLO ID</h4>
+                        </div>
+                    </section>
+                </div>
+                <section id="cashier" class=" grid gap-1 hide admin-element">
+                    <h4>Requests</h4>
+                    <ul id="cashier_request_list" class="observe-empty-state"></ul>
+                    <div class="empty-state">
+                        <h4>No requests to process</h4>
                     </div>
                 </section>
             </div>
@@ -293,13 +303,6 @@
                 </svg>
                 Add FLO ID
             </button>
-            <section id="cashier" class=" grid gap-1 hide admin-element">
-                <h4>Requests</h4>
-                <ul id="cashier_request_list" class="observe-empty-state"></ul>
-                <div class="empty-state">
-                    <h4>No requests to process</h4>
-                </div>
-            </section>
         </section>
         <section id="history" class="inner-page hide grid gap-1-5">
             <div class="page__header">
@@ -584,9 +587,9 @@
                         d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
                 </svg>
             </button>
+            <h4 id="token_transfer__title"></h4>
         </header>
         <section class="grid gap-2">
-            <h4 id="token_transfer__title"></h4>
             <sm-form>
                 <sm-input id="token_transfer__receiver" placeholder="FLO ID" error-text="Invalid FLO ID" data-flo-id
                     animate required autofocus>

@@ -705,6 +705,10 @@ ul {
   z-index: 1;
 }
 
+.scrolling-wrapper {
+  overflow-y: auto;
+}
+
 #home {
   display: flex;
   flex-direction: column;
@@ -716,9 +720,7 @@ ul {
 #cashier {
   position: relative;
   gap: 2rem;
-  height: 100%;
   padding: 0 1.5rem;
-  overflow-y: auto;
   padding-bottom: 5rem;
   align-content: flex-start;
 }
