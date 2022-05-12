@@ -1151,9 +1151,37 @@ ul {
 .payment-request:not(:last-of-type) {
   margin-bottom: 0.5rem;
 }
+.cashier-request__mode,
+.payment-request__mode {
+  text-align: center;
+  width: 2rem;
+  font-size: 0.8rem;
+}
 .cashier-request__time,
 .payment-request__time {
   font-size: 0.8rem;
+}
+
+.cashier-request {
+  display: grid;
+  gap: 0.5rem 1rem;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "mode details status" "mode . status";
+}
+.cashier-request__mode {
+  grid-area: mode;
+}
+.cashier-request__details {
+  grid-area: details;
+  font-weight: 700;
+}
+.cashier-request__requestor {
+  font-size: 0.8rem;
+}
+.cashier-request__status {
+  grid-area: status;
+  grid-column: 3/4;
+  grid-row: 1/3;
 }
 
 #payment_request_history {

@@ -1068,8 +1068,34 @@ ul {
   &:not(:last-of-type) {
     margin-bottom: 0.5rem;
   }
+  &__mode {
+    text-align: center;
+    width: 2rem;
+    font-size: 0.8rem;
+  }
   &__time {
     font-size: 0.8rem;
+  }
+}
+.cashier-request {
+  display: grid;
+  gap: 0.5rem 1rem;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "mode details status" "mode . status";
+  &__mode {
+    grid-area: mode;
+  }
+  &__details {
+    grid-area: details;
+    font-weight: 700;
+  }
+  &__requestor {
+    font-size: 0.8rem;
+  }
+  &__status {
+    grid-area: status;
+    grid-column: 3/4;
+    grid-row: 1/3;
   }
 }
 #payment_request_history {

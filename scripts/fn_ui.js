@@ -428,13 +428,17 @@ const render = {
         return clone;
     },
     cashierRequestCard(details) {
-        const { time, senderID, message: { mode }, note, tag, vectorClock } = details;
+        const { time, senderID, message: { mode, amount }, note, tag, vectorClock } = details;
+        console.log(amount)
         const clone = getRef('cashier_request_template').content.cloneNode(true).firstElementChild;
         clone.id = vectorClock;
         const status = tag || note; //status tag for completed, note for rejected
+        clone.querySelector('.cashier-request__details').textContent = `${mode === 'cash-to-token' ? 'Top-up wallet with' : 'Withdraw'} ${formatAmount(amount)}`;
         clone.querySelector('.cashier-request__requestor').textContent = senderID;
         clone.querySelector('.cashier-request__time').textContent = getFormattedTime(time);
-        clone.querySelector('.cashier-request__mode').textContent = mode;
+        clone.querySelector('.cashier-request__mode').innerHTML = mode === 'token-to-cash' ? `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <g> <rect height="7" width="3" x="4" y="10"></rect> <rect height="7" width="3" x="10.5" y="10"></rect> <rect height="3" width="20" x="2" y="19"></rect> <rect height="7" width="3" x="17" y="10"></rect> <polygon points="12,1 2,6 2,8 22,8 22,6"></polygon> </g> </g> </svg>`
+            :
+            `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>`;
         if (status)
             clone.querySelector('.cashier-request__status').textContent = status;
         else
