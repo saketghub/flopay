@@ -138,10 +138,10 @@ document.addEventListener('popupclosed', e => {
 // displays a popup for asking permission. Use this instead of JS confirm
 const getConfirmation = (title, options = {}) => {
     return new Promise(resolve => {
-        const { message, cancelText = 'Cancel', confirmText = 'OK' } = options
+        const { message = '', cancelText = 'Cancel', confirmText = 'OK' } = options
         showPopup('confirmation_popup', true)
-        getRef('confirm_title').textContent = title;
-        getRef('confirm_message').textContent = message;
+        getRef('confirm_title').innerText = title;
+        getRef('confirm_message').innerText = message;
         let cancelButton = getRef('confirmation_popup').children[2].children[0],
             submitButton = getRef('confirmation_popup').children[2].children[1]
         submitButton.textContent = confirmText
@@ -153,6 +153,33 @@ const getConfirmation = (title, options = {}) => {
         cancelButton.onclick = () => {
             hidePopup()
             resolve(false);
+        }
+    })
+}
+// displays a popup for asking user input. Use this instead of JS prompt
+function getPromptInput(title, message = '', options = {}) {
+    let { placeholder = '', isPassword = false, cancelText = 'Cancel', confirmText = 'OK' } = options
+    showPopup('prompt_popup', true)
+    getRef('prompt_title').innerText = title;
+    getRef('prompt_message').innerText = message;
+    let buttons = getRef('prompt_popup').querySelectorAll("sm-button");
+    if (isPassword) {
+        placeholder = 'Password'
+        getRef('prompt_input').setAttribute("type", "password")
+    }
+    getRef('prompt_input').setAttribute("placeholder", placeholder)
+    getRef('prompt_input').focusIn()
+    buttons[0].textContent = cancelText;
+    buttons[1].textContent = confirmText;
+    return new Promise((resolve, reject) => {
+        buttons[0].onclick = () => {
+            hidePopup()
+            return (null);
+        }
+        buttons[1].onclick = () => {
+            const value = getRef('prompt_input').value;
+            hidePopup()
+            resolve(value)
         }
     })
 }

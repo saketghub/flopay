@@ -327,20 +327,23 @@ cashierUI.completeRequest = function (reqID) {
 function completeCashToTokenRequest(request) {
     const { message: { upi_txid, amount }, vectorClock, senderID } = request;
     Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
-        let confirmation = confirm(`Check if you have received UPI transfer\ntxid:${upi_txid}\namount:${amount}`);
-        if (!confirmation)
-            return alert("Cancelled");
-        User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
-            console.warn(`${amount} cash-to-token for ${senderID}`, txid);
-            Cashier.finishRequest(request, txid).then(result => {
-                console.log(result);
-                console.info('Completed cash-to-token request:', vectorClock);
-                alert("Completed request");
-            }).catch(error => console.error(error))
-        }).catch(error => console.error(error))
+        getConfirmation('Confirm', {
+            message: `Check if you have received UPI transfer\ntxid: ${upi_txid}\namount: ${formatAmount(amount)}`,
+            confirmText: 'Confirm'
+        }).then(confirmed => {
+            if (confirmed) {
+                User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
+                    console.warn(`${amount} cash-to-token for ${senderID}`, txid);
+                    Cashier.finishRequest(request, txid).then(result => {
+                        console.log(result);
+                        console.info('Completed cash-to-token request:', vectorClock);
+                        notify("Completed request", 'success');
+                    }).catch(error => console.error(error))
+                }).catch(error => console.error(error))
+            }
+        })
     }).catch(error => {
-        console.error(error);
-        alert(error);
+        notify(error, 'error');
         if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
             Cashier.rejectRequest(request, error[1]).then(result => {
                 console.log(result);
@@ -350,22 +353,25 @@ function completeCashToTokenRequest(request) {
 }
 
 function completeTokenToCashRequest(request) {
-    Cashier.checkIfTokenTxIsValid(request.message.token_txid, request.senderID, request.message.amount).then(result => {
-        let upiTxID = prompt(`Token transfer is verified!\n Send ${request.message.amount} to ${request.message.upi_id} and Enter UPI txid`);
-        if (!upiTxID)
-            return alert("Cancelled");
-        Cashier.finishRequest(request, upiTxID).then(result => {
-            console.log(result);
-            console.info('Completed token-to-cash request:', request.vectorClock);
-            alert("Completed request");
-        }).catch(error => console.error(error))
+    const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request
+    Cashier.checkIfTokenTxIsValid(token_txid, senderID, amount).then(result => {
+        getPromptInput('Process', `Token transfer is verified!\n Send ${formatAmount(amount)}\n to ${upi_id}\n Enter UPI transaction ID`, {
+            placeholder: 'UPI transaction ID',
+        }).then(upiTxID => {
+            if (!upiTxID || upiTxID.length < 10)
+                return notify("Invalid UPI txid", 'error');
+            Cashier.finishRequest(request, upiTxID).then(result => {
+                console.log(result);
+                console.info('Completed token-to-cash request:', vectorClock);
+                notify("Completed request", 'success');
+            }).catch(error => console.error(error))
+        })
     }).catch(error => {
-        console.error(error);
-        alert(error);
+        notify(error, 'error');
         if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
             Cashier.rejectRequest(request, error[1]).then(result => {
                 console.log(result);
-                console.info('Rejected token-to-cash request:', request.vectorClock);
+                console.info('Rejected token-to-cash request:', vectorClock);
             }).catch(error => console.error(error))
     })
 }

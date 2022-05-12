@@ -56,6 +56,17 @@
             <sm-button variant="no-outline" class="submit-btn">OK</sm-button>
         </div>
     </sm-popup>
+    <sm-popup id="prompt_popup">
+        <h4 id="prompt_title"></h4>
+        <p id="prompt_message"></p>
+        <sm-form>
+            <sm-input id="prompt_input"></sm-input>
+            <div class="flex align-center">
+                <sm-button variant="no-outline" class="cancel-btn">Cancel</sm-button>
+                <sm-button variant="no-outline" class="submit-btn" type="submit">OK</sm-button>
+            </div>
+        </sm-form>
+    </sm-popup>
     <div id="secondary_pages" class="page hide">
         <header class="flex align-center gap-1">
             <div class="flex align-center flex-1">
@@ -156,7 +167,7 @@
         <section id="home" class="inner-page hide">
             <div class="scrolling-wrapper">
                 <div class="grid" style="margin: 0 1.5rem;">
-                    <h5>My FLO ID</h5>
+                    <h5>Welcome</h5>
                     <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
                 </div>
                 <div id="wallet_section" class="grid gap-1">
