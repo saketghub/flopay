@@ -600,6 +600,7 @@ ul {
   height: 100%;
   width: 100%;
   transition: background-color 0.3s;
+  background-color: rgba(var(--foreground-color), 1);
 }
 
 #main_navbar {
@@ -727,23 +728,51 @@ ul {
 
 #wallet_section {
   margin: 1.5rem;
-  padding: 1rem;
-  background: url(bg-art2.svg) no-repeat right bottom, rgba(var(--text-color), 0.03);
-  background-size: contain;
-  border-radius: 0.5rem;
 }
 
-#rupee_balance span:first-of-type {
+#wallet_cards_wrapper {
+  display: flex;
+  overflow-x: auto;
+  -ms-scroll-snap-type: x proximity;
+      scroll-snap-type: x proximity;
+}
+
+.balance-card {
+  scroll-snap-align: start;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  width: min(16rem, 90%);
+  flex-shrink: 0;
+}
+.balance-card h5 {
+  margin-top: 1rem;
+}
+.balance-card:not(:last-of-type) {
+  margin-right: 0.5rem;
+}
+.balance-card:nth-of-type(1) {
+  background: url("bg-art2.svg") no-repeat bottom right, rgba(var(--foreground-color), 1);
+  background-size: contain;
+  border: solid medium #10ddc2;
+}
+.balance-card:nth-of-type(2) {
+  background: url("back.svg") no-repeat bottom right, rgba(var(--foreground-color), 1);
+  background-size: contain;
+  border: solid medium #ffc446;
+}
+
+#rupee_balance span:first-of-type,
+#flo_balance span:first-of-type {
   font-size: 2rem;
 }
-#rupee_balance span:last-of-type {
+#rupee_balance span:last-of-type,
+#flo_balance span:last-of-type {
   font-size: 1rem;
 }
 
 #wallet_actions_wrapper {
   display: grid;
-  gap: 0.3rem;
-  margin-top: 1rem;
+  gap: 0.5rem;
   grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
 }
 
@@ -1015,6 +1044,9 @@ ul {
   grid-template-columns: auto 1fr auto;
   gap: 0.5rem 1rem;
   align-items: center;
+}
+.transaction__amount {
+  white-space: nowrap;
 }
 .transaction.sent .icon {
   fill: rgba(var(--text-color), 0.8);
@@ -1343,7 +1375,6 @@ ul {
     position: relative;
     border-radius: 0.5rem;
     overflow: hidden;
-    background-color: rgba(var(--background-color), 1);
     box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05), 0 1rem 3rem rgba(0, 0, 0, 0.2);
   }
   #main_card:not(.nav-hidden) {
