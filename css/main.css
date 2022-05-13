@@ -45,6 +45,16 @@ body[data-theme=dark] sm-popup::part(popup) {
   background-color: rgba(var(--foreground-color), 1);
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400;
+  font-family: "Calistoga", cursive;
+}
+
 p,
 strong {
   font-size: 0.9rem;
@@ -484,7 +494,6 @@ ul {
 }
 #confirmation_popup h4,
 #prompt_popup h4 {
-  font-weight: 500;
   margin-bottom: 0.5rem;
 }
 #confirmation_popup sm-button,
@@ -571,7 +580,6 @@ ul {
   margin: 1.5rem 0;
 }
 #sign_up h5 {
-  font-weight: 500;
   color: rgba(var(--text-color), 0.8);
 }
 
@@ -725,7 +733,6 @@ ul {
 #user,
 #cashier {
   position: relative;
-  gap: 2rem;
   padding-bottom: 4rem;
   align-content: flex-start;
 }
@@ -925,7 +932,7 @@ ul {
   padding: 0.8rem 2rem;
   border-radius: 1rem;
   color: var(--accent-color);
-  background-color: rgba(var(--foreground-color), 1);
+  background-color: rgba(var(--text-color), 0.03);
 }
 
 #contact__transactions {
@@ -1187,7 +1194,7 @@ ul {
   display: flex;
   gap: 1rem;
   align-items: center;
-  padding: 0.8rem;
+  padding: 0.8rem 0;
   border-radius: 0.3rem;
   background-color: rgba(var(--foreground-color), 1);
 }
@@ -1237,7 +1244,6 @@ ul {
   gap: 0.5rem 1rem;
   grid-template-columns: 1fr auto;
   color: rgba(var(--text-color), 1);
-  padding: 0.8rem 0;
 }
 .payment-request__requestor {
   font-weight: 500;
@@ -1352,7 +1358,7 @@ ul {
   align-items: center;
   padding: 0.4rem 0.4rem 0.4rem 1rem;
   border-radius: 0.5rem;
-  background-color: rgba(var(--foreground-color), 1);
+  background-color: rgba(var(--text-color), 0.03);
 }
 
 @media screen and (max-width: 40rem) {

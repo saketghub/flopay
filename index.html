@@ -8,7 +8,7 @@
     <meta name="description"
         content="This webapp allows monitoring FLO addresses and performing transactions based on blockchain.">
     <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Calistoga&family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/main.min.css">
     <script id="floGlobals">
@@ -223,56 +223,56 @@
                         </div>
                     </div>
                 </div>
-                <div class="grid gap-0-5 user-element">
-                    <h4>Rupee token actions</h4>
-                    <div id="wallet_actions_wrapper">
-                        <button class="wallet-action" onclick="showTokenTransfer('send')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                            </svg>
-                            Send
-                        </button>
-                        <button class="wallet-action" onclick="showTokenTransfer('request')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M11 5v5.59H7.5l4.5 4.5 4.5-4.5H13V5h-2zm-5 9c0 3.31 2.69 6 6 6s6-2.69 6-6h-2c0 2.21-1.79 4-4 4s-4-1.79-4-4H6z" />
-                            </svg>
-                            Request
-                        </button>
-                        <button class="wallet-action cashier-option" onclick="showPopup('topup_wallet_popup')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-                            </svg>
-                            Top-up
-                        </button>
-                        <button class="wallet-action cashier-option" onclick="showPopup('withdraw_wallet_popup')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <g>
-                                    <rect fill="none" height="24" width="24" />
-                                </g>
-                                <g>
+                <div id="user" class="hide grid gap-2 user-element">
+                    <div class="grid gap-0-5">
+                        <h4>Rupee token actions</h4>
+                        <div id="wallet_actions_wrapper">
+                            <button class="wallet-action" onclick="showTokenTransfer('send')">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                    width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                </svg>
+                                Send
+                            </button>
+                            <button class="wallet-action" onclick="showTokenTransfer('request')">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                    width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M11 5v5.59H7.5l4.5 4.5 4.5-4.5H13V5h-2zm-5 9c0 3.31 2.69 6 6 6s6-2.69 6-6h-2c0 2.21-1.79 4-4 4s-4-1.79-4-4H6z" />
+                                </svg>
+                                Request
+                            </button>
+                            <button class="wallet-action cashier-option" onclick="showPopup('topup_wallet_popup')">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                    width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                                </svg>
+                                Top-up
+                            </button>
+                            <button class="wallet-action cashier-option" onclick="showPopup('withdraw_wallet_popup')">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                                    height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                                     <g>
-                                        <rect height="7" width="3" x="4" y="10" />
-                                        <rect height="7" width="3" x="10.5" y="10" />
-                                        <rect height="3" width="20" x="2" y="19" />
-                                        <rect height="7" width="3" x="17" y="10" />
-                                        <polygon points="12,1 2,6 2,8 22,8 22,6" />
+                                        <rect fill="none" height="24" width="24" />
                                     </g>
-                                </g>
-                            </svg>
-                            Withdraw
-                        </button>
+                                    <g>
+                                        <g>
+                                            <rect height="7" width="3" x="4" y="10" />
+                                            <rect height="7" width="3" x="10.5" y="10" />
+                                            <rect height="3" width="20" x="2" y="19" />
+                                            <rect height="7" width="3" x="17" y="10" />
+                                            <polygon points="12,1 2,6 2,8 22,8 22,6" />
+                                        </g>
+                                    </g>
+                                </svg>
+                                Withdraw
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div id="user" class="hide grid user-element">
                     <section class="flex direction-column h-100">
                         <div class="grid align-center gap-0-5">
                             <div class="flex align-center">
@@ -976,7 +976,7 @@
                         d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                 </svg>
             </button>
-            <h4 class="saved-id__title"></h4>
+            <div class="saved-id__title"></div>
             <div class="grid align-center" style="grid-template-columns: 1fr auto;">
                 <div class="saved-id__flo-id overflow-ellipsis"></div>
                 <button class="copy-saved-id icon-only margin-left-0-5" title="Copy FLO ID">
@@ -1028,7 +1028,7 @@
     <template id="pending_payment_request_template">
         <li class="payment-request payment-request--pending">
             <div class="grid gap-0-5 flex-1">
-                <h4 class="payment-request__requestor breakable"></h4>
+                <div class="payment-request__requestor breakable"></div>
                 <div class="payment-request__remark"></div>
             </div>
             <div class="payment-request__amount"></div>
@@ -1045,7 +1045,7 @@
         <li>
             <a href="" class="payment-request payment-request--processed interact">
                 <div class="grid gap-0-5 flex-1">
-                    <h4 class="payment-request__requestor breakable"></h4>
+                    <b class="payment-request__requestor breakable"></b>
                     <div class="payment-request__remark"></div>
                 </div>
                 <div class="payment-request__amount"></div>
@@ -1058,7 +1058,7 @@
     </template>
     <template id="transaction_message_template">
         <li class="transaction-message grid">
-            <h3 class="transaction-message__amount"></h3>
+            <b class="transaction-message__amount"></b>
             <p class="transaction-message__remark"></p>
             <time class="transaction-message__time"></time>
         </li>
