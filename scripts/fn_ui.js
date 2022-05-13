@@ -380,7 +380,7 @@ function getFloIdTitle(floID) {
     return floGlobals.savedIds[floID] ? floGlobals.savedIds[floID].title : floID;
 }
 
-function formatAmount(amount) {
+function formatAmount(amount = 0) {
     return amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' })
 }
 
@@ -428,8 +428,7 @@ const render = {
         return clone;
     },
     cashierRequestCard(details) {
-        const { time, senderID, message: { mode, amount }, note, tag, vectorClock } = details;
-        console.log(amount)
+        const { time, senderID, message: { mode, amount = 0 }, note, tag, vectorClock } = details;
         const clone = getRef('cashier_request_template').content.cloneNode(true).firstElementChild;
         clone.id = vectorClock;
         const status = tag || note; //status tag for completed, note for rejected
