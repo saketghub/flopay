@@ -1102,7 +1102,7 @@
                     getRef('rupee_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
                 })
                 floBlockchainAPI.getBalance(myFloID).then(balance => {
-                    const [beforeDecimal, afterDecimal] = String(balance).split('.')
+                    const [beforeDecimal, afterDecimal = '0'] = String(balance).split('.')
                     getRef('flo_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
                 })
                 if (floGlobals.isSubAdmin) {
