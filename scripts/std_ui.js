@@ -132,6 +132,9 @@ document.addEventListener('popupclosed', e => {
             getRef('select_upi_id').parentNode.classList.add('hide')
             getRef('select_upi_id').innerHTML = ''
             break;
+        case 'transfer_to_exchange_popup':
+            showProcessStage('exchange_transfer_process', 0);
+            break;
     }
 })
 

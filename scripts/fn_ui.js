@@ -99,6 +99,27 @@ function withdrawMoneyFromWallet() {
     })
 }
 
+function transferToExchange() {
+    const amount = parseFloat(getRef('exchange_transfer__amount').value.trim());
+    buttonLoader('exchange_transfer__button', true);
+    floExchangeAPI.depositToken('rupee', amount, myFloID, 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm', myPrivKey).then(txid => {
+        console.log(txid);
+        showProcessStage('exchange_transfer_process', 1);
+        getRef('exchange_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to exchange`;
+    }).catch(error => {
+        console.log(error);
+        if (error.code) {
+            error = error.message;
+        }
+        if (error === 'Insufficient rupee# balance')
+            error = 'Insufficient rupee token balance in your wallet, please top-up your wallet.';
+        getRef('exchange_transfer__failed_reason').textContent = error;
+        showProcessStage('exchange_transfer_process', 2);
+    }).finally(() => {
+        buttonLoader('exchange_transfer__button', false);
+    });
+}
+
 async function renderSavedUpiIds() {
     const frag = document.createDocumentFragment();
     for (const upiId in floGlobals.savedUserData.upiIds) {

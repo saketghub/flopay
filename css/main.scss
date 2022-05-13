@@ -342,7 +342,7 @@ ul {
   justify-self: end;
 }
 
-.direction-column {
+.flex-direction-column {
   flex-direction: column;
 }
 
@@ -677,19 +677,15 @@ ul {
 #home {
   display: flex;
   flex-direction: column;
-  padding: 0;
   position: relative;
-  .scrolling-wrapper {
-    & > * {
-      margin: 0 1.5rem;
-      margin-bottom: 2rem;
-    }
+  & > * {
+    margin-bottom: 2rem;
   }
 }
 #user,
 #cashier {
   position: relative;
-  padding-bottom: 4rem;
+  padding-bottom: 1rem;
   align-content: flex-start;
 }
 #wallet_cards_wrapper {
@@ -742,10 +738,21 @@ ul {
     font-size: 1rem;
   }
 }
-#wallet_actions_wrapper {
+.actions-wrapper {
   display: grid;
   gap: 0.5rem;
   grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
+}
+.wallet-action,
+.integrated-action-button {
+  .icon:first-of-type {
+    height: 2.5rem;
+    width: 2.5rem;
+    padding: 0.6rem;
+    fill: rgba(var(--foreground-color), 1);
+    background-color: var(--accent-color);
+    border-radius: 2rem;
+  }
 }
 .wallet-action {
   flex-direction: column;
@@ -753,14 +760,19 @@ ul {
   align-items: center;
   font-weight: 500;
   font-size: 0.8rem;
+  white-space: initial;
   .icon {
-    height: 2.5rem;
-    width: 2.5rem;
-    padding: 0.6rem;
     margin-bottom: 0.8rem;
-    fill: rgba(var(--foreground-color), 1);
-    background-color: var(--accent-color);
-    border-radius: 2rem;
+  }
+}
+.integrated-action-button {
+  padding: 0.8rem 0;
+  justify-content: initial;
+  .icon:first-of-type {
+    margin-right: 1rem;
+  }
+  .icon:last-of-type {
+    margin-left: 0.5rem;
   }
 }
 .cashier-status {
@@ -796,10 +808,17 @@ ul {
   }
 }
 
+#contacts {
+  position: relative;
+  padding: 0;
+  .scrolling-wrapper {
+    padding: 0 1.5rem;
+  }
+}
 #saved_ids_list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  margin-top: 1rem;
+  padding-bottom: 5rem;
 }
 .saved-id {
   grid-template-columns: auto 1fr;
@@ -1284,6 +1303,11 @@ ul {
       bottom: 0;
       left: 0;
       right: 0;
+    }
+  }
+  .integrated-action-button {
+    .icon:last-of-type {
+      margin-left: auto;
     }
   }
 }
