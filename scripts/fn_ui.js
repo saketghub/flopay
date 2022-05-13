@@ -382,7 +382,7 @@ function getFloIdTitle(floID) {
 
 function formatAmount(amount = 0) {
     if (!amount)
-        return '0';
+        return '₹0.00';
     return amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' })
 }
 
