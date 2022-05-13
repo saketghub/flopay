@@ -1098,7 +1098,7 @@
                 document.querySelectorAll('.logged-in-user-id').forEach(elem => elem.value = myFloID);
                 floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
                 tokenAPI.getBalance(myFloID).then(balance => {
-                    const [beforeDecimal, afterDecimal = '00'] = String(balance.toFixed(2)).split('.')
+                    const [beforeDecimal, afterDecimal] = formatAmount(balance).split('₹')[1].split('.')
                     getRef('rupee_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
                 })
                 floBlockchainAPI.getBalance(myFloID).then(balance => {

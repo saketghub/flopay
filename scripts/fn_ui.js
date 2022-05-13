@@ -431,7 +431,6 @@ const render = {
     },
     cashierRequestCard(details) {
         const { time, senderID, message: { mode, amount = 0 }, note, tag, vectorClock } = details;
-        console.log(details);
         const clone = getRef('cashier_request_template').content.cloneNode(true).firstElementChild;
         clone.id = vectorClock;
         const status = tag || note; //status tag for completed, note for rejected
