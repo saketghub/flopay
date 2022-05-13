@@ -14,7 +14,7 @@ body {
 }
 
 body {
-  --accent-color: #256eff;
+  --accent-color: #4d77ff;
   --text-color: 20, 20, 20;
   --foreground-color: 252, 253, 255;
   --background-color: 241, 243, 248;
@@ -32,7 +32,7 @@ body {
 }
 
 body[data-theme="dark"] {
-  --accent-color: rgb(144, 184, 248);
+  --accent-color: #a0b6ff;
   --text-color: 220, 220, 220;
   --foreground-color: 27, 28, 29;
   --background-color: 21, 22, 22;
@@ -585,8 +585,9 @@ ul {
   justify-content: center;
   padding: 0.5rem 0.3rem;
   color: var(--text-color);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   border-radius: 0.3rem;
+  font-weight: 500;
   .icon {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
@@ -692,7 +693,7 @@ ul {
 .balance-card {
   scroll-snap-align: start;
   padding: 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   width: min(16rem, 90%);
   flex-shrink: 0;
   color: rgba(0, 0, 0, 0.8);
@@ -1306,7 +1307,7 @@ ul {
       grid-template-areas: "nav header" "nav .";
     }
     position: relative;
-    border-radius: 0.5rem;
+    border-radius: 0.8rem;
     overflow: hidden;
     box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05),
       0 1rem 3rem rgba(0, 0, 0, 0.2);
