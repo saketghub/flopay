@@ -32,7 +32,7 @@ body {
 }
 
 body[data-theme="dark"] {
-  --accent-color: #90b8f8;
+  --accent-color: rgb(144, 184, 248);
   --text-color: 220, 220, 220;
   --foreground-color: 27, 28, 29;
   --background-color: 21, 22, 22;
@@ -118,6 +118,12 @@ button {
   font-weight: 700;
   letter-spacing: 0.05em;
   padding: 0.8rem 1rem;
+}
+.icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: rgba(var(--text-color), 0.8);
+  flex-shrink: 0;
 }
 .icon-only {
   padding: 0.5rem;
@@ -397,13 +403,6 @@ ul {
     background-color: var(--accent-color);
   }
 }
-
-.icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  fill: rgba(var(--text-color), 0.8);
-  flex-shrink: 0;
-}
 .margin-right-0-5 {
   margin-right: 0.5rem;
 }
@@ -586,7 +585,7 @@ ul {
   justify-content: center;
   padding: 0.5rem 0.3rem;
   color: var(--text-color);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   border-radius: 0.3rem;
   .icon {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -671,17 +670,19 @@ ul {
   flex-direction: column;
   padding: 0;
   position: relative;
+  .scrolling-wrapper {
+    & > * {
+      margin: 0 1.5rem;
+      margin-bottom: 2rem;
+    }
+  }
 }
 #user,
 #cashier {
   position: relative;
   gap: 2rem;
-  padding: 0 1.5rem;
-  padding-bottom: 5rem;
+  padding-bottom: 4rem;
   align-content: flex-start;
-}
-#wallet_section {
-  margin: 1.5rem;
 }
 #wallet_cards_wrapper {
   display: flex;
@@ -691,26 +692,37 @@ ul {
 .balance-card {
   scroll-snap-align: start;
   padding: 1.5rem;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   width: min(16rem, 90%);
   flex-shrink: 0;
-  h5 {
-    margin-top: 1rem;
-  }
+  color: rgba(0, 0, 0, 0.8);
   &:not(:last-of-type) {
     margin-right: 0.5rem;
   }
   &:nth-of-type(1) {
-    background: url("bg-art2.svg") no-repeat bottom right,
-      rgba(var(--foreground-color), 1);
+    background: url("bg-art2.svg") no-repeat bottom right, hsl(141, 100%, 88%);
     background-size: contain;
-    border: solid medium #10ddc2;
+    .icon {
+      background-color: hsla(141, 100%, 70%, 0.5);
+    }
   }
   &:nth-of-type(2) {
-    background: url("back.svg") no-repeat bottom right,
-      rgba(var(--foreground-color), 1);
+    background: url("back.svg") no-repeat bottom right, hsl(62, 100%, 83%);
     background-size: contain;
-    border: solid medium #ffc446;
+    .icon {
+      background-color: hsla(55, 100%, 50%, 0.5);
+    }
+  }
+  & > .flex {
+    margin-bottom: 0.3rem;
+    .icon {
+      height: 2rem;
+      width: 2rem;
+      padding: 0.4rem;
+      border-radius: 0.3rem;
+      fill: rgba(0, 0, 0, 0.8);
+      margin-right: 0.5rem;
+    }
   }
 }
 #rupee_balance,
@@ -733,12 +745,14 @@ ul {
   align-items: center;
   font-weight: 500;
   font-size: 0.8rem;
-  padding: 0.8rem 0;
-  background-color: rgba(var(--foreground-color), 0.8);
-  backdrop-filter: blur(1rem);
   .icon {
-    fill: var(--accent-color);
-    margin-bottom: 0.5rem;
+    height: 2.5rem;
+    width: 2.5rem;
+    padding: 0.6rem;
+    margin-bottom: 0.8rem;
+    fill: rgba(var(--foreground-color), 1);
+    background-color: var(--accent-color);
+    border-radius: 2rem;
   }
 }
 .cashier-status {
@@ -794,8 +808,6 @@ ul {
     position: relative;
     .icon {
       position: absolute;
-      height: 1.2rem;
-      width: 1.2rem;
       right: 0;
       bottom: 0;
       border-radius: 0.5rem;
@@ -1135,6 +1147,7 @@ ul {
   gap: 0.5rem 1rem;
   grid-template-columns: 1fr auto;
   color: rgba(var(--text-color), 1);
+  padding: 0.8rem 0;
   &__requestor {
     font-weight: 500;
   }
@@ -1284,8 +1297,8 @@ ul {
   }
 
   #main_card {
-    height: calc(100vh - 3rem);
-    width: calc(100vw - 3rem);
+    height: calc(100vh - 2rem);
+    width: calc(100vw - 2rem);
     grid-template-areas: "header" ".";
     &:not(.nav-hidden) {
       grid-template-columns: auto 1fr;
@@ -1306,12 +1319,14 @@ ul {
     grid-area: nav;
     border-top: none;
     flex-direction: column;
-    height: 100%;
+    height: calc(100% - 1rem);
+    margin: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: rgba(37 110 255/ 0.03);
     ul {
       flex-direction: column;
       gap: 0.5rem;
       padding: 0.3rem;
-
       li:last-of-type {
         margin-top: auto;
       }
