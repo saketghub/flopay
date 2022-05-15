@@ -139,7 +139,7 @@ function saveUpiId() {
         notify(`Saved ${upiId}`, 'success');
         if (pagesData.lastPage === 'settings') {
             getRef('saved_upi_ids_list').append(render.savedUpiId(upiId));
-        } else if (pagesData.lastPage === 'wallet') {
+        } else if (pagesData.lastPage === 'home') {
             getRef('select_upi_id').append(
                 createElement('sm-option', {
                     textContent: upiId,
