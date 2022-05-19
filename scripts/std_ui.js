@@ -114,7 +114,7 @@ document.addEventListener('popupopened', async e => {
                 getRef('select_upi_id').parentNode.classList.remove('hide')
                 getRef('select_upi_id').append(frag)
             }
-            showProcessStage('withdraw_wallet_process', 0)
+            showChildElement('withdraw_wallet_process', 0)
             break;
     }
 })
@@ -126,14 +126,14 @@ document.addEventListener('popupclosed', e => {
             getRef('search_saved_ids_picker').value = ''
             break;
         case 'topup_wallet_popup':
-            showProcessStage('topup_wallet_process', 0)
+            showChildElement('topup_wallet_process', 0)
             break;
         case 'withdraw_wallet_popup':
             getRef('select_upi_id').parentNode.classList.add('hide')
             getRef('select_upi_id').innerHTML = ''
             break;
         case 'transfer_to_exchange_popup':
-            showProcessStage('exchange_transfer_process', 0);
+            showChildElement('exchange_transfer_process', 0);
             break;
     }
 })
@@ -372,6 +372,31 @@ async function showPage(targetPage, options = {}) {
             break;
         case 'history':
             render.paymentsHistory()
+            const walletTransactions = []
+            if (walletHistoryLoader)
+                walletHistoryLoader.clear()
+            const pendingWalletTransactions = document.createDocumentFragment()
+
+            let areTransactionsPending = false
+            for (const transactionId in User.cashierRequests) {
+                if (!User.cashierRequests[transactionId].note) {
+                    areTransactionsPending = true
+                    pendingWalletTransactions.prepend(render.walletRequestCard(User.cashierRequests[transactionId]))
+                } else {
+                    walletTransactions.unshift(User.cashierRequests[transactionId])
+                }
+            }
+            if (walletHistoryLoader) {
+                walletHistoryLoader.update(walletTransactions)
+            } else {
+                walletHistoryLoader = new LazyLoader('#wallet_history', walletTransactions, render.walletRequestCard);
+                pendingTransactionsObserver.observe(getRef('pending_wallet_transactions'), { childList: true });
+            }
+            if (areTransactionsPending) {
+                getRef('pending_wallet_transactions').innerHTML = ''
+                getRef('pending_wallet_transactions').append(pendingWalletTransactions)
+            }
+            walletHistoryLoader.init()
             break;
         case 'requests':
             const paymentRequests = [];
@@ -399,33 +424,6 @@ async function showPage(targetPage, options = {}) {
                 getRef('pending_payment_requests').append(pendingPaymentRequests)
             }
             paymentRequestsLoader.init()
-            break;
-        case 'wallet':
-            const walletTransactions = []
-            if (walletHistoryLoader)
-                walletHistoryLoader.clear()
-            const pendingWalletTransactions = document.createDocumentFragment()
-
-            let areTransactionsPending = false
-            for (const transactionId in User.cashierRequests) {
-                if (!User.cashierRequests[transactionId].note) {
-                    areTransactionsPending = true
-                    pendingWalletTransactions.prepend(render.walletRequestCard(User.cashierRequests[transactionId]))
-                } else {
-                    walletTransactions.unshift(User.cashierRequests[transactionId])
-                }
-            }
-            if (walletHistoryLoader) {
-                walletHistoryLoader.update(walletTransactions)
-            } else {
-                walletHistoryLoader = new LazyLoader('#wallet_history', walletTransactions, render.walletRequestCard);
-                pendingTransactionsObserver.observe(getRef('pending_wallet_transactions'), { childList: true });
-            }
-            if (areTransactionsPending) {
-                getRef('pending_wallet_transactions').innerHTML = ''
-                getRef('pending_wallet_transactions').append(pendingWalletTransactions)
-            }
-            walletHistoryLoader.init()
             break;
         case 'transaction':
             let transactionDetails
@@ -485,14 +483,12 @@ async function showPage(targetPage, options = {}) {
     if (pageId !== 'history') {
         if (paymentsHistoryLoader)
             paymentsHistoryLoader.clear()
+        if (walletHistoryLoader)
+            walletHistoryLoader.clear()
     }
     if (pageId !== 'contact') {
         if (contactHistoryLoader)
             contactHistoryLoader.clear()
-    }
-    if (pageId !== 'wallet') {
-        if (walletHistoryLoader)
-            walletHistoryLoader.clear()
     }
     if (pageId !== 'settings') {
         getRef('saved_upi_ids_list').innerHTML = '';
@@ -746,7 +742,7 @@ function handleMobileChange(e) {
 mobileQuery.addEventListener('change', handleMobileChange)
 handleMobileChange(mobileQuery)
 
-function showProcessStage(id, index) {
+function showChildElement(id, index) {
     [...getRef(id).children].forEach((child, i) => {
         if (i === index)
             child.classList.remove('hide')
@@ -754,3 +750,68 @@ function showProcessStage(id, index) {
             child.classList.add('hide')
     })
 }
+
+// Reactivity system
+class ReactiveState {
+    constructor() {
+        this.state = {}
+    }
+    setState(key, value, callback) {
+        if (this.state[key].value === value) return
+        this.state[key].value = value
+        this.state[key].refs.forEach(ref => {
+            ref.textContent = value
+        })
+        if (callback)
+            callback(value)
+    }
+    getState(key) {
+        return this.state[key].value
+    }
+    subscribe(key, dom) {
+        if (!this.state.hasOwnProperty(key)) {
+            this.state[key] = {
+                refs: new Set(),
+                value: '',
+            }
+        }
+        this.state[key].refs.add(dom)
+        dom.textContent = this.state[key].value
+    }
+    unsubscribe(key, dom) {
+        this.state[key].refs.delete(dom)
+    }
+    createState(defaultValue, key, callback) {
+        if (!key)
+            key = Math.random().toString(36).substr(2, 9);
+        if (!this.state.hasOwnProperty(key)) {
+            this.state[key] = {
+                refs: new Set()
+            }
+        }
+        this.setState(key, defaultValue, callback)
+        return [
+            () => this.getState(key),
+            value => this.setState(key, value, callback)
+        ]
+    }
+}
+const reactiveState = new ReactiveState()
+function createState(defaultValue, key, callback) {
+    return reactiveState.createState(defaultValue, key, callback)
+}
+const smState = document.createElement('template')
+smState.innerHTML = ``
+class SmState extends HTMLElement {
+    constructor() {
+        super();
+        this.appendChild(smState.content.cloneNode(true));
+    }
+    connectedCallback() {
+        reactiveState.subscribe(this.getAttribute('sid'), this)
+    }
+    disconnectedCallback() {
+        reactiveState.unsubscribe(this.getAttribute('sid'), this)
+    }
+}
+window.customElements.define('r-s', SmState);

@@ -45,12 +45,17 @@ body[data-theme=dark] sm-popup::part(popup) {
   background-color: rgba(var(--foreground-color), 1);
 }
 
-h1,
+h1, h1 > *,
 h2,
+h2 > *,
 h3,
+h3 > *,
 h4,
+h4 > *,
 h5,
-h6 {
+h5 > *,
+h6,
+h6 > * {
   font-weight: 400;
   font-family: "Calistoga", cursive;
 }
@@ -1001,16 +1006,18 @@ ul {
 }
 
 #history .page__header {
+  min-height: 4rem;
   margin-bottom: 0;
 }
 
 #history_applied_filters_wrapper {
-  padding: 0.2rem 0 0.5rem 0;
-  background-color: rgba(var(--background-color), 1);
-  z-index: 1;
   position: -webkit-sticky;
   position: sticky;
   top: 0;
+  padding: 0.2rem 0 0.5rem 0;
+  background-color: rgba(var(--foreground-color), 1);
+  z-index: 1;
+  transition: background-color 0.3s;
 }
 
 .applied-filter {

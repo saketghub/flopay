@@ -48,7 +48,7 @@ function continueWalletTopup() {
         res.text().then(data => getRef('topup_wallet__qr_code').innerHTML = data)
             .catch(err => console.error(err));
     }).catch(err => console.error(err));
-    showProcessStage('topup_wallet_process', 1)
+    showChildElement('topup_wallet_process', 1)
     getRef('topup_wallet__txid').focusIn();
 }
 function depositMoneyToWallet() {
@@ -62,11 +62,12 @@ function depositMoneyToWallet() {
     buttonLoader('topup_wallet_button', true);
     User.cashToToken(cashier, amount, upiTxID).then(result => {
         console.log(result);
-        showProcessStage('topup_wallet_process', 2);
+        showChildElement('topup_wallet_process', 2);
+        refreshBalance()
     }).catch(error => {
         console.error(error)
         getRef('topup_failed_reason').textContent = error;
-        showProcessStage('topup_wallet_process', 3);
+        showChildElement('topup_wallet_process', 3);
     })
 }
 
@@ -82,18 +83,19 @@ function withdrawMoneyFromWallet() {
     User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
         console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
         User.tokenToCash(cashier, amount, txid, upiId).then(result => {
-            showProcessStage('withdraw_wallet_process', 1);
+            showChildElement('withdraw_wallet_process', 1);
+            refreshBalance();
             console.log(result);
         }).catch(error => {
             getRef('withdrawal_failed_reason').textContent = error;
-            showProcessStage('withdraw_wallet_process', 2);
+            showChildElement('withdraw_wallet_process', 2);
             console.error(error)
         }).finally(() => {
             buttonLoader('withdraw_rupee_button', false);
         });
     }).catch(error => {
         getRef('withdrawal_failed_reason').textContent = error;
-        showProcessStage('withdraw_wallet_process', 2);
+        showChildElement('withdraw_wallet_process', 2);
         buttonLoader('withdraw_rupee_button', false);
         console.error(error)
     })
@@ -104,7 +106,7 @@ function transferToExchange() {
     buttonLoader('exchange_transfer__button', true);
     floExchangeAPI.depositToken('rupee', amount, myFloID, 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm', myPrivKey).then(txid => {
         console.log(txid);
-        showProcessStage('exchange_transfer_process', 1);
+        showChildElement('exchange_transfer_process', 1);
         getRef('exchange_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to exchange`;
     }).catch(error => {
         console.log(error);
@@ -114,7 +116,7 @@ function transferToExchange() {
         if (error === 'Insufficient rupee# balance')
             error = 'Insufficient rupee token balance in your wallet, please top-up your wallet.';
         getRef('exchange_transfer__failed_reason').textContent = error;
-        showProcessStage('exchange_transfer_process', 2);
+        showChildElement('exchange_transfer_process', 2);
     }).finally(() => {
         buttonLoader('exchange_transfer__button', false);
     });
@@ -182,7 +184,7 @@ userUI.renderCashierRequests = function (requests, error = null) {
         return console.error(error);
     else if (typeof requests !== "object" || requests === null)
         return;
-    if (pagesData.lastPage === 'wallet') {
+    if (pagesData.lastPage === 'history') {
         for (let transactionID in requests) {
             const { note, tag } = requests[transactionID];
             let status = tag ? 'done' : (note ? 'failed' : "pending");
@@ -349,7 +351,7 @@ function completeCashToTokenRequest(request) {
     const { message: { upi_txid, amount }, vectorClock, senderID } = request;
     Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
         getConfirmation('Confirm', {
-            message: `Check if you have received UPI transfer\ntxid: ${upi_txid}\namount: ${formatAmount(amount)}`,
+            message: `Check if you have received UPI transfer\nTxID: ${upi_txid}\nAmount: ${formatAmount(amount)}`,
             confirmText: 'Confirm'
         }).then(confirmed => {
             if (confirmed) {
@@ -579,14 +581,15 @@ const render = {
 };
 
 function buttonLoader(id, show) {
-    getRef(id).disabled = show;
+    const button = typeof id === 'string' ? getRef(id) : id;
+    button.disabled = show;
     const animOptions = {
         duration: 200,
         fill: 'forwards',
         easing: 'ease'
     }
     if (show) {
-        getRef(id).animate([
+        button.animate([
             {
                 clipPath: 'circle(100%)',
             },
@@ -597,12 +600,28 @@ function buttonLoader(id, show) {
             e.target.commitStyles()
             e.target.cancel()
         }
-        getRef(id).parentNode.append(createElement('sm-spinner'))
+        button.parentNode.append(createElement('sm-spinner'))
     } else {
-        getRef(id).style = ''
-        const potentialTarget = getRef(id).parentNode.querySelector('sm-spinner')
+        button.style = ''
+        const potentialTarget = button.parentNode.querySelector('sm-spinner')
         if (potentialTarget) potentialTarget.remove();
     }
+}
+function refreshBalance(button) {
+    if (button)
+        buttonLoader(button, true)
+    tokenAPI.getBalance(myFloID).then((balance = 0) => {
+        const [beforeDecimal, afterDecimal] = formatAmount(balance).split('₹')[1].split('.')
+        getRef('rupee_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
+        if (button)
+            buttonLoader(button, false)
+    })
+    floBlockchainAPI.getBalance(myFloID).then(balance => {
+        const [beforeDecimal, afterDecimal = '00'] = String(balance).split('.')
+        getRef('flo_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
+        if (button)
+            buttonLoader(button, false)
+    })
 }
 
 function getArrayOfSavedIds() {
@@ -812,6 +831,12 @@ function executeUserAction() {
         userUI.requestMoneyFromUser(floID, amount, remark);
     }
 }
+const [historyType, setHistoryType] = createState('Payments', 'history_type', (v) => {
+    showChildElement('history_wrapper', v === 'Payments' ? 0 : 1)
+});
+getRef('history_type_selector').addEventListener('change', e => {
+    setHistoryType(e.target.value === 'payment' ? 'Payments' : 'Wallet')
+})
 
 function toggleFilters() {
     const animOptions = {
