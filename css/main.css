@@ -801,6 +801,7 @@ ul {
 .wallet-action,
 .integrated-action-button {
   color: inherit;
+  font-weight: 500;
 }
 .wallet-action .icon:first-of-type,
 .integrated-action-button .icon:first-of-type {

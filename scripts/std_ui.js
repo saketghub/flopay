@@ -450,7 +450,7 @@ async function showPage(targetPage, options = {}) {
                 transactionDetails = User.cashierRequests[params.transactionId]
                 const { message: { amount, mode, upi_id, upi_txid }, note, tag } = transactionDetails
                 status = tag ? tag : (note ? 'REJECTED' : "PENDING");
-                getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Transfer to bank';
+                getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
                 if (status === 'COMPLETED') {
                     getRef('transaction__link').href = `https://flosight.duckdns.org/tx/${note}`
                     getRef('transaction__link').classList.remove('hide')

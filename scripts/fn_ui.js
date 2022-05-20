@@ -477,7 +477,7 @@ const render = {
     walletRequestCard(details) {
         const { time, message: { mode, amount }, note, tag, vectorClock } = details;
         const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild.firstElementChild;
-        const type = mode === 'cash-to-token' ? 'Wallet top-up' : 'Transfer to bank';
+        const type = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
         let status = tag ? tag : (note ? 'REJECTED' : "PENDING");
         clone.classList.add(status.toLowerCase());
         clone.classList.add(mode === 'cash-to-token' ? 'added' : 'withdrawn');
