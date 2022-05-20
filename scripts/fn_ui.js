@@ -44,10 +44,8 @@ function continueWalletTopup() {
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
     getRef('topup_wallet__details').innerHTML = `Send <b>${formatAmount(amount)}</b> to UPI ID below`;
     getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
-    fetch(`https://upiqr.in/api/qr?name=cashier&vpa=${cashierUPI[cashier]}`).then(res => {
-        res.text().then(data => getRef('topup_wallet__qr_code').innerHTML = data)
-            .catch(err => console.error(err));
-    }).catch(err => console.error(err));
+    getRef('topup_wallet__qr_code').innerHTML = ''
+    getRef('topup_wallet__qr_code').append(new QRCode(`upi://pay?am=${amount}&pa=${cashierUPI[cashier]}`))
     showChildElement('topup_wallet_process', 1)
     getRef('topup_wallet__txid').focusIn();
 }
@@ -184,7 +182,7 @@ userUI.renderCashierRequests = function (requests, error = null) {
         return console.error(error);
     else if (typeof requests !== "object" || requests === null)
         return;
-    if (pagesData.lastPage === 'history') {
+    if (pagesData.lastPage === 'wallet') {
         for (let transactionID in requests) {
             const { note, tag } = requests[transactionID];
             let status = tag ? 'done' : (note ? 'failed' : "pending");
@@ -831,12 +829,6 @@ function executeUserAction() {
         userUI.requestMoneyFromUser(floID, amount, remark);
     }
 }
-const [historyType, setHistoryType] = createState('Payments', 'history_type', (v) => {
-    showChildElement('history_wrapper', v === 'Payments' ? 0 : 1)
-});
-getRef('history_type_selector').addEventListener('change', e => {
-    setHistoryType(e.target.value === 'payment' ? 'Payments' : 'Wallet')
-})
 
 function toggleFilters() {
     const animOptions = {

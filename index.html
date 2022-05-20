@@ -216,6 +216,20 @@
                         <h1 class="h1" id="flo_balance"></h1>
                     </div>
                 </div>
+                <a class="integrated-action-button flex align-center user-element" href="#/wallet">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z" />
+                    </svg>
+                    See wallet top-up and withdraw history
+                    <svg class="icon justify-self-end" xmlns="http://www.w3.org/2000/svg" height="24px"
+                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                    </svg>
+                </a>
             </div>
             <div id="user" class="hide grid gap-2 user-element">
                 <div class="grid gap-0-5">
@@ -295,15 +309,9 @@
             </section>
         </section>
         <section id="history" class="inner-page hide grid gap-1-5">
-            <strip-select id="history_type_selector" class="justify-self-center">
-                <strip-option value="payment" selected>Payments</strip-option>
-                <strip-option value="wallet">Wallet</strip-option>
-            </strip-select>
             <div class="page__header">
                 <div class="grid">
-                    <h4>
-                        <r-s sid="history_type">Payments</r-s>
-                    </h4>
+                    <h4>Payments</h4>
                     <h1>history</h1>
                 </div>
                 <button class="button button--small align-self-end" onclick="showPopup('payments_filters_popup')">
@@ -319,23 +327,36 @@
                 <h5>Applied filters</h5>
                 <div id="history_applied_filters" class="flex gap-0-5"></div>
             </div>
-            <div id="history_wrapper">
-                <div>
-                    <ul id="payments_history" class="observe-empty-state"></ul>
+            <ul id="payments_history" class="observe-empty-state"></ul>
+            <div class=" empty-state gap-1 justify-center text-center">
+                <h4>No transactions</h4>
+            </div>
+        </section>
+        <section id="wallet" class="inner-page hide">
+            <div class="flex sticky top-0" style="background-color: rgba(var(--foreground-color),1);">
+                <a href="#/home" class="button icon-only margin-right-0-5">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    </svg>
+                </a>
+            </div>
+            <div class="page__header">
+                <div class="grid">
+                    <h4>Wallet</h4>
+                    <h1>transactions</h1>
+                </div>
+            </div>
+            <div id="wallet_history_wrapper" class="grid gap-1-5">
+                <div class="hide grid gap-1">
+                    <h4>Pending transactions</h4>
+                    <ul id="pending_wallet_transactions" class="grid gap-0-5"></ul>
+                </div>
+                <div class="grid gap-1">
+                    <ul id="wallet_history" class="observe-empty-state grid gap-0-5"></ul>
                     <div class=" empty-state gap-1 justify-center text-center">
                         <h4>No transactions</h4>
-                    </div>
-                </div>
-                <div id="wallet_history_wrapper" class="grid gap-1-5 hide">
-                    <div class="hide grid gap-1">
-                        <h4>Pending transactions</h4>
-                        <ul id="pending_wallet_transactions" class="grid gap-0-5"></ul>
-                    </div>
-                    <div class="grid gap-1">
-                        <ul id="wallet_history" class="observe-empty-state grid gap-0-5"></ul>
-                        <div class=" empty-state gap-1 justify-center text-center">
-                            <h4>No transactions</h4>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -463,7 +484,7 @@
                 <h4 id="transaction__type"></h4>
             </div>
             <div class="grid gap-1">
-                <h1 id="transaction__amount"></h1>
+                <div id="transaction__amount"></div>
                 <div id="transaction__remark" class="hide"></div>
                 <div class="flex align-center" style="font-size: 0.8rem;">
                     <time id="transaction__time"></time>
@@ -1138,6 +1159,7 @@
     <script src="scripts/fn_ui.js"></script>
     <script src="scripts/floTokenAPI.js"></script>
     <script src="scripts/floExchangeAPI.js"></script>
+    <script src="scripts/qrcode.min.js"></script>
     <script id="onLoadStartUp">
         function onLoadStartUp() {
             showPage('loading')

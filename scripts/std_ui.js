@@ -372,6 +372,8 @@ async function showPage(targetPage, options = {}) {
             break;
         case 'history':
             render.paymentsHistory()
+            break;
+        case 'wallet':
             const walletTransactions = []
             if (walletHistoryLoader)
                 walletHistoryLoader.clear()
@@ -483,8 +485,11 @@ async function showPage(targetPage, options = {}) {
     if (pageId !== 'history') {
         if (paymentsHistoryLoader)
             paymentsHistoryLoader.clear()
+    }
+    if (pageId !== 'wallet') {
         if (walletHistoryLoader)
             walletHistoryLoader.clear()
+
     }
     if (pageId !== 'contact') {
         if (contactHistoryLoader)

@@ -798,6 +798,10 @@ ul {
   grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
 }
 
+.wallet-action,
+.integrated-action-button {
+  color: inherit;
+}
 .wallet-action .icon:first-of-type,
 .integrated-action-button .icon:first-of-type {
   height: 2.5rem;
@@ -843,7 +847,6 @@ ul {
 }
 
 #topup_wallet__qr_code {
-  padding: 2vw;
   background-color: rgba(var(--text-color), 0.03);
   border-radius: 0.5rem;
   height: 12rem;
@@ -1006,7 +1009,6 @@ ul {
 }
 
 #history .page__header {
-  min-height: 4rem;
   margin-bottom: 0;
 }
 
@@ -1358,6 +1360,11 @@ ul {
 }
 .wallet-request__status .icon {
   margin-left: 0.3rem;
+}
+
+#transaction__amount {
+  font-size: 2.5rem;
+  font-weight: 700;
 }
 
 #transaction__remark,

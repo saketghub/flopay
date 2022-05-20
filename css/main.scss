@@ -747,6 +747,7 @@ ul {
 }
 .wallet-action,
 .integrated-action-button {
+  color: inherit;
   .icon:first-of-type {
     height: 2.5rem;
     width: 2.5rem;
@@ -788,7 +789,6 @@ ul {
   }
 }
 #topup_wallet__qr_code {
-  padding: 2vw;
   background-color: rgba(var(--text-color), 0.03);
   border-radius: 0.5rem;
   height: 12rem;
@@ -944,7 +944,6 @@ ul {
 
 #history {
   .page__header {
-    min-height: 4rem;
     margin-bottom: 0;
   }
 }
@@ -1273,6 +1272,10 @@ ul {
       margin-left: 0.3rem;
     }
   }
+}
+#transaction__amount {
+  font-size: 2.5rem;
+  font-weight: 700;
 }
 #transaction__remark,
 #transaction__note {
