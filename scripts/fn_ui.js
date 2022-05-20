@@ -45,7 +45,14 @@ function continueWalletTopup() {
     getRef('topup_wallet__details').innerHTML = `Send <b>${formatAmount(amount)}</b> to UPI ID below`;
     getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
     getRef('topup_wallet__qr_code').innerHTML = ''
-    getRef('topup_wallet__qr_code').append(new QRCode(`upi://pay?am=${amount}&pa=${cashierUPI[cashier]}`))
+    getRef('topup_wallet__qr_code').append(new QRCode({
+        msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}`,
+        ecl: 'H'
+    }))
+    // fetch(`https://upiqr.in/api/qr?name=cashier&vpa=${cashierUPI[cashier]}`).then(res => {
+    //     res.text().then(data => getRef('topup_wallet__qr_code').innerHTML = data)
+    //         .catch(err => console.error(err));
+    // }).catch(err => console.error(err));
     showChildElement('topup_wallet_process', 1)
     getRef('topup_wallet__txid').focusIn();
 }
