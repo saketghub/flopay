@@ -301,10 +301,26 @@
                 </div>
             </div>
             <section id="cashier" class=" grid gap-1 hide admin-element">
-                <h4>Requests</h4>
-                <ul id="cashier_request_list" class="observe-empty-state"></ul>
-                <div class="empty-state">
-                    <p>No requests to process</p>
+                <div class="flex align-center space-between">
+                    <h4>Requests</h4>
+                    <strip-select id="cashier_requests_selector">
+                        <strip-option value="pending" selected>Pending</strip-option>
+                        <strip-option value="processed">Processed</strip-option>
+                    </strip-select>
+                </div>
+                <div id="cashier_requests_wrapper">
+                    <div>
+                        <ul id="cashier_pending_request_list" class="observe-empty-state"></ul>
+                        <div class="empty-state">
+                            <p>No requests to process</p>
+                        </div>
+                    </div>
+                    <div class="hide">
+                        <ul id="cashier_processed_request_list" class="observe-empty-state"></ul>
+                        <div class="empty-state">
+                            <p>No requests to process</p>
+                        </div>
+                    </div>
                 </div>
             </section>
         </section>
@@ -350,10 +366,11 @@
             </div>
             <div id="wallet_history_wrapper" class="grid gap-1-5">
                 <div class="hide grid gap-1">
-                    <p>Pending transactions</p>
+                    <h4>Pending</h4>
                     <ul id="pending_wallet_transactions" class="grid gap-0-5"></ul>
                 </div>
                 <div class="grid gap-1">
+                    <h4>Processed</h4>
                     <ul id="wallet_history" class="observe-empty-state grid gap-0-5"></ul>
                     <div class=" empty-state gap-1 justify-center text-center">
                         <p>No transactions</p>
@@ -493,7 +510,7 @@
                 </div>
             </div>
             <a id="transaction__link" target="_blank" rel="noopener noreferrer">See transaction on blockchain</a>
-            <div id="transaction__note" class="hide flex align-center"></div>
+            <p id="transaction__note" class="hide flex flex-direction-column gap-0-5"></p>
         </div>
         <section id="settings" class="inner-page hide">
             <div class="page__header">
@@ -834,7 +851,10 @@
                     </div>
                     <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
                 </div>
-                <p>After sending money, please enter the transaction ID of completed transaction.</p>
+                <p>
+                    After sending money, please enter the transaction ID of completed transaction. <br>
+                    * <strong>PhonePe</strong> users please enter <strong>UTR ID</strong> instead of transaction ID
+                </p>
                 <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
                     error-text="Please enter UPI transaction ID of money you sent to continue."
                     placeholder="UPI transaction ID" autofocus animate required></sm-input>
@@ -1035,6 +1055,51 @@
                 </svg>
                 <b>Failed to Send</b>
                 <p id="exchange_transfer__failed_reason"></p>
+            </div>
+        </div>
+    </sm-popup>
+
+    <!-- Cashier popups -->
+    <sm-popup id="confirm_topup_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h4>Confirm top-up</h4>
+        </header>
+        <div id="confirm_topup_wrapper">
+            <div class="grid gap-1-5">
+                <div class="grid gap-0-5">
+                    <p>
+                        Check if you have received UPI payment
+                    </p>
+                    <b id="top_up_amount" style="font-size: 1.5rem;"></b>
+                    <sm-copy id="top_up_txid"></sm-copy>
+                </div>
+                <div class="flex justify-right gap-0-3">
+                    <button class="button" onclick="showChildElement('confirm_topup_wrapper', 1)">Decline</button>
+                    <button class="button" onclick="confirmTopUp()">Confirm</button>
+                </div>
+            </div>
+            <div class="flex flex-direction-column gap-1-5 hide" style="height: 24rem;">
+                <div class="grid gap-0-3">
+                    <p>Select reason</p>
+                    <sm-select id="top_up__reason_selector">
+                        <sm-option value="1001">Invalid transaction ID</sm-option>
+                        <sm-option value="1002">Amount doesn't match</sm-option>
+                        <sm-option value="other">Other</sm-option>
+                    </sm-select>
+                </div>
+                <div class="grid gap-0-3 hide">
+                    <p>Describe reason</p>
+                    <sm-textarea id="top_up__specified_reason" rows="4"></sm-textarea>
+                </div>
+                <button class="button justify-right" style="margin-top: auto;" onclick="declineTopUp()">Decline</button>
             </div>
         </div>
     </sm-popup>

@@ -72,7 +72,7 @@ const debounce = (callback, wait) => {
     };
 }
 
-let zIndex = 10
+let zIndex = 100
 // function required for popups or modals to appear
 function showPopup(popupId, pinned) {
     zIndex++
@@ -134,6 +134,9 @@ document.addEventListener('popupclosed', e => {
             break;
         case 'transfer_to_exchange_popup':
             showChildElement('exchange_transfer_process', 0);
+            break;
+        case 'confirm_topup_popup':
+            showChildElement('confirm_topup_wrapper', 0);
             break;
     }
 })
@@ -448,6 +451,7 @@ async function showPage(targetPage, options = {}) {
                 }
             } else if (params.type === 'wallet') {
                 transactionDetails = User.cashierRequests[params.transactionId]
+                console.log(transactionDetails)
                 const { message: { amount, mode, upi_id, upi_txid }, note, tag } = transactionDetails
                 status = tag ? tag : (note ? 'REJECTED' : "PENDING");
                 getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
@@ -459,7 +463,15 @@ async function showPage(targetPage, options = {}) {
                     getRef('transaction__note').classList.remove('hide')
                 }
                 if (mode === 'cash-to-token') {
-                    getRef('transaction__note').textContent = `UPI transaction ID: ${upi_txid}`
+                    if (status === 'COMPLETED') {
+                        getRef('transaction__note').textContent = `UPI transaction ID: ${upi_txid}`
+                    } else if (status === 'REJECTED') {
+                        const reason = ['1001', '1002'].includes(note.split(':')[1]) ? cashierRejectionErrors[note.split(':')[1]] : note.split(':')[1]
+                        getRef('transaction__note').innerHTML = `
+                        <svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+                        ${reason}
+                        `
+                    }
                     getRef('transaction__note').classList.remove('hide')
 
                 } else {
@@ -806,7 +818,13 @@ function createState(defaultValue, key, callback) {
     return reactiveState.createState(defaultValue, key, callback)
 }
 const smState = document.createElement('template')
-smState.innerHTML = ``
+smState.innerHTML = `
+<style>
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+</style>
+`
 class SmState extends HTMLElement {
     constructor() {
         super();

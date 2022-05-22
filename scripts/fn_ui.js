@@ -336,40 +336,29 @@ cashierUI.renderRequests = function (requests, error = null) {
     else if (typeof requests !== "object" || requests === null)
         return;
     const frag = document.createDocumentFragment();
-    for (let r in requests) {
-        const oldCard = document.getElementById(r);
-        if (oldCard) oldCard.remove();
-        frag.prepend(render.cashierRequestCard(requests[r]));
+    for (let transactionID in requests) {
+        const { note, tag } = requests[transactionID];
+        let status = tag ? 'done' : (note ? 'failed' : "pending");
+        getRef('cashier_pending_request_list').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
+        getRef(status === 'pending' ? 'cashier_pending_request_list' : 'cashier_processed_request_list').prepend(render.cashierRequestCard(requests[transactionID]))
     }
-    getRef('cashier_request_list').prepend(frag)
 }
 
 cashierUI.completeRequest = function (reqID) {
-    let request = Cashier.Requests[reqID];
-    if (request.message.mode === "cash-to-token")
-        completeCashToTokenRequest(request);
-    else if (request.message.mode === "token-to-cash")
-        completeTokenToCashRequest(request);
+    floGlobals.cashierProcessingRequest = Cashier.Requests[reqID];
+    const { message: { mode } } = floGlobals.cashierProcessingRequest;
+    if (mode === "cash-to-token")
+        completeCashToTokenRequest(floGlobals.cashierProcessingRequest);
+    else if (mode === "token-to-cash")
+        completeTokenToCashRequest(floGlobals.cashierProcessingRequest);
 }
 
 function completeCashToTokenRequest(request) {
     const { message: { upi_txid, amount }, vectorClock, senderID } = request;
     Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
-        getConfirmation('Confirm', {
-            message: `Check if you have received UPI transfer\nTxID: ${upi_txid}\nAmount: ${formatAmount(amount)}`,
-            confirmText: 'Confirm'
-        }).then(confirmed => {
-            if (confirmed) {
-                User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
-                    console.warn(`${amount} cash-to-token for ${senderID}`, txid);
-                    Cashier.finishRequest(request, txid).then(result => {
-                        console.log(result);
-                        console.info('Completed cash-to-token request:', vectorClock);
-                        notify("Completed request", 'success');
-                    }).catch(error => console.error(error))
-                }).catch(error => console.error(error))
-            }
-        })
+        getRef('top_up_amount').textContent = formatAmount(amount);
+        getRef('top_up_txid').value = upi_txid;
+        showPopup('confirm_topup_popup');
     }).catch(error => {
         notify(error, 'error');
         if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
@@ -379,6 +368,41 @@ function completeCashToTokenRequest(request) {
             }).catch(error => console.error(error))
     })
 }
+
+function confirmTopUp() {
+    const { message: { amount }, vectorClock, senderID } = floGlobals.cashierProcessingRequest;
+    User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
+        console.warn(`${amount} cash-to-token for ${senderID}`, txid);
+        Cashier.finishRequest(floGlobals.cashierProcessingRequest, txid).then(result => {
+            console.log(result);
+            console.info('Completed cash-to-token request:', vectorClock);
+            notify("Completed request", 'success');
+        }).catch(error => console.error(error))
+    }).catch(error => console.error(error))
+}
+
+getRef('top_up__reason_selector').addEventListener('change', e => {
+    console.log(e.target.value);
+    if (e.target.value === 'other') {
+        getRef('top_up__specified_reason').parentNode.classList.remove('hide');
+    } else {
+        getRef('top_up__specified_reason').parentNode.classList.add('hide');
+    }
+})
+function declineTopUp() {
+    const { vectorClock } = floGlobals.cashierProcessingRequest;
+    let reason = getRef('top_up__reason_selector').value;
+    if (reason === 'other') {
+        reason = getRef('top_up__specified_reason').value
+    }
+    Cashier.rejectRequest(floGlobals.cashierProcessingRequest, reason).then(result => {
+        console.log(result);
+        console.info('Rejected cash-to-token request:', vectorClock);
+        notify('Request top-up request', 'success');
+        hidePopup()
+    }).catch(error => console.error(error))
+}
+
 
 function completeTokenToCashRequest(request) {
     const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request
@@ -427,6 +451,11 @@ function getStatusIcon(status) {
     }
 }
 
+const cashierRejectionErrors = {
+    1001: `Your request was reject because of wrong transaction ID. If you have sent money, it'll be returned within 24 hrs.`,
+    1002: `Amount requested and amount sent via UPI doesn't match. your transferred money will be returned within 24hrs.`
+}
+
 const render = {
     savedId(floID, details) {
         const { title } = details;
@@ -469,7 +498,7 @@ const render = {
             :
             `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>`;
         if (status)
-            clone.querySelector('.cashier-request__status').textContent = status;
+            clone.querySelector('.cashier-request__status').textContent = status.includes(':') ? status.split(':')[0] : status;
         else
             clone.querySelector('.cashier-request__status').innerHTML = `<button class="button process-cashier-request">Process</button>`;
         return clone;
