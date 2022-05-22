@@ -395,6 +395,8 @@ function declineTopUp() {
     if (reason === 'other') {
         reason = getRef('top_up__specified_reason').value
     }
+    if (reason.trim() === '')
+        return notify('Please specify a reason', 'error');
     Cashier.rejectRequest(floGlobals.cashierProcessingRequest, reason).then(result => {
         console.log(result);
         console.info('Rejected cash-to-token request:', vectorClock);
