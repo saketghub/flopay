@@ -409,6 +409,14 @@ function declineTopUp() {
 
 function completeTokenToCashRequest(request) {
     const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request
+    if (upi_id instanceof Object && "secret" in upi_id){
+        try {
+            upi_id = floCrypto.decryptData(upi_id, myPrivKey);
+        } catch(error) {
+            console.error("UPI ID is not encrypted with a proper key", error);
+            return notify("Invalid UPI ID", 'error');
+        }
+    }
     Cashier.checkIfTokenTxIsValid(token_txid, senderID, amount).then(result => {
         getPromptInput('Process', `Token transfer is verified!\n Send ${formatAmount(amount)}\n to ${upi_id}\n Enter UPI transaction ID`, {
             placeholder: 'UPI transaction ID',
@@ -550,7 +558,7 @@ const render = {
         return clone;
     },
     transactionMessage(details) {
-        const { tokenAmount, time, sender, receiver, flodata } = tokenAPI.util.parseTxData(details)
+        const { tokenAmount, time, sender, receiver, flodata } = floTokenAPI.util.parseTxData(details)
         let messageType = sender === receiver ? 'self' : sender === myFloID ? 'sent' : 'received';
         const clone = getRef('transaction_message_template').content.cloneNode(true).firstElementChild;
         clone.classList.add(messageType);
@@ -585,10 +593,10 @@ const render = {
         if (paymentsHistoryLoader)
             paymentsHistoryLoader.clear()
         getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
-        tokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
+        floTokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
             for (const transactionId in transactions) {
                 paymentTransactions.push({
-                    ...tokenAPI.util.parseTxData(transactions[transactionId]),
+                    ...floTokenAPI.util.parseTxData(transactions[transactionId]),
                     txid: transactionId
                 })
             }
@@ -647,7 +655,7 @@ function buttonLoader(id, show) {
 function refreshBalance(button) {
     if (button)
         buttonLoader(button, true)
-    tokenAPI.getBalance(myFloID).then((balance = 0) => {
+    floTokenAPI.getBalance(myFloID).then((balance = 0) => {
         const [beforeDecimal, afterDecimal] = formatAmount(balance).split('₹')[1].split('.')
         getRef('rupee_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
         if (button)
