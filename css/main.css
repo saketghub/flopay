@@ -1266,7 +1266,7 @@ ul {
   grid-area: details;
   font-weight: 700;
 }
-.cashier-request__requestor {
+.cashier-request__status, .cashier-request__requestor {
   font-size: 0.8rem;
 }
 .cashier-request__status {

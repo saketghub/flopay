@@ -377,6 +377,7 @@ function confirmTopUp() {
             console.log(result);
             console.info('Completed cash-to-token request:', vectorClock);
             notify("Completed request", 'success');
+            hidePopup()
         }).catch(error => console.error(error))
     }).catch(error => console.error(error))
 }
