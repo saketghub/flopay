@@ -97,8 +97,8 @@ User.findCashier = function() {
         if (cashierStatus[c] && cashierUPI[c])
             online.push(c);
     if (!online.length) {
-        if (floGlobals.settings.defaultCashier && floGlobals.settings.defaultCashier in cashierUPI)
-            return floGlobals.settings.defaultCashier;
+        if (floGlobals.settings.default_cashier && floGlobals.settings.default_cashier in cashierUPI)
+            return floGlobals.settings.default_cashier;
         else
             return null;
     } else {
@@ -138,9 +138,9 @@ User.tokenToCash = function(cashier, amount, blkTxID, upiID) {
     })
 }
 
-User.sendToken = function(receiverID, amount, remark = '') {
+User.sendToken = function(receiverID, amount, remark = '', options = {}) {
     return new Promise((resolve, reject) => {
-        floTokenAPI.sendToken(myPrivKey, amount, receiverID, remark)
+        floTokenAPI.sendToken(myPrivKey, amount, receiverID, remark, options)
             .then(result => resolve(result))
             .catch(error => reject(error))
     })

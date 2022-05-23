@@ -371,15 +371,23 @@ function completeCashToTokenRequest(request) {
 
 function confirmTopUp() {
     const { message: { amount }, vectorClock, senderID } = floGlobals.cashierProcessingRequest;
-    User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
-        console.warn(`${amount} cash-to-token for ${senderID}`, txid);
-        Cashier.finishRequest(floGlobals.cashierProcessingRequest, txid).then(result => {
-            console.log(result);
-            console.info('Completed cash-to-token request:', vectorClock);
-            notify("Completed request", 'success');
-            hidePopup()
+    floBlockchainAPI.getBalance(senderID).then(async user_balance => {
+        let sendAmt_FLO = floGlobals.sendAmt;
+        if(user_balance < floGlobals.settings.user_flo_threshold){
+            let cur_rate = await floExchangeAPI.getRates("FLO");
+            sendAmt_FLO = floGlobals.settings.send_user_flo;
+            amount -= cur_rate * sendAmt_FLO;
+        }
+        User.sendToken(senderID, amount, 'for cash-to-token', {sendAmt: sendAmt_FLO}).then(txid => {
+            console.warn(`${amount} cash-to-token for ${senderID}`, txid);
+            Cashier.finishRequest(floGlobals.cashierProcessingRequest, txid).then(result => {
+                console.log(result);
+                console.info('Completed cash-to-token request:', vectorClock);
+                notify("Completed request", 'success');
+                hidePopup()
+            }).catch(error => console.error(error))
         }).catch(error => console.error(error))
-    }).catch(error => console.error(error))
+    }).catch(error => reject(error))
 }
 
 getRef('top_up__reason_selector').addEventListener('change', e => {
