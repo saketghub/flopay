@@ -492,7 +492,7 @@ const render = {
     cashierRequestCard(details) {
         const { time, senderID, message: { mode, amount = 0 }, note, tag, vectorClock } = details;
         const clone = getRef('cashier_request_template').content.cloneNode(true).firstElementChild;
-        clone.id = vectorClock;
+        clone.dataset.vc = vectorClock;
         const status = tag || note; //status tag for completed, note for rejected
         clone.querySelector('.cashier-request__details').textContent = `${mode === 'cash-to-token' ? 'Top-up wallet with' : 'Withdraw'} ${formatAmount(amount)}`;
         clone.querySelector('.cashier-request__requestor').textContent = senderID;

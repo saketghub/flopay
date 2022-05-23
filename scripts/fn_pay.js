@@ -165,7 +165,7 @@ const Cashier = {};
 
 Cashier.init = function () {
     delegate(getRef('cashier_pending_request_list'), 'click', '.process-cashier-request', e => {
-        const requestID = e.delegateTarget.closest('.cashier-request').id;
+        const requestID = e.delegateTarget.closest('.cashier-request').dataset.vc;
         cashierUI.completeRequest(requestID)
     })
     getRef('cashier_requests_selector').addEventListener('change', e => {
