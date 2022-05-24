@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floTokenAPI v1.0.3
+(function(EXPORTS) { //floTokenAPI v1.0.3a
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
@@ -58,7 +58,7 @@
     tokenAPI.sendToken = function(privKey, amount, receiverID, message = "", token = DEFAULT.currency, options = {}) {
         return new Promise((resolve, reject) => {
             let senderID = floCrypto.getFloID(privKey);
-            if (typeof amount !== "number" || amount <= 0)
+            if (typeof amount !== "number" || isNaN(amount) || amount <= 0)
                 return reject("Invalid amount");
             getBalance(senderID, token).then(bal => {
                 if (amount > bal)
