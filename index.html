@@ -14,33 +14,10 @@
     <script id="floGlobals">
         /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
         const floGlobals = {
-
-            //Required for all
             blockchain: "FLO",
-
-            //Required for blockchain API operators
-            apiURL: {
-                FLO: ['https://flosight.duckdns.org/', 'https://livenet.flocha.in/'],
-                FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
-            },
             adminID: "FH64hLqB71e6i11rnZZW7hvzoH8daCwy1J",
-            sendAmt: 0.001,
-            fee: 0.0005,
-
-            //Required for token API operations
-            tokenURL: "https://ranchimallflo.duckdns.org/",
             currency: "rupee",
-
-            //Required for Supernode operations
-            SNStorageID: "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
-            supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
-
-            //for cloud apps
-            subAdmins: [],
-            application: "blockchainUPI",
-            appObjects: {},
-            generalData: {},
-            lastVC: {}
+            application: "blockchainUPI"
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6" defer></script>
@@ -1223,7 +1200,12 @@
 
     <script src="scripts/components.js"></script>
     <script src="scripts/std_ui.js"></script>
-    <script src="scripts/std_op.js"></script>
+    <script src="scripts/lib.js"></script>
+    <script src="scripts/floCrypto.js"></script>
+    <script src="scripts/floBlockchainAPI.js"></script>
+    <script src="scripts/compactIDB.js"></script>
+    <script src="scripts/floCloudAPI.js"></script>
+    <script src="scripts/floDapps.js"></script>
     <script src="scripts/fn_pay.js"></script>
     <script src="scripts/fn_ui.js"></script>
     <script src="scripts/floTokenAPI.js"></script>
