@@ -419,17 +419,19 @@ function declineTopUp() {
 
 
 function completeTokenToCashRequest(request) {
-    const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request
-    if (upi_id instanceof Object && "secret" in upi_id){
+    const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request;
+    var upiID;
+    if(upi_id instanceof Object && "secret" in upi_id){
         try {
-            upi_id = floCrypto.decryptData(upi_id, myPrivKey);
+            upiID = floCrypto.decryptData(upi_id, myPrivKey);
         } catch(error) {
             console.error("UPI ID is not encrypted with a proper key", error);
             return notify("Invalid UPI ID", 'error');
         }
-    }
+    } else 
+        upiID = upi_id;
     Cashier.checkIfTokenTxIsValid(token_txid, senderID, amount).then(result => {
-        getPromptInput('Process', `Token transfer is verified!\n Send ${formatAmount(amount)}\n to ${upi_id}\n Enter UPI transaction ID`, {
+        getPromptInput('Process', `Token transfer is verified!\n Send ${formatAmount(amount)}\n to ${upiID}\n Enter UPI transaction ID`, {
             placeholder: 'UPI transaction ID',
         }).then(upiTxID => {
             if (!upiTxID || upiTxID.length < 10)

@@ -140,7 +140,7 @@ User.tokenToCash = function(cashier, amount, blkTxID, upiID) {
 
 User.sendToken = function(receiverID, amount, remark = '', options = {}) {
     return new Promise((resolve, reject) => {
-        floTokenAPI.sendToken(myPrivKey, amount, receiverID, remark, options)
+        floTokenAPI.sendToken(myPrivKey, amount, receiverID, remark, floTokenAPI.currency, options)
             .then(result => resolve(result))
             .catch(error => reject(error))
     })
@@ -194,7 +194,7 @@ function startStatusInterval() {
 
 Cashier.init = function() {
     delegate(getRef('cashier_pending_request_list'), 'click', '.process-cashier-request', e => {
-        const requestID = e.delegateTarget.closest('.cashier-request').id;
+        const requestID = e.delegateTarget.closest('.cashier-request').dataset.vc;
         cashierUI.completeRequest(requestID)
     })
     getRef('cashier_requests_selector').addEventListener('change', e => {
