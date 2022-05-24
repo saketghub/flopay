@@ -1083,7 +1083,9 @@
                 </div>
                 <div class="flex justify-right gap-0-3">
                     <button class="button" onclick="showChildElement('confirm_topup_wrapper', 1)">Decline</button>
-                    <button class="button" onclick="confirmTopUp()">Confirm</button>
+                    <div class="multi-state-button">
+                        <button class="button" onclick="confirmTopUp(this)">Confirm</button>
+                    </div>
                 </div>
             </div>
             <div class="flex flex-direction-column gap-1-5 hide" style="height: 24rem;">

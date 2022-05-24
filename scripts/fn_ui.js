@@ -368,8 +368,9 @@ function completeCashToTokenRequest(request) {
     })
 }
 
-function confirmTopUp() {
+function confirmTopUp(button) {
     const { message: { amount }, vectorClock, senderID } = floGlobals.cashierProcessingRequest;
+    buttonLoader(button, true);
     User.sendToken(senderID, amount, 'for cash-to-token').then(txid => {
         console.warn(`${amount} cash-to-token for ${senderID}`, txid);
         Cashier.finishRequest(floGlobals.cashierProcessingRequest, txid).then(result => {
@@ -378,6 +379,7 @@ function confirmTopUp() {
             notify("Completed request", 'success');
             hidePopup()
         }).catch(error => console.error(error))
+            .finally(() => buttonLoader(button, false))
     }).catch(error => console.error(error))
 }
 
