@@ -452,11 +452,11 @@ async function showPage(targetPage, options = {}) {
             } else if (params.type === 'wallet') {
                 transactionDetails = User.cashierRequests[params.transactionId]
                 console.log(transactionDetails)
-                const { message: { amount, mode, upi_id, upi_txid }, note, tag } = transactionDetails
+                const { message: { amount, mode, upi_id, upi_txid, token_txid }, note, tag } = transactionDetails
                 status = tag ? tag : (note ? 'REJECTED' : "PENDING");
                 getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
                 if (status === 'COMPLETED') {
-                    getRef('transaction__link').href = `https://flosight.duckdns.org/tx/${note}`
+                    getRef('transaction__link').href = `https://flosight.duckdns.org/tx/${mode === 'cash-to-token' ? note : token_txid}`
                     getRef('transaction__link').classList.remove('hide')
                 } else if (status === 'REJECTED') {
                     getRef('transaction__note').innerHTML = `<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${note.split(':')[1]}`

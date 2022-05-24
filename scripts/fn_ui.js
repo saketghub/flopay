@@ -85,11 +85,14 @@ function withdrawMoneyFromWallet() {
     if (!upiId)
         return notify("Please add an UPI ID to continue", 'error');
     buttonLoader('withdraw_rupee_button', true);
+    getRef('withdrawal_blockchain_link').classList.add('hide');
     User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
         console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
         User.tokenToCash(cashier, amount, txid, upiId).then(result => {
             showChildElement('withdraw_wallet_process', 1);
             refreshBalance();
+            getRef('withdrawal_blockchain_link').classList.remove('hide');
+            getRef('withdrawal_blockchain_link').href = `https://flosight.duckdns.org/tx/${txid}`
             console.log(result);
         }).catch(error => {
             getRef('withdrawal_failed_reason').textContent = error;
