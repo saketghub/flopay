@@ -335,11 +335,10 @@ cashierUI.renderRequests = function (requests, error = null) {
         return console.error(error);
     else if (typeof requests !== "object" || requests === null)
         return;
-    const frag = document.createDocumentFragment();
     for (let transactionID in requests) {
         const { note, tag } = requests[transactionID];
         let status = tag ? 'done' : (note ? 'failed' : "pending");
-        getRef('cashier_pending_request_list').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
+        getRef('cashier_requests_wrapper').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
         getRef(status === 'pending' ? 'cashier_pending_request_list' : 'cashier_processed_request_list').prepend(render.cashierRequestCard(requests[transactionID]))
     }
 }
