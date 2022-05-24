@@ -952,6 +952,8 @@
                 </svg>
                 <h4>Sent transfer to bank request</h4>
                 <p>This may take upto 30 mins to complete</p>
+                <a href="" class="hide" target="_blank" id="withdrawal_blockchain_link">Check transaction on
+                    blockchain</a>
             </div>
             <div class="grid gap-0-5 hide justify-center text-center">
                 <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px"
@@ -1083,7 +1085,9 @@
                 </div>
                 <div class="flex justify-right gap-0-3">
                     <button class="button" onclick="showChildElement('confirm_topup_wrapper', 1)">Decline</button>
-                    <button class="button" onclick="confirmTopUp()">Confirm</button>
+                    <div class="multi-state-button">
+                        <button class="button" onclick="confirmTopUp(this)">Confirm</button>
+                    </div>
                 </div>
             </div>
             <div class="flex flex-direction-column gap-1-5 hide" style="height: 24rem;">

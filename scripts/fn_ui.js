@@ -85,11 +85,14 @@ function withdrawMoneyFromWallet() {
     if (!upiId)
         return notify("Please add an UPI ID to continue", 'error');
     buttonLoader('withdraw_rupee_button', true);
+    getRef('withdrawal_blockchain_link').classList.add('hide');
     User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
         console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
         User.tokenToCash(cashier, amount, txid, upiId).then(result => {
             showChildElement('withdraw_wallet_process', 1);
             refreshBalance();
+            getRef('withdrawal_blockchain_link').classList.remove('hide');
+            getRef('withdrawal_blockchain_link').href = `https://flosight.duckdns.org/tx/${txid}`
             console.log(result);
         }).catch(error => {
             getRef('withdrawal_failed_reason').textContent = error;
@@ -335,11 +338,10 @@ cashierUI.renderRequests = function (requests, error = null) {
         return console.error(error);
     else if (typeof requests !== "object" || requests === null)
         return;
-    const frag = document.createDocumentFragment();
     for (let transactionID in requests) {
         const { note, tag } = requests[transactionID];
         let status = tag ? 'done' : (note ? 'failed' : "pending");
-        getRef('cashier_pending_request_list').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
+        getRef('cashier_requests_wrapper').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
         getRef(status === 'pending' ? 'cashier_pending_request_list' : 'cashier_processed_request_list').prepend(render.cashierRequestCard(requests[transactionID]))
     }
 }
@@ -369,8 +371,9 @@ function completeCashToTokenRequest(request) {
     })
 }
 
-function confirmTopUp() {
+function confirmTopUp(button) {
     const { message: { amount }, vectorClock, senderID } = floGlobals.cashierProcessingRequest;
+    buttonLoader(button, true);
     floBlockchainAPI.getBalance(senderID).then(async user_balance => {
         let sendAmt_FLO = floGlobals.sendAmt;
         if(user_balance < floGlobals.settings.user_flo_threshold){
