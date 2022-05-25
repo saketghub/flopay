@@ -377,12 +377,12 @@ function confirmTopUp(button) {
     buttonLoader(button, true);
     floBlockchainAPI.getBalance(senderID).then(async user_balance => {
         let floAmt = floGlobals.sendAmt;
-        if(user_balance < floGlobals.settings.user_flo_threshold){
+        if (user_balance < floGlobals.settings.user_flo_threshold) {
             let cur_rate = (await floExchangeAPI.getRates("FLO")).rate;
             floAmt = floGlobals.settings.send_user_flo;
             tokenAmt -= cur_rate * floAmt;
         }
-        User.sendToken(senderID, tokenAmt, 'for cash-to-token', {sendAmt: floAmt}).then(txid => {
+        User.sendToken(senderID, tokenAmt, 'for cash-to-token', { sendAmt: floAmt }).then(txid => {
             console.warn(`${amount} (${tokenAmt}|${floAmt}) cash-to-token for ${senderID}`, txid);
             Cashier.finishRequest(floGlobals.cashierProcessingRequest, txid).then(result => {
                 console.log(result);
@@ -422,14 +422,14 @@ function declineTopUp() {
 function completeTokenToCashRequest(request) {
     const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request;
     var upiID;
-    if(upi_id instanceof Object && "secret" in upi_id){
+    if (upi_id instanceof Object && "secret" in upi_id) {
         try {
             upiID = floCrypto.decryptData(upi_id, myPrivKey);
-        } catch(error) {
+        } catch (error) {
             console.error("UPI ID is not encrypted with a proper key", error);
             return notify("Invalid UPI ID", 'error');
         }
-    } else 
+    } else
         upiID = upi_id;
     Cashier.checkIfTokenTxIsValid(token_txid, senderID, amount).then(result => {
         getPromptInput('Process', `Token transfer is verified!\n Send ${formatAmount(amount)}\n to ${upiID}\n Enter UPI transaction ID`, {
@@ -619,6 +619,8 @@ const render = {
                 let propToCheck = filter === 'sent' ? 'sender' : 'receiver';
                 paymentTransactions = paymentTransactions.filter(v => v[propToCheck] === myFloID)
             }
+            // solve issue at backend
+            paymentTransactions.sort((a, b) => b.time - a.time);
             if (paymentsHistoryLoader) {
                 paymentsHistoryLoader.update(paymentTransactions);
             } else {
