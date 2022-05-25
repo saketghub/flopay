@@ -359,8 +359,8 @@ async function showPage(targetPage, options = {}) {
             getRef('contact__title').textContent = getFloIdTitle(params.floId)
             getRef('contact__transactions').innerHTML = '<sm-spinner></sm-spinner>'
             Promise.all([
-                tokenAPI.fetch_api(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${myFloID}&destFloAddress=${params.floId}`),
-                tokenAPI.fetch_api(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${params.floId}&destFloAddress=${myFloID}`)])
+                floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${myFloID}&destFloAddress=${params.floId}`),
+                floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${params.floId}&destFloAddress=${myFloID}`)])
                 .then(([sentTransactions, receivedTransactions]) => {
                     const allTransactions = Object.values({ ...sentTransactions.transactions, ...receivedTransactions.transactions }).sort((a, b) => b.transactionDetails.time - a.transactionDetails.time)
                     if (contactHistoryLoader) {
