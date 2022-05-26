@@ -680,6 +680,12 @@ function refreshBalance(button) {
     floBlockchainAPI.getBalance(myFloID).then(balance => {
         const [beforeDecimal, afterDecimal = '00'] = String(balance).split('.')
         getRef('flo_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
+        if (balance < floGlobals.settings.user_flo_threshold) {
+            getRef('low_user_flo_warning').textContent = `Your FLO balance is low. You will receive ${floGlobals.settings.send_user_flo} FLO by deducting equivalent rupee tokens.`;
+            getRef('low_user_flo_warning').classList.remove('hide');
+        } else {
+            getRef('low_user_flo_warning').classList.add('hide');
+        }
         if (button)
             buttonLoader(button, false)
     })

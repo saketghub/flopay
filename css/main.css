@@ -72,6 +72,14 @@ strong:not(:last-of-type) {
   margin-bottom: 1.5rem;
 }
 
+.warning {
+  line-height: normal;
+  padding: 1rem;
+  background-color: khaki;
+  border-radius: 1rem;
+  color: rgba(0, 0, 0, 0.8);
+}
+
 a {
   text-decoration: none;
   color: var(--accent-color);
