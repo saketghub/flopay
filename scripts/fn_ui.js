@@ -49,10 +49,6 @@ function continueWalletTopup() {
         msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}`,
         ecl: 'H'
     }))
-    // fetch(`https://upiqr.in/api/qr?name=cashier&vpa=${cashierUPI[cashier]}`).then(res => {
-    //     res.text().then(data => getRef('topup_wallet__qr_code').innerHTML = data)
-    //         .catch(err => console.error(err));
-    // }).catch(err => console.error(err));
     showChildElement('topup_wallet_process', 1)
     getRef('topup_wallet__txid').focusIn();
 }
@@ -390,8 +386,15 @@ function confirmTopUp(button) {
                 notify("Completed request", 'success');
                 hidePopup()
             }).catch(error => console.error(error))
-        }).catch(error => console.error(error))
-    }).catch(error => console.error(error))
+                .finally(() => buttonLoader(button, false));
+        }).catch(error => {
+            console.error(error)
+            buttonLoader(button, false);
+        })
+    }).catch(error => {
+        buttonLoader(button, false);
+        console.error(error)
+    })
 }
 
 getRef('top_up__reason_selector').addEventListener('change', e => {
@@ -668,7 +671,7 @@ function buttonLoader(id, show) {
         if (potentialTarget) potentialTarget.remove();
     }
 }
-function refreshBalance(button) {
+async function refreshBalance(button) {
     if (button)
         buttonLoader(button, true)
     floTokenAPI.getBalance(myFloID).then((balance = 0) => {
@@ -677,18 +680,21 @@ function refreshBalance(button) {
         if (button)
             buttonLoader(button, false)
     })
-    floBlockchainAPI.getBalance(myFloID).then(balance => {
-        const [beforeDecimal, afterDecimal = '00'] = String(balance).split('.')
+    try {
+        const [floBal, floRates] = await Promise.all([floBlockchainAPI.getBalance(myFloID), floExchangeAPI.getRates('FLO')])
+        const [beforeDecimal, afterDecimal = '00'] = String(floBal).split('.')
         getRef('flo_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
-        if (balance < floGlobals.settings.user_flo_threshold) {
-            getRef('low_user_flo_warning').textContent = `Your FLO balance is low. You will receive ${floGlobals.settings.send_user_flo} FLO by deducting equivalent rupee tokens.`;
+        if (floBal < floGlobals.settings.user_flo_threshold) {
+            getRef('low_user_flo_warning').textContent = `Your FLO balance is low. You will receive ${floGlobals.settings.send_user_flo} FLO of worth ₹${parseFloat(floRates.rate.toFixed(2))} deducted from top-up amount.`;
             getRef('low_user_flo_warning').classList.remove('hide');
         } else {
             getRef('low_user_flo_warning').classList.add('hide');
         }
         if (button)
             buttonLoader(button, false)
-    })
+    } catch (e) {
+        console.error(e)
+    }
 }
 
 function getArrayOfSavedIds() {
