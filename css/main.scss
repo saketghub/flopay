@@ -158,9 +158,6 @@ button:disabled {
 a:any-link:focus-visible {
   outline: rgba(var(--text-color), 1) 0.1rem solid;
 }
-details {
-  padding: 1rem 0;
-}
 
 details summary {
   display: flex;
@@ -373,6 +370,12 @@ ul {
 }
 .h-100 {
   height: 100%;
+}
+.label {
+  font-size: 0.8rem;
+  color: rgba(var(--text-color), 0.8);
+  font-weight: 500;
+  margin-bottom: 0.2rem;
 }
 
 .ripple {
@@ -808,7 +811,8 @@ ul {
   background-color: rgba(var(--text-color), 0.03);
   border-radius: 0.5rem;
   height: 12rem;
-  justify-self: center;
+  width: max-content;
+  margin: 0 auto;
   svg {
     width: 100%;
     height: 100%;

@@ -41,8 +41,11 @@ function continueWalletTopup() {
     let cashier = User.findCashier();
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
+    const upiId = getRef('select_topup_upi_id').value;
+    if (!upiId)
+        return notify("Please add the UPI ID which you'll use to send the money", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    getRef('topup_wallet__details').innerHTML = `Send <b>${formatAmount(amount)}</b> to UPI ID below`;
+    renderElem(getRef('topup_wallet__details'), html`Send <b>${formatAmount(amount)}</b> from your UPI ID <b>${upiId}</b>`);
     getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
     getRef('topup_wallet__qr_code').innerHTML = ''
     getRef('topup_wallet__qr_code').append(new QRCode({
@@ -58,10 +61,11 @@ function depositMoneyToWallet() {
         return notify("No cashier online. Please try again in a while.", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
     let upiTxID = getRef('topup_wallet__txid').value.trim();
+    const upiId = getRef('select_topup_upi_id').value;
     if (upiTxID === '')
         return notify("Please enter UPI transaction ID", 'error');
     buttonLoader('topup_wallet_button', true);
-    User.cashToToken(cashier, amount, upiTxID).then(result => {
+    User.cashToToken(cashier, amount, upiTxID, upiId).then(result => {
         console.log(result);
         showChildElement('topup_wallet_process', 2);
         refreshBalance()
@@ -77,7 +81,7 @@ function withdrawMoneyFromWallet() {
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
     let amount = parseFloat(getRef('send_cashier_amount').value.trim());
-    const upiId = getRef('select_upi_id').value;
+    const upiId = getRef('select_withdraw_upi_id').value;
     if (!upiId)
         return notify("Please add an UPI ID to continue", 'error');
     buttonLoader('withdraw_rupee_button', true);
@@ -135,6 +139,7 @@ async function renderSavedUpiIds() {
     getRef('saved_upi_ids_list').append(frag);
 }
 function saveUpiId() {
+    const frag = document.createDocumentFragment();
     const upiId = getRef('get_upi_id').value.trim();
     if (upiId === '')
         return notify("Please add an UPI ID to continue", 'error');
@@ -146,15 +151,10 @@ function saveUpiId() {
         if (pagesData.lastPage === 'settings') {
             getRef('saved_upi_ids_list').append(render.savedUpiId(upiId));
         } else if (pagesData.lastPage === 'home') {
-            getRef('select_upi_id').append(
-                createElement('sm-option', {
-                    textContent: upiId,
-                    attributes: {
-                        value: upiId,
-                    }
-                })
-            )
-            getRef('select_upi_id').parentNode.classList.remove('hide')
+            getRef('select_topup_upi_id').append(render.savedUpiIdOption(upiId));
+            getRef('select_topup_upi_id').parentNode.classList.remove('hide')
+            getRef('select_withdraw_upi_id').append(render.savedUpiIdOption(upiId));
+            getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
         }
         hidePopup();
     }).catch(error => {
@@ -352,10 +352,11 @@ cashierUI.completeRequest = function (reqID) {
 }
 
 function completeCashToTokenRequest(request) {
-    const { message: { upi_txid, amount }, vectorClock, senderID } = request;
+    const { message: { upi_txid, amount, upiID }, vectorClock, senderID } = request;
     Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
         getRef('top_up_amount').textContent = formatAmount(amount);
         getRef('top_up_txid').value = upi_txid;
+        getRef('top_up_upi_id').value = upiID;
         showPopup('confirm_topup_popup');
     }).catch(error => {
         notify(error, 'error');
@@ -413,12 +414,13 @@ function declineTopUp() {
     }
     if (reason.trim() === '')
         return notify('Please specify a reason', 'error');
+    buttonLoader('decline_button', true);
     Cashier.rejectRequest(floGlobals.cashierProcessingRequest, reason).then(result => {
         console.log(result);
         console.info('Rejected cash-to-token request:', vectorClock);
-        notify('Request top-up request', 'success');
+        notify('Rejected top-up request', 'success');
         hidePopup()
-    }).catch(error => console.error(error))
+    }).catch(error => console.error(error)).finally(() => buttonLoader('decline_button', false));
 }
 
 
@@ -605,6 +607,14 @@ const render = {
                             `
         })
     },
+    savedUpiIdOption(upiId) {
+        return createElement('sm-option', {
+            textContent: upiId,
+            attributes: {
+                value: upiId,
+            }
+        })
+    },
     paymentsHistory() {
         let paymentTransactions = []
         if (paymentsHistoryLoader)
@@ -676,14 +686,14 @@ async function refreshBalance(button) {
         buttonLoader(button, true)
     floTokenAPI.getBalance(myFloID).then((balance = 0) => {
         const [beforeDecimal, afterDecimal] = formatAmount(balance).split('₹')[1].split('.')
-        getRef('rupee_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
+        renderElem(getRef('rupee_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
         if (button)
             buttonLoader(button, false)
     })
     try {
         const [floBal, floRates] = await Promise.all([floBlockchainAPI.getBalance(myFloID), floExchangeAPI.getRates('FLO')])
         const [beforeDecimal, afterDecimal = '00'] = String(floBal).split('.')
-        getRef('flo_balance').innerHTML = `<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`
+        renderElem(getRef('flo_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
         if (floBal < floGlobals.settings.user_flo_threshold) {
             getRef('low_user_flo_warning').textContent = `Your FLO balance is low. You will receive ${floGlobals.settings.send_user_flo} FLO of worth ₹${parseFloat(floRates.rate.toFixed(2))} deducted from top-up amount.`;
             getRef('low_user_flo_warning').classList.remove('hide');
@@ -960,16 +970,16 @@ function applyPaymentsFilters() {
     const filter = getRef('payments_type_filter').querySelector('input:checked').value;
     getRef('history_applied_filters').innerHTML = ``;
     if (filter !== 'all') {
-        getRef('history_applied_filters').append(
-            createElement('button', {
-                attributes: { 'data-filter': 'type', 'data-value': filter, title: 'Remove filter' },
-                className: 'applied-filter',
-                innerHTML: `
-                    <span class="applied-filter__title">${filter}</span>
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-                `
-            })
-        );
+        renderElem(getRef('history_applied_filters'),
+            html`
+            <button class="applied-filter" data-filter="type" data-value=${filter} title="Remove filter">
+                <span class="applied-filter__title">${filter}</span>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none"  />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"  />
+                    </svg>
+            </button>`);
     }
     toggleFilters()
     render.paymentsHistory()

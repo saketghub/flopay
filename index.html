@@ -813,7 +813,23 @@
                         </g>
                     </svg>
                 </sm-input>
-                <strong id="low_user_flo_warning" class="warning"></strong>
+                <div class="grid gap-1">
+                    <div class="grid gap-0-5 hide">
+                        <p>
+                            <b>Select UPI ID you'll send money from</b>
+                        </p>
+                        <sm-select id="select_topup_upi_id" style="z-index: 2;"></sm-select>
+                    </div>
+                    <button class="button button--small justify-self-start" onclick="showPopup('save_upi_popup')">
+                        <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                        </svg>
+                        Add UPI ID
+                    </button>
+                </div>
+                <strong id="low_user_flo_warning" class="hide warning"></strong>
                 <button class="button button--primary cta" onclick="continueWalletTopup()"
                     type="submit">Continue</button>
             </sm-form>
@@ -822,12 +838,24 @@
                     <h4>Confirm</h4>
                     <p id="topup_wallet__details"></p>
                 </div>
-                <div class="grid gap-1 justify-center text-center">
-                    <div class="grid gap-0-5">
-                        <p>Scan QR code</p>
+                <div class="grid gap-1">
+                    <details>
+                        <summary class="interact">
+                            <b style="font-size: 0.9rem;">Show QR code to scan</b>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0V0z" fill="none" />
+                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+                            </svg>
+                        </summary>
                         <div id="topup_wallet__qr_code"></div>
+                    </details>
+                    <div class="grid gap-0-5">
+                        <p>
+                            or send money to UPI ID below
+                        </p>
+                        <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
                     </div>
-                    <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
                 </div>
                 <p>
                     After sending money, please enter the transaction ID of completed transaction. <br>
@@ -906,7 +934,7 @@
                         <p>
                             <b>Select UPI ID to receive money</b>
                         </p>
-                        <sm-select id="select_upi_id" style="z-index: 2;"></sm-select>
+                        <sm-select id="select_withdraw_upi_id" style="z-index: 2;"></sm-select>
                     </div>
                     <button class="button button--small justify-self-start" onclick="showPopup('save_upi_popup')">
                         <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
@@ -1059,6 +1087,14 @@
                         Check if you have received UPI payment
                     </p>
                     <b id="top_up_amount" style="font-size: 1.5rem;"></b>
+
+                </div>
+                <div class="grid">
+                    <div class="label">UPI ID</div>
+                    <sm-copy id="top_up_upi_id"></sm-copy>
+                </div>
+                <div class="grid">
+                    <div class="label">Transaction ID</div>
                     <sm-copy id="top_up_txid"></sm-copy>
                 </div>
                 <div class="flex justify-right gap-0-3">
@@ -1081,7 +1117,9 @@
                     <p>Describe reason</p>
                     <sm-textarea id="top_up__specified_reason" rows="4"></sm-textarea>
                 </div>
-                <button class="button justify-right" style="margin-top: auto;" onclick="declineTopUp()">Decline</button>
+                <div class="multi-state-button" style="margin-top: auto;">
+                    <button id="decline_button" class="button justify-right" onclick="declineTopUp()">Decline</button>
+                </div>
             </div>
         </div>
     </sm-popup>
@@ -1198,7 +1236,7 @@
             </button>
         </li>
     </template>
-
+    <script src="//unpkg.com/uhtml"></script>
     <script src="scripts/components.js"></script>
     <script src="scripts/std_ui.js"></script>
     <script src="scripts/lib.js"></script>

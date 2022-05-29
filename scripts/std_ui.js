@@ -1,5 +1,6 @@
 /*jshint esversion: 9 */
 // Global variables
+const { html, render: renderElem } = uhtml;
 const domRefs = {};
 const currentYear = new Date().getFullYear();
 let paymentsHistoryLoader = null;
@@ -72,7 +73,7 @@ const debounce = (callback, wait) => {
     };
 }
 
-let zIndex = 100
+let zIndex = 50
 // function required for popups or modals to appear
 function showPopup(popupId, pinned) {
     zIndex++
@@ -99,22 +100,20 @@ document.addEventListener('popupopened', async e => {
             getRef('saved_ids_picker_list').append(frag)
             getRef('search_saved_ids_picker').focusIn()
             break;
+        case 'topup_wallet_popup':
         case 'withdraw_wallet_popup':
             let hasSavedIds = false
             for (const upiId in floGlobals.savedUserData.upiIds) {
-                frag.append(createElement('sm-option', {
-                    textContent: upiId,
-                    attributes: {
-                        value: upiId,
-                    }
-                }))
+                frag.append(render.savedUpiIdOption(upiId))
                 hasSavedIds = true
             }
             if (hasSavedIds) {
-                getRef('select_upi_id').parentNode.classList.remove('hide')
-                getRef('select_upi_id').append(frag)
+                const clone = frag.cloneNode(true)
+                getRef('select_topup_upi_id').append(frag)
+                getRef('select_topup_upi_id').parentNode.classList.remove('hide')
+                getRef('select_withdraw_upi_id').append(clone)
+                getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
             }
-            showChildElement('withdraw_wallet_process', 0)
             break;
     }
 })
@@ -126,11 +125,14 @@ document.addEventListener('popupclosed', e => {
             getRef('search_saved_ids_picker').value = ''
             break;
         case 'topup_wallet_popup':
+            getRef('select_topup_upi_id').parentNode.classList.add('hide')
+            getRef('select_topup_upi_id').innerHTML = ''
             showChildElement('topup_wallet_process', 0)
             break;
         case 'withdraw_wallet_popup':
-            getRef('select_upi_id').parentNode.classList.add('hide')
-            getRef('select_upi_id').innerHTML = ''
+            getRef('select_withdraw_upi_id').parentNode.classList.add('hide')
+            getRef('select_withdraw_upi_id').innerHTML = ''
+            showChildElement('withdraw_wallet_process', 0)
             break;
         case 'transfer_to_exchange_popup':
             showChildElement('exchange_transfer_process', 0);
