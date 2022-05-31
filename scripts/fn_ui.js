@@ -73,7 +73,9 @@ function depositMoneyToWallet() {
         console.error(error)
         getRef('topup_failed_reason').textContent = error;
         showChildElement('topup_wallet_process', 3);
-    })
+    }).finally(() => {
+        buttonLoader('topup_wallet_button', false);
+    });
 }
 
 function withdrawMoneyFromWallet() {
@@ -632,7 +634,7 @@ const render = {
                 let propToCheck = filter === 'sent' ? 'sender' : 'receiver';
                 paymentTransactions = paymentTransactions.filter(v => v[propToCheck] === myFloID)
             }
-            // solve issue at backend
+            // solve sorting issue at backend
             paymentTransactions.sort((a, b) => b.time - a.time);
             if (paymentsHistoryLoader) {
                 paymentsHistoryLoader.update(paymentTransactions);
