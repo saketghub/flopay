@@ -229,7 +229,7 @@
                             </svg>
                             Request
                         </button>
-                        <button class="wallet-action cashier-option" onclick="showPopup('topup_wallet_popup')">
+                        <button class="wallet-action cashier-option" onclick="openPopup('topup_wallet_popup')">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                                 width="24px" fill="#000000">
                                 <path d="M0 0h24v24H0z" fill="none" />
@@ -238,7 +238,7 @@
                             </svg>
                             Top-up
                         </button>
-                        <button class="wallet-action cashier-option" onclick="showPopup('withdraw_wallet_popup')">
+                        <button class="wallet-action cashier-option" onclick="openPopup('withdraw_wallet_popup')">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                                 height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                                 <g>
@@ -261,7 +261,7 @@
                 <div class="grid gap-0-5">
                     <h4>More from RanchiMall</h4>
                     <button class="integrated-action-button align-center"
-                        onclick="showPopup('transfer_to_exchange_popup')">
+                        onclick="openPopup('transfer_to_exchange_popup')">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
                             <path d="M0 0h24v24H0z" fill="none" />
@@ -307,7 +307,7 @@
                     <h4>Payments</h4>
                     <h1>history</h1>
                 </div>
-                <button class="button button--small align-self-end" onclick="showPopup('payments_filters_popup')">
+                <button class="button button--small align-self-end" onclick="openPopup('payments_filters_popup')">
                     <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
                         viewBox="0 0 24 24" width="24px" fill="#000000">
                         <path d="M0 0h24v24H0z" fill="none" />
@@ -415,7 +415,7 @@
                     <p>No Saved FLO ID</p>
                 </div>
             </section>
-            <button id="add_address_button" class="button interact fab" onclick="showPopup('add_address_popup')">
+            <button id="add_address_button" class="button interact fab" onclick="openPopup('add_address_popup')">
                 <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                     width="24px" fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -509,7 +509,7 @@
                     <div class="empty-state">
                         <p>Add your UPI IDs for easier access during transactions.</p>
                     </div>
-                    <button class="button justify-self-start" onclick="showPopup('save_upi_popup')">
+                    <button class="button justify-self-start" onclick="openPopup('save_upi_popup')">
                         <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
                             viewBox="0 0 24 24" width="24px" fill="#000000">
                             <path d="M0 0h24v24H0V0z" fill="none" />
@@ -524,7 +524,7 @@
                         <sm-copy id="my_upi_id"></sm-copy>
                     </div>
                     <button id="change_upi_button" class="button button--small justify-self-start"
-                        onclick="showPopup('change_cashier_upi_popup')">Change
+                        onclick="openPopup('change_cashier_upi_popup')">Change
                         UPI</button>
                 </div>
             </section>
@@ -600,7 +600,7 @@
     <!-- Popups -->
     <sm-popup id="add_address_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -624,7 +624,7 @@
     <sm-popup id="edit_saved_popup">
         <header slot="header" class="popup__header">
             <div class="flex align-center">
-                <button class="popup__header__close" onclick="hidePopup()">
+                <button class="popup__header__close">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -657,7 +657,7 @@
     </sm-popup>
     <sm-popup id="token_transfer_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -671,7 +671,7 @@
             <sm-form>
                 <sm-input id="token_transfer__receiver" placeholder="FLO ID" error-text="Invalid FLO ID" data-flo-id
                     animate required autofocus>
-                    <button slot="right" class="icon-only" onclick="showPopup('saved_ids_popup')"
+                    <button slot="right" class="icon-only" onclick="openPopup('saved_ids_popup')"
                         title="Select from saved IDs">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
@@ -707,7 +707,7 @@
     <sm-popup id="saved_ids_popup">
         <header slot="header" class="popup__header">
             <div class="grid gap-1">
-                <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                <button class="popup__header__close justify-self-start">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -729,7 +729,7 @@
     <sm-popup id="payments_filters_popup">
         <header slot="header" class="popup__header">
             <div class="grid gap-1">
-                <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                <button class="popup__header__close justify-self-start">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -783,7 +783,7 @@
     </sm-popup>
     <sm-popup id="topup_wallet_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -813,22 +813,6 @@
                         </g>
                     </svg>
                 </sm-input>
-                <!-- <div class="grid gap-1">
-                    <div class="grid gap-0-5 hide">
-                        <p>
-                            <b>Select UPI ID you'll send money from</b>
-                        </p>
-                        <sm-select id="select_topup_upi_id" style="z-index: 2;"></sm-select>
-                    </div>
-                    <button class="button button--small justify-self-start" onclick="showPopup('save_upi_popup')">
-                        <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
-                            viewBox="0 0 24 24" width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0V0z" fill="none" />
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                        </svg>
-                        Add UPI ID
-                    </button>
-                </div> -->
                 <strong id="low_user_flo_warning" class="hide warning"></strong>
                 <button class="button button--primary cta" onclick="continueWalletTopup()"
                     type="submit">Continue</button>
@@ -927,7 +911,7 @@
     </sm-popup>
     <sm-popup id="withdraw_wallet_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -964,7 +948,7 @@
                         </p>
                         <sm-select id="select_withdraw_upi_id" style="z-index: 2;"></sm-select>
                     </div>
-                    <button class="button button--small justify-self-start" onclick="showPopup('save_upi_popup')">
+                    <button class="button button--small justify-self-start" onclick="openPopup('save_upi_popup')">
                         <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
                             viewBox="0 0 24 24" width="24px" fill="#000000">
                             <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1010,7 +994,7 @@
     </sm-popup>
     <sm-popup id="save_upi_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1028,7 +1012,7 @@
     </sm-popup>
     <sm-popup id="change_cashier_upi_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1048,7 +1032,7 @@
     </sm-popup>
     <sm-popup id="transfer_to_exchange_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1098,7 +1082,7 @@
     <!-- Cashier popups -->
     <sm-popup id="confirm_topup_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />

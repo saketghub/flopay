@@ -75,7 +75,7 @@ const debounce = (callback, wait) => {
 
 let zIndex = 50
 // function required for popups or modals to appear
-function showPopup(popupId, pinned) {
+function openPopup(popupId, pinned) {
     zIndex++
     getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
     getRef(popupId).show({ pinned })
@@ -83,10 +83,17 @@ function showPopup(popupId, pinned) {
 }
 
 // hides the popup or modal
-function hidePopup() {
+function closePopup() {
     if (popupStack.peek() === undefined)
         return;
     popupStack.peek().popup.hide()
+}
+function popupState(show = false, id) {
+    if (show) {
+        openPopup(id);
+    } else {
+        closePopup();
+    }
 }
 
 document.addEventListener('popupopened', async e => {
@@ -147,7 +154,7 @@ document.addEventListener('popupclosed', e => {
 const getConfirmation = (title, options = {}) => {
     return new Promise(resolve => {
         const { message = '', cancelText = 'Cancel', confirmText = 'OK' } = options
-        showPopup('confirmation_popup', true)
+        openPopup('confirmation_popup', true)
         getRef('confirm_title').innerText = title;
         getRef('confirm_message').innerText = message;
         let cancelButton = getRef('confirmation_popup').children[2].children[0],
@@ -155,11 +162,11 @@ const getConfirmation = (title, options = {}) => {
         submitButton.textContent = confirmText
         cancelButton.textContent = cancelText
         submitButton.onclick = () => {
-            hidePopup()
+            closePopup()
             resolve(true);
         }
         cancelButton.onclick = () => {
-            hidePopup()
+            closePopup()
             resolve(false);
         }
     })
@@ -167,7 +174,7 @@ const getConfirmation = (title, options = {}) => {
 // displays a popup for asking user input. Use this instead of JS prompt
 function getPromptInput(title, message = '', options = {}) {
     let { placeholder = '', isPassword = false, cancelText = 'Cancel', confirmText = 'OK' } = options
-    showPopup('prompt_popup', true)
+    openPopup('prompt_popup', true)
     getRef('prompt_title').innerText = title;
     getRef('prompt_message').innerText = message;
     let buttons = getRef('prompt_popup').querySelectorAll("sm-button");
@@ -181,12 +188,12 @@ function getPromptInput(title, message = '', options = {}) {
     buttons[1].textContent = confirmText;
     return new Promise((resolve, reject) => {
         buttons[0].onclick = () => {
-            hidePopup()
+            closePopup()
             return (null);
         }
         buttons[1].onclick = () => {
             const value = getRef('prompt_input').value;
-            hidePopup()
+            closePopup()
             resolve(value)
         }
     })
@@ -261,7 +268,7 @@ window.addEventListener("load", () => {
     document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
     document.addEventListener('keyup', (e) => {
         if (e.key === 'Escape') {
-            hidePopup()
+            closePopup()
         }
     })
     document.addEventListener('copy', () => {
@@ -272,7 +279,11 @@ window.addEventListener("load", () => {
             createRipple(e, e.target.closest("button, sm-button, .interact"));
         }
     });
-
+    document.querySelectorAll('.popup__header__close, .close-popup-on-click').forEach(elem => {
+        elem.addEventListener('click', () => {
+            closePopup()
+        })
+    })
 });
 function createRipple(event, target) {
     const circle = document.createElement("span");
@@ -471,14 +482,18 @@ async function showPage(targetPage, options = {}) {
                         } else if (upi_txid) {
                             getRef('transaction__note').textContent = `UPI Transaction ID: ${upi_txid}`
                         }
+                        getRef('transaction__note').classList.remove('hide')
                     } else if (status === 'REJECTED') {
                         const reason = cashierRejectionErrors.hasOwnProperty(note.split(':')[1]) ? cashierRejectionErrors[note.split(':')[1]] : note.split(':')[1]
                         getRef('transaction__note').innerHTML = `
                         <svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
                         ${reason}
                         `
+                        getRef('transaction__note').classList.remove('hide')
+                    } else {
+                        getRef('transaction__note').classList.add('hide')
+                        getRef('transaction__note').textContent = ''
                     }
-                    getRef('transaction__note').classList.remove('hide')
 
                 } else {
                     if (status === 'PENDING') {

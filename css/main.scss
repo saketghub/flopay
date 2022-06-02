@@ -244,26 +244,28 @@ ol {
         content: "";
         position: absolute;
         width: 0.1rem;
-        height: calc(100% - 1.5rem);
+        height: calc(100% - 2.2rem);
         background: var(--accent-color);
-        margin-left: 0.6rem;
-        margin-top: 1.5rem;
+        margin-left: 0.7rem;
+        margin-top: 2rem;
       }
     }
   }
   li::before {
     content: counter(item);
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     font-size: 0.8rem;
     font-weight: 500;
     margin-top: 0.15rem;
-    padding: 0.4rem;
     margin-right: 1rem;
-    aspect-ratio: 1/1;
+    line-height: 1;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 100%;
+    flex-shrink: 0;
     color: rgba(var(--text-color), 0.8);
     background: rgba(var(--text-color), 0.1);
   }
