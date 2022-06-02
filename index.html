@@ -326,7 +326,7 @@
             </div>
         </section>
         <section id="wallet" class="inner-page hide">
-            <div class="flex sticky top-0" style="background-color: rgba(var(--foreground-color),1);">
+            <div class="flex sticky top-0" style="background-color: rgba(var(--foreground-color),1); z-index: 1;">
                 <a href="#/home" class="button icon-only margin-right-0-5">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
@@ -813,7 +813,7 @@
                         </g>
                     </svg>
                 </sm-input>
-                <div class="grid gap-1">
+                <!-- <div class="grid gap-1">
                     <div class="grid gap-0-5 hide">
                         <p>
                             <b>Select UPI ID you'll send money from</b>
@@ -828,42 +828,70 @@
                         </svg>
                         Add UPI ID
                     </button>
-                </div>
+                </div> -->
                 <strong id="low_user_flo_warning" class="hide warning"></strong>
                 <button class="button button--primary cta" onclick="continueWalletTopup()"
                     type="submit">Continue</button>
             </sm-form>
             <sm-form id="confirm_topup_form" class="hide">
-                <div class="grid gap-0-5">
-                    <h4>Confirm</h4>
-                    <p id="topup_wallet__details"></p>
-                </div>
-                <div class="grid gap-1">
-                    <details>
-                        <summary class="interact">
-                            <b style="font-size: 0.9rem;">Show QR code to scan</b>
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0V0z" fill="none" />
-                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
-                            </svg>
-                        </summary>
-                        <div id="topup_wallet__qr_code"></div>
-                    </details>
-                    <div class="grid gap-0-5">
+                <h4>Transfer money</h4>
+                <ol type="1">
+                    <li>
                         <p>
-                            or send money to UPI ID below
+                            Open your<strong> preferred UPI app </strong>
                         </p>
-                        <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
-                    </div>
-                </div>
-                <p>
-                    After sending money, please enter the transaction ID of completed transaction. <br>
-                    * <strong>PhonePe</strong> users please enter <strong>UTR ID</strong> instead of transaction ID
-                </p>
-                <sm-input id="topup_wallet__txid" minlength="12" maxlength="12"
-                    error-text="Please enter UPI transaction ID of money you sent to continue."
-                    placeholder="UPI transaction ID" autofocus animate required></sm-input>
+                    </li>
+                    <li>
+                        <div class="grid gap-1">
+                            <div class="grid gap-0-5">
+                                <p>
+                                    Enter <strong> UPI ID </strong>below as recipient
+                                </p>
+                                <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
+                            </div>
+                            <details>
+                                <summary class="interact">
+                                    <b style="font-size: 0.9rem;">Or get QR code to scan</b>
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                                        <path d="M0 0h24v24H0V0z" fill="none" />
+                                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+                                    </svg>
+                                </summary>
+                                <div class="grid gap-0-5">
+                                    <div id="topup_wallet__qr_code"></div>
+                                    <p>
+                                        <strong>
+                                            *If you are paying by scanning the QR code, amount and remark/message will
+                                            be
+                                            added automatically.</strong>
+                                    </p>
+                                </div>
+                            </details>
+                        </div>
+                    </li>
+                    <li>
+                        <p id="topup_wallet__details"></p>
+                    </li>
+                    <li>
+                        <div class="grid gap-0-5">
+                            <p>
+                                Enter <strong>code</strong> below in the <strong> message/remark </strong> field
+                            </p>
+                            <sm-copy id="topup_wallet__code" style="font-weight: 700;"></sm-copy>
+                            <p>
+                                <strong>*This is very important step. If you skip or enter wrong code, transaction can't
+                                    be
+                                    verified.</strong>
+                            </p>
+                        </div>
+                    </li>
+                    <li>
+                        <p>
+                            After sending money, press <b>Confirm</b>.
+                        </p>
+                    </li>
+                </ol>
                 <div class="multi-state-button">
                     <button id="topup_wallet_button" class="button button--primary cta" onclick="depositMoneyToWallet()"
                         type="submit">Confirm</button>
@@ -947,7 +975,7 @@
                 </div>
                 <div class="multi-state-button">
                     <button id="withdraw_rupee_button" class="button button--primary cta"
-                        onclick="withdrawMoneyFromWallet()" type="submit">Transfer</button>
+                        onclick="withdrawMoneyFromWallet()" type="submit">Withdraw</button>
                 </div>
             </sm-form>
             <div class="grid gap-0-5 hide justify-center text-center">
@@ -1089,14 +1117,18 @@
                     <b id="top_up_amount" style="font-size: 1.5rem;"></b>
 
                 </div>
-                <div class="grid">
+                <!-- <div class="grid">
                     <div class="label">UPI ID</div>
                     <sm-copy id="top_up_upi_id"></sm-copy>
-                </div>
+                </div> -->
                 <div class="grid">
+                    <div class="label">Transaction code</div>
+                    <sm-copy id="top_up__code"></sm-copy>
+                </div>
+                <!-- <div class="grid">
                     <div class="label">Transaction ID</div>
                     <sm-copy id="top_up_txid"></sm-copy>
-                </div>
+                </div> -->
                 <div class="flex justify-right gap-0-3">
                     <button class="button" onclick="showChildElement('confirm_topup_wrapper', 1)">Decline</button>
                     <div class="multi-state-button">
@@ -1108,7 +1140,7 @@
                 <div class="grid gap-0-3">
                     <p>Select reason</p>
                     <sm-select id="top_up__reason_selector">
-                        <sm-option value="1001">Invalid transaction ID</sm-option>
+                        <sm-option value="1003">Transaction code mismatch</sm-option>
                         <sm-option value="1002">Amount doesn't match</sm-option>
                         <sm-option value="other">Other</sm-option>
                     </sm-select>

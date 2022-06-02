@@ -107,15 +107,16 @@ User.findCashier = function () {
     }
 }
 
-User.cashToToken = function (cashier, amount, upiTxID, upiID) {
+User.cashToToken = function (cashier, amount, txCode, upiID) {
     return new Promise((resolve, reject) => {
         if (!floGlobals.subAdmins.includes(cashier))
             return reject("Invalid cashier");
         floCloudAPI.sendGeneralData({
             mode: "cash-to-token",
             amount: amount,
-            upi_txid: upiTxID,
-            upiID
+            // upi_txid: upiTxID,
+            upiID,
+            txCode
         }, TYPE_CASHIER_REQUEST, {
             receiverID: cashier
         }).then(result => resolve(result))
@@ -232,7 +233,6 @@ Cashier.updateUPI = function (upi_id) {
             .catch(error => reject(error))
     })
 }
-
 Object.defineProperty(Cashier, 'Requests', {
     get: function () {
         let fk = floCloudAPI.util.filterKey(TYPE_CASHIER_REQUEST, {

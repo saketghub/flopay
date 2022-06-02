@@ -41,31 +41,34 @@ function continueWalletTopup() {
     let cashier = User.findCashier();
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
-    const upiId = getRef('select_topup_upi_id').value;
-    if (!upiId)
-        return notify("Please add the UPI ID which you'll use to send the money", 'error');
+    // const upiId = getRef('select_topup_upi_id').value;
+    const txCode =  randomString(6);
+    getRef('topup_wallet__code').value = txCode;
+    // if (!upiId)
+    //     return notify("Please add the UPI ID which you'll use to send the money", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    renderElem(getRef('topup_wallet__details'), html`Send <b>${formatAmount(amount)}</b> from your UPI ID <b>${upiId}</b>`);
+    renderElem(getRef('topup_wallet__details'), html`Enter <b>${formatAmount(amount)}</b> as amount`);
     getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
     getRef('topup_wallet__qr_code').innerHTML = ''
     getRef('topup_wallet__qr_code').append(new QRCode({
-        msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}`,
+        msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${txCode}`,
         ecl: 'H'
     }))
     showChildElement('topup_wallet_process', 1)
-    getRef('topup_wallet__txid').focusIn();
+    // getRef('topup_wallet__txid').focusIn();
 }
 function depositMoneyToWallet() {
     let cashier = User.findCashier();
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    let upiTxID = getRef('topup_wallet__txid').value.trim();
-    const upiId = getRef('select_topup_upi_id').value;
-    if (upiTxID === '')
-        return notify("Please enter UPI transaction ID", 'error');
+    // let upiTxID = getRef('topup_wallet__txid').value.trim();
+    const txCode = getRef('topup_wallet__code').value;
+    // const upiId = getRef('select_topup_upi_id').value;
+    // if (upiTxID === '')
+    //     return notify("Please enter UPI transaction ID", 'error');
     buttonLoader('topup_wallet_button', true);
-    User.cashToToken(cashier, amount, upiTxID, upiId).then(result => {
+    User.cashToToken(cashier, amount, txCode/* , upiId */).then(result => {
         console.log(result);
         showChildElement('topup_wallet_process', 2);
         refreshBalance()
@@ -153,8 +156,8 @@ function saveUpiId() {
         if (pagesData.lastPage === 'settings') {
             getRef('saved_upi_ids_list').append(render.savedUpiId(upiId));
         } else if (pagesData.lastPage === 'home') {
-            getRef('select_topup_upi_id').append(render.savedUpiIdOption(upiId));
-            getRef('select_topup_upi_id').parentNode.classList.remove('hide')
+            // getRef('select_topup_upi_id').append(render.savedUpiIdOption(upiId));
+            // getRef('select_topup_upi_id').parentNode.classList.remove('hide')
             getRef('select_withdraw_upi_id').append(render.savedUpiIdOption(upiId));
             getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
         }
@@ -354,20 +357,24 @@ cashierUI.completeRequest = function (reqID) {
 }
 
 function completeCashToTokenRequest(request) {
-    const { message: { upi_txid, amount, upiID }, vectorClock, senderID } = request;
-    Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
+    const { message: { upi_txid, amount, upiID, txCode }, vectorClock } = request;
         getRef('top_up_amount').textContent = formatAmount(amount);
-        getRef('top_up_txid').value = upi_txid;
-        getRef('top_up_upi_id').value = upiID;
+        getRef('top_up__code').value = txCode;
         showPopup('confirm_topup_popup');
-    }).catch(error => {
-        notify(error, 'error');
-        if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
-            Cashier.rejectRequest(request, error[1]).then(result => {
-                console.log(result);
-                console.info('Rejected cash-to-token request:', vectorClock);
-            }).catch(error => console.error(error))
-    })
+    // Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
+    //     getRef('top_up_amount').textContent = formatAmount(amount);
+    //     // getRef('top_up_txid').value = upi_txid;
+    //     // getRef('top_up_upi_id').value = upiID;
+    //     getRef('top_up__code').value = txCode;
+    //     showPopup('confirm_topup_popup');
+    // }).catch(error => {
+    //     notify(Array.isArray(error) ? error[1]: error, 'error');
+    //     if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
+    //         Cashier.rejectRequest(request, error[1]).then(result => {
+    //             console.log(result);
+    //             console.info('Rejected cash-to-token request:', vectorClock);
+    //         }).catch(error => console.error(error))
+    // })
 }
 
 function confirmTopUp(button) {
@@ -485,7 +492,8 @@ function getStatusIcon(status) {
 
 const cashierRejectionErrors = {
     1001: `Your request was reject because of wrong transaction ID. If you have sent money, it'll be returned within 24 hrs.`,
-    1002: `Amount requested and amount sent via UPI doesn't match. your transferred money will be returned within 24hrs.`
+    1002: `Amount requested and amount sent via UPI doesn't match. your transferred money will be returned within 24hrs.`,
+    1003: `Your request was rejected because of wrong or missing remark/message code. If you have sent money, it'll be returned within 24 hrs.`,
 }
 
 const render = {

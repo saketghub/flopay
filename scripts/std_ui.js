@@ -109,8 +109,8 @@ document.addEventListener('popupopened', async e => {
             }
             if (hasSavedIds) {
                 const clone = frag.cloneNode(true)
-                getRef('select_topup_upi_id').append(frag)
-                getRef('select_topup_upi_id').parentNode.classList.remove('hide')
+                // getRef('select_topup_upi_id').append(frag)
+                // getRef('select_topup_upi_id').parentNode.classList.remove('hide')
                 getRef('select_withdraw_upi_id').append(clone)
                 getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
             }
@@ -125,8 +125,8 @@ document.addEventListener('popupclosed', e => {
             getRef('search_saved_ids_picker').value = ''
             break;
         case 'topup_wallet_popup':
-            getRef('select_topup_upi_id').parentNode.classList.add('hide')
-            getRef('select_topup_upi_id').innerHTML = ''
+            // getRef('select_topup_upi_id').parentNode.classList.add('hide')
+            // getRef('select_topup_upi_id').innerHTML = ''
             showChildElement('topup_wallet_process', 0)
             break;
         case 'withdraw_wallet_popup':
@@ -454,7 +454,7 @@ async function showPage(targetPage, options = {}) {
             } else if (params.type === 'wallet') {
                 transactionDetails = User.cashierRequests[params.transactionId]
                 console.log(transactionDetails)
-                const { message: { amount, mode, upi_id, upi_txid, token_txid }, note, tag } = transactionDetails
+                const { message: { amount, mode, upi_id, upi_txid, token_txid, txCode }, note, tag } = transactionDetails
                 status = tag ? tag : (note ? 'REJECTED' : "PENDING");
                 getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
                 if (status === 'COMPLETED') {
@@ -466,9 +466,13 @@ async function showPage(targetPage, options = {}) {
                 }
                 if (mode === 'cash-to-token') {
                     if (status === 'COMPLETED') {
-                        getRef('transaction__note').textContent = `UPI transaction ID: ${upi_txid}`
+                        if (txCode) {
+                            getRef('transaction__note').textContent = `Transaction code: ${txCode}`
+                        } else if (upi_txid) {
+                            getRef('transaction__note').textContent = `UPI Transaction ID: ${upi_txid}`
+                        }
                     } else if (status === 'REJECTED') {
-                        const reason = ['1001', '1002'].includes(note.split(':')[1]) ? cashierRejectionErrors[note.split(':')[1]] : note.split(':')[1]
+                        const reason = cashierRejectionErrors.hasOwnProperty(note.split(':')[1]) ? cashierRejectionErrors[note.split(':')[1]] : note.split(':')[1]
                         getRef('transaction__note').innerHTML = `
                         <svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
                         ${reason}
@@ -840,3 +844,15 @@ class SmState extends HTMLElement {
     }
 }
 window.customElements.define('r-s', SmState);
+
+
+// generate random string with numbers and capital and small letters
+function randomString(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
