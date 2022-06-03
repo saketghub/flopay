@@ -193,7 +193,8 @@
                         <h1 class="h1" id="flo_balance"></h1>
                     </div>
                 </div>
-                <a class="integrated-action-button flex align-center user-element" href="#/wallet">
+                <a id="wallet_history_button" class="integrated-action-button flex align-center user-element"
+                    href="#/wallet">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -229,7 +230,7 @@
                             </svg>
                             Request
                         </button>
-                        <button class="wallet-action cashier-option" onclick="openPopup('topup_wallet_popup')">
+                        <button class="wallet-action cashier-option" onclick="openPopup('topup_wallet_popup', true)">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                                 width="24px" fill="#000000">
                                 <path d="M0 0h24v24H0z" fill="none" />

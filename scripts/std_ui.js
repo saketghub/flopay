@@ -88,15 +88,9 @@ function closePopup() {
         return;
     popupStack.peek().popup.hide()
 }
-function popupState(show = false, id) {
-    if (show) {
-        openPopup(id);
-    } else {
-        closePopup();
-    }
-}
 
 document.addEventListener('popupopened', async e => {
+    getRef('main_card').setAttribute('inert', '')
     const frag = document.createDocumentFragment()
     switch (e.target.id) {
         case 'saved_ids_popup':
@@ -116,8 +110,6 @@ document.addEventListener('popupopened', async e => {
             }
             if (hasSavedIds) {
                 const clone = frag.cloneNode(true)
-                // getRef('select_topup_upi_id').append(frag)
-                // getRef('select_topup_upi_id').parentNode.classList.remove('hide')
                 getRef('select_withdraw_upi_id').append(clone)
                 getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
             }
@@ -132,8 +124,6 @@ document.addEventListener('popupclosed', e => {
             getRef('search_saved_ids_picker').value = ''
             break;
         case 'topup_wallet_popup':
-            // getRef('select_topup_upi_id').parentNode.classList.add('hide')
-            // getRef('select_topup_upi_id').innerHTML = ''
             showChildElement('topup_wallet_process', 0)
             break;
         case 'withdraw_wallet_popup':
@@ -147,6 +137,9 @@ document.addEventListener('popupclosed', e => {
         case 'confirm_topup_popup':
             showChildElement('confirm_topup_wrapper', 0);
             break;
+    }
+    if (popupStack.items.length === 0) {
+        getRef('main_card').removeAttribute('inert')
     }
 })
 
@@ -415,6 +408,7 @@ async function showPage(targetPage, options = {}) {
                 getRef('pending_wallet_transactions').append(pendingWalletTransactions)
             }
             walletHistoryLoader.init()
+            removeNotificationBadge('wallet_history_button')
             break;
         case 'requests':
             const paymentRequests = [];
