@@ -427,7 +427,8 @@ function confirmTopUp(button) {
         }
         User.sendToken(senderID, tokenAmt, 'for cash-to-token', { sendAmt: floAmt }).then(txid => {
             console.warn(`${amount} (${tokenAmt}|${floAmt}) cash-to-token for ${senderID}`, txid);
-            Cashier.finishRequest(floGlobals.cashierProcessingRequest, txid).then(result => {
+            let note = txid + (tokenAmt === amount ? '' : `#${tokenAmt}`);
+            Cashier.finishRequest(floGlobals.cashierProcessingRequest, note).then(result => {
                 console.log(result);
                 console.info('Completed cash-to-token request:', vectorClock);
                 notify("Completed request", 'success');
