@@ -10,6 +10,7 @@
 
 const relativeTime = new RelativeTime({ style: 'narrow' });
 
+// use floDapps.storeContact() to store contacts that can be used by other apps on same device 
 function syncUserData(obsName, data) {
     const dataToSend = Crypto.AES.encrypt(JSON.stringify(data), myPrivKey);
     return floCloudAPI.sendApplicationData(dataToSend, obsName, { receiverID: myFloID });
@@ -35,6 +36,7 @@ async function organizeSyncedData(obsName) {
         return true;
     }
 }
+
 
 const userUI = {};
 function continueWalletTopup() {
@@ -197,7 +199,7 @@ userUI.renderCashierRequests = function (requests, error = null) {
     for (let transactionID in requests) {
         const { message: {amount,mode}, note, tag } = requests[transactionID];
         let status = tag ? 'completed' : (note ? 'rejected' : "pending");
-        console.log(requests[transactionID])
+        // console.log(requests[transactionID])
         if (status !== 'pending') {
             processedRequests++;
         }

@@ -1269,14 +1269,13 @@
     <script src="scripts/floExchangeAPI.js"></script>
     <script src="scripts/qrcode.min.js"></script>
     <script id="onLoadStartUp">
-        function onLoadStartUp() {
+        async function onLoadStartUp() {
             showPage('loading')
             console.log("Starting the app! Please Wait!")
             floDapps.setCustomPrivKeyInput(getSignedIn)
             floDapps.setAppObjectStores({ savedIds: {}, savedUserData: {} })
-            floExchangeAPI.init("FMxYC7gYZhouzqtHZukGnPiQ8nvG4CMzXM", "exchange").then(() => {
-                console.log('Exchange API initialized!')
-            })
+            await floExchangeAPI.init("FMxYC7gYZhouzqtHZukGnPiQ8nvG4CMzXM", "exchange")
+            console.log('Exchange API initialized!')
             floDapps.launchStartUp().then(result => {
                 floGlobals.savedIds = {};
                 floGlobals.savedUserData = {
