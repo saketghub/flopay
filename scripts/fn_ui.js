@@ -194,21 +194,35 @@ userUI.renderCashierRequests = function (requests, error = null) {
     else if (typeof requests !== "object" || requests === null)
         return;
     let processedRequests = 0;
-    if (pagesData.lastPage === 'wallet') {
-        for (let transactionID in requests) {
-            const { note, tag } = requests[transactionID];
-            let status = tag ? 'done' : (note ? 'failed' : "pending");
+    for (let transactionID in requests) {
+        const { message: {amount,mode}, note, tag } = requests[transactionID];
+        let status = tag ? 'completed' : (note ? 'rejected' : "pending");
+        console.log(requests[transactionID])
+        if (status !== 'pending') {
+            processedRequests++;
+        }
+        if (pagesData.lastPage === 'wallet') {
             getRef('wallet_history_wrapper').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
             getRef(status !== 'pending' ? 'wallet_history' : 'pending_wallet_transactions').prepend(render.walletRequestCard(requests[transactionID]))
-            if (status === 'done' || status === 'failed') {
-                processedRequests++;
-            }
         }
-    } else {
+        if (floGlobals.loaded&& status !== 'pending') {
+            const { message: {amount,mode}, note, tag } = requests[transactionID];
+            notify(`Your ${mode ==='cash-to-token'? 'top-up': 'withdraw'} request of ${formatAmount(amount)} has been ${status}`, status === 'completed' ? 'success' : 'error', {
+                action: {
+                    label: 'View',
+                    callback: () => {
+                        window.location.hash = `#/wallet`
+                    }
+                }
+            });
+        }
+    } 
+    if(pagesData.lastPage !== 'wallet') {
         if(processedRequests === 0)
-            removeNotificationBadge('wallet_history_button');
-        else
-        addNotificationBadge('wallet_history_button', processedRequests)
+        removeNotificationBadge('wallet_history_button');
+        else {
+            addNotificationBadge('wallet_history_button', processedRequests)
+        }
     }
 };
 
@@ -243,7 +257,6 @@ userUI.renderMoneyRequests = function (requests, error = null) {
         for (let r in requests) {
             if (!requests[r].note) {
                 notify(`You have received payment request from ${getFloIdTitle(requests[r].senderID)}`, '', {
-                    pinned: true,
                     action: {
                         label: 'View',
                         callback: () => {
@@ -516,6 +529,7 @@ const cashierRejectionErrors = {
     1001: `Your request was reject because of wrong transaction ID. If you have sent money, it'll be returned within 24 hrs.`,
     1002: `Amount requested and amount sent via UPI doesn't match. your transferred money will be returned within 24hrs.`,
     1003: `Your request was rejected because of wrong or missing remark/message code. If you have sent money, it'll be returned within 24 hrs.`,
+    1004: `Your request was rejected because specified amount wasn't received by the cashier.`,
 }
 
 const render = {
