@@ -865,3 +865,12 @@ function randomString(length) {
     }
     return result;
 }
+
+document.addEventListener("visibilitychange", handleVisibilityChange, false);
+function handleVisibilityChange() {
+    if (document.visibilityState === "hidden") {
+        // code if page is hidden 
+    } else {
+        startStatusInterval()
+    }
+}

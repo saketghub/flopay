@@ -15,6 +15,7 @@ function syncUserData(obsName, data) {
     const dataToSend = Crypto.AES.encrypt(JSON.stringify(data), myPrivKey);
     return floCloudAPI.sendApplicationData(dataToSend, obsName, { receiverID: myFloID });
 }
+// store user data in separate IDB 
 async function organizeSyncedData(obsName) {
     const fetchedData = await floCloudAPI.requestApplicationData(obsName, { mostRecent: true, senderIDs: [myFloID], receiverID: myFloID });
     if (fetchedData.length && await compactIDB.readData(obsName, 'lastSyncTime') !== fetchedData[0].time) {

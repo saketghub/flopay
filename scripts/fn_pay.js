@@ -184,7 +184,6 @@ function statusReconnect() {
 }
 
 var status_interval_instance = null;
-// add page visibility API to startStatusInterval()
 function startStatusInterval() {
     if (status_interval_instance) {
         clearInterval(status_interval_instance);
