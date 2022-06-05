@@ -45,20 +45,18 @@ function continueWalletTopup() {
     if (!cashier)
         return notify("No cashier online. Please try again in a while.", 'error');
     // const upiId = getRef('select_topup_upi_id').value;
-    floGlobals.txCode =  randomString(6);
-    // getRef('topup_wallet__code').value = txCode;
+    const txCode =  randomString(6);
+    getRef('topup_wallet__code').value = txCode;
     // if (!upiId)
     //     return notify("Please add the UPI ID which you'll use to send the money", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    // renderElem(getRef('topup_wallet__details'), html`Enter <b>${formatAmount(amount)}</b> as amount`);
-    // getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
+    renderElem(getRef('topup_wallet__details'), html`Enter <b>${formatAmount(amount)}</b> as amount`);
+    getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
     getRef('topup_wallet__qr_code').innerHTML = ''
     getRef('topup_wallet__qr_code').append(new QRCode({
-        msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${floGlobals.txCode}`,
+        msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${txCode}`,
         ecl: 'H'
     }))
-    getRef('pay_by_upi').href = `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${floGlobals.txCode}`
-    getRef('pay_by_upi').textContent = `Pay ${formatAmount(amount)} by UPI`;
     showChildElement('topup_wallet_process', 1)
     // getRef('topup_wallet__txid').focusIn();
 }
@@ -68,16 +66,15 @@ function depositMoneyToWallet() {
         return notify("No cashier online. Please try again in a while.", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
     // let upiTxID = getRef('topup_wallet__txid').value.trim();
-    // const txCode = getRef('topup_wallet__code').value;
+    const txCode = getRef('topup_wallet__code').value;
     // const upiId = getRef('select_topup_upi_id').value;
     // if (upiTxID === '')
     //     return notify("Please enter UPI transaction ID", 'error');
     buttonLoader('topup_wallet_button', true);
-    User.cashToToken(cashier, amount, floGlobals.txCode/* , upiId */).then(result => {
+    User.cashToToken(cashier, amount, txCode/* , upiId */).then(result => {
         console.log(result);
         showChildElement('topup_wallet_process', 2);
         refreshBalance()
-        floGlobals.txCode = ''
     }).catch(error => {
         console.error(error)
         getRef('topup_failed_reason').textContent = error;
