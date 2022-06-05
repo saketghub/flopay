@@ -46,12 +46,12 @@ function continueWalletTopup() {
         return notify("No cashier online. Please try again in a while.", 'error');
     // const upiId = getRef('select_topup_upi_id').value;
     const txCode =  randomString(6);
-    getRef('topup_wallet__code').value = txCode;
+    // getRef('topup_wallet__code').value = txCode;
     // if (!upiId)
     //     return notify("Please add the UPI ID which you'll use to send the money", 'error');
     let amount = parseFloat(getRef('request_cashier_amount').value.trim());
-    renderElem(getRef('topup_wallet__details'), html`Enter <b>${formatAmount(amount)}</b> as amount`);
-    getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
+    // renderElem(getRef('topup_wallet__details'), html`Enter <b>${formatAmount(amount)}</b> as amount`);
+    // getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
     getRef('topup_wallet__qr_code').innerHTML = ''
     getRef('topup_wallet__qr_code').append(new QRCode({
         msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${txCode}`,

@@ -820,9 +820,22 @@
             </sm-form>
             <sm-form id="confirm_topup_form" class="hide">
                 <h4>Transfer money</h4>
-                <a id="pay_by_upi" href="" class="button button--primary">Pay using UPI apps</a>
+                <div class="grid gap-0-5">
+                    <a id="pay_by_upi" href="" class="button button--primary cta text-center"
+                        style="padding: 0.8rem">Pay using UPI
+                        apps</a>
+                    <p>*Only for mobile users with UPI apps installed. <br> All the required details will be auto
+                        filled.</p>
+                </div>
                 <div class="text-center">OR</div>
-                <ol type="1">
+                <div class="text-center justify-center grid gap-0-5">
+                    <p>Scan QR code below with an UPI app</p>
+                    <div id="topup_wallet__qr_code" style="justify-self: center"></div>
+                </div>
+                <p class="warning">
+                    After sending money, press <b>Confirm</b>.
+                </p>
+                <!-- <ol type="1">
                     <li>
                         <p>
                             Open your<strong> preferred UPI app </strong>
@@ -878,7 +891,7 @@
                             After sending money, press <b>Confirm</b>.
                         </p>
                     </li>
-                </ol>
+                </ol> -->
                 <div class="multi-state-button">
                     <button id="topup_wallet_button" class="button button--primary cta" onclick="depositMoneyToWallet()"
                         type="submit">Confirm</button>
