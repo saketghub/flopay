@@ -682,7 +682,7 @@
                         </svg>
                     </button>
                 </sm-input>
-                <sm-input id="token_transfer__amount" type="number" placeholder="0" required min="1">
+                <sm-input id="token_transfer__amount" type="number" placeholder="0" required min="1" step="0.01">
                     <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                         height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                         <g>
@@ -927,8 +927,8 @@
                     <h4>Withdraw</h4>
                     <p>Money will be sent to your bank account linked to selected UPI ID</p>
                 </div>
-                <sm-input id="send_cashier_amount" type="number" min="1" error-text="Amount should al least be ₹1"
-                    name="amount" placeholder="Amount" autofocus animate required>
+                <sm-input id="send_cashier_amount" type="number" min="1" error-text="Amount should at least be ₹1"
+                    name="amount" step="0.01" placeholder="Amount" autofocus animate required>
                     <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                         height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                         <g>
@@ -1050,7 +1050,7 @@
                         Deposit rupee tokens to RanchiMall Exchange.
                     </p>
                 </div>
-                <sm-input id="exchange_transfer__amount" type="number" placeholder="Amount" min="1"
+                <sm-input id="exchange_transfer__amount" type="number" placeholder="Amount" min="1" step="0.01"
                     error-text="minimum amount is ₹1" animate required autofocus>
                 </sm-input>
                 <div class="multi-state-button">
