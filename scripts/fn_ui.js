@@ -57,6 +57,7 @@ function continueWalletTopup() {
         msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${txCode}`,
         ecl: 'H'
     }))
+    getRef('pay_by_upi').href = `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${txCode}`
     showChildElement('topup_wallet_process', 1)
     // getRef('topup_wallet__txid').focusIn();
 }
