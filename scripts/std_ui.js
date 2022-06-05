@@ -871,6 +871,7 @@ function handleVisibilityChange() {
     if (document.visibilityState === "hidden") {
         // code if page is hidden 
     } else {
-        startStatusInterval()
+        if (floGlobals.loaded && floGlobals.isSubAdmin)
+            startStatusInterval()
     }
 }
