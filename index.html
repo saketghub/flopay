@@ -820,7 +820,7 @@
             </sm-form>
             <sm-form id="confirm_topup_form" class="hide">
                 <h4>Transfer money</h4>
-                <ol type="1">
+                <ol id="topup_steps" type="1">
                     <li>
                         <p>
                             Open your<strong> preferred UPI app </strong>
@@ -834,10 +834,10 @@
                                 </p>
                                 <sm-copy id="topup_wallet__upi_id" style="font-weight: 700;"></sm-copy>
                             </div>
-                            <details>
+                            <details id="topup_wallet__qr_wrapper">
                                 <summary class="interact">
                                     <b style="font-size: 0.9rem;">Or get QR code to scan</b>
-                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    <svg class="icon down-arrow" xmlns="http://www.w3.org/2000/svg" height="24px"
                                         viewBox="0 0 24 24" width="24px" fill="#000000">
                                         <path d="M0 0h24v24H0V0z" fill="none" />
                                         <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
@@ -845,30 +845,9 @@
                                 </summary>
                                 <div class="grid gap-0-5">
                                     <div id="topup_wallet__qr_code"></div>
-                                    <p>
-                                        <strong>
-                                            *If you are paying by scanning the QR code, amount and remark/message will
-                                            be
-                                            added automatically.</strong>
-                                    </p>
+                                    <strong> *All the required details for payment will be auto-filled.</strong>
                                 </div>
                             </details>
-                        </div>
-                    </li>
-                    <li>
-                        <p id="topup_wallet__details"></p>
-                    </li>
-                    <li>
-                        <div class="grid gap-0-5">
-                            <p>
-                                Enter <strong>code</strong> below in the <strong> message/remark </strong> field
-                            </p>
-                            <sm-copy id="topup_wallet__code" style="font-weight: 700;"></sm-copy>
-                            <p>
-                                <strong>*This is very important step. If you skip or enter wrong code, transaction can't
-                                    be
-                                    verified.</strong>
-                            </p>
                         </div>
                     </li>
                     <li>
@@ -1252,6 +1231,21 @@
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                 </svg>
             </button>
+        </li>
+    </template>
+    <template id="conditional_steps_template">
+        <li class="conditional">
+            <p>Enter <b class="amount"></b> as amount</p>
+        </li>
+        <li class="conditional">
+            <div class="grid gap-0-5">
+                <p>
+                    Enter <strong>code</strong> below in the <strong> message/remark </strong> field
+                </p>
+                <sm-copy class="tx-code" style="font-weight: 700; "></sm-copy>
+                <strong class="warning">*This is very important step. If you skip or enter wrong code, transaction can't
+                    be verified.</strong>
+            </div>
         </li>
     </template>
     <script src="//unpkg.com/uhtml"></script>

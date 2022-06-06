@@ -915,8 +915,9 @@ ol li::before {
 #topup_wallet__qr_code {
   background-color: rgba(var(--text-color), 0.03);
   border-radius: 0.5rem;
-  height: 12rem;
+  height: 10rem;
   justify-self: flex-start;
+  width: 10rem;
 }
 #topup_wallet__qr_code svg {
   width: 100%;
