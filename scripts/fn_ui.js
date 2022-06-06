@@ -707,11 +707,13 @@ const render = {
         if (getRef('topup_wallet__qr_wrapper').open) {
             getRef('topup_steps').querySelectorAll('.conditional').forEach(e => e.remove());
         } else {
-            const amount = parseFloat(getRef('request_cashier_amount').value.trim());
-            const conditionalSteps = getRef('conditional_steps_template').content.cloneNode(true);
-            conditionalSteps.querySelector('.amount').textContent = formatAmount(amount);
-            conditionalSteps.querySelector('.tx-code').setAttribute('value',floGlobals.txCode);
-            getRef('topup_steps').children[1].after(conditionalSteps)
+            if (getRef('topup_steps').children.length < 4) {
+                const amount = parseFloat(getRef('request_cashier_amount').value.trim());
+                const conditionalSteps = getRef('conditional_steps_template').content.cloneNode(true);
+                conditionalSteps.querySelector('.amount').textContent = formatAmount(amount);
+                conditionalSteps.querySelector('.tx-code').setAttribute('value',floGlobals.txCode);
+                getRef('topup_steps').children[1].after(conditionalSteps)
+            }
         }
     }
 };
