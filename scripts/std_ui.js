@@ -277,6 +277,14 @@ window.addEventListener("load", () => {
         })
     })
 });
+function toggleFloIDVisibility(hide) {
+    document.querySelectorAll('.flo-id-wrapper').forEach(elem => {
+        if(hide)
+            elem.classList.add('hide')
+        else
+            elem.classList.remove('hide')
+    })
+}
 function createRipple(event, target) {
     const circle = document.createElement("span");
     const diameter = Math.max(target.clientWidth, target.clientHeight);

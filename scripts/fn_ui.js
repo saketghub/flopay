@@ -517,19 +517,6 @@ function formatAmount(amount = 0) {
     return amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' })
 }
 
-function getStatusIcon(status) {
-    switch (status) {
-        case 'PENDING':
-            return '<i class="fas fa-clock"></i>';
-        case 'COMPLETED':
-            return '<i class="fas fa-check"></i>';
-        case 'REJECTED':
-            return '<i class="fas fa-times"></i>';
-        default:
-            break;
-    }
-}
-
 const cashierRejectionErrors = {
     1001: `Your request was reject because of wrong transaction ID. If you have sent money, it'll be returned within 24 hrs.`,
     1002: `Amount requested and amount sent via UPI doesn't match. your transferred money will be returned within 24hrs.`,

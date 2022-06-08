@@ -142,7 +142,7 @@
             <theme-toggle></theme-toggle>
         </header>
         <section id="home" class="inner-page hide">
-            <div class="grid">
+            <div class="grid flo-id-wrapper">
                 <h1>Welcome</h1>
                 <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
             </div>
@@ -428,7 +428,7 @@
         </section>
         <section id="contact" class="inner-page hide">
             <div class="flex align-center">
-                <a href="#/home" class="button icon-only margin-right-0-5">
+                <a href="#/contacts" class="button icon-only margin-right-0-5">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0z" fill="none" />
@@ -492,6 +492,12 @@
                         <h5>My FLO ID</h5>
                         <sm-copy class="logged-in-user-id" style="font-size: 0.9rem;"></sm-copy>
                     </div>
+                    <sm-switch id="flo_id_visibility_switcher">
+                        <div class="flex flex-direction-column gap-0-3" slot="left">
+                            <b>FLO ID visibility</b>
+                            Don't show my FLO ID on homepage. *Only applies to this device.
+                        </div>
+                    </sm-switch>
                     <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
                 </div>
                 <div class="grid gap-1 user-element">
@@ -1262,6 +1268,12 @@
             console.log('Exchange API initialized!')
             floDapps.launchStartUp().then(result => {
                 console.log(`Welcome ${myFloID}`);
+                getRef('flo_id_visibility_switcher').checked = localStorage.getItem(`${myFloID}_id_visibility`) === 'true'
+                toggleFloIDVisibility(localStorage.getItem(`${myFloID}_id_visibility`) === 'true')
+                getRef('flo_id_visibility_switcher').addEventListener('change', e => {
+                    localStorage.setItem(`${myFloID}_id_visibility`, e.target.checked)
+                    toggleFloIDVisibility(e.target.checked)
+                })
                 floGlobals.savedIds = {};
                 floGlobals.savedUserData = {
                     upiIds: {}

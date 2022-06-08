@@ -1904,6 +1904,9 @@ customElements.define('sm-switch', class extends HTMLElement {
             this.removeAttribute('checked')
         }
     }
+    get value() {
+        return this.isChecked
+    }
 
     reset() {
 
