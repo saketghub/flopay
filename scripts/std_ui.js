@@ -258,7 +258,6 @@ window.addEventListener('hashchange', e => showPage(window.location.hash))
 window.addEventListener("load", () => {
     document.body.classList.remove('hide')
     document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
-    document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
     document.addEventListener('keyup', (e) => {
         if (e.key === 'Escape') {
             closePopup()
@@ -440,22 +439,16 @@ async function showPage(targetPage, options = {}) {
         case 'transaction':
             let transactionDetails
             let status
-            getRef('transaction__link').classList.add('hide')
-            getRef('transaction__remark').classList.add('hide')
-            getRef('transaction__note').classList.add('hide')
+            let shouldRender = {}
             if (params.type === 'request') {
                 transactionDetails = User.moneyRequests[params.transactionId]
                 const { message: { remark }, note, tag } = transactionDetails
                 status = note ? note.split(':')[0] : 'PENDING';
                 getRef('transaction__type').textContent = 'Payment request'
-                if (status === 'PAID') {
-                    getRef('transaction__link').href = `https://flosight.duckdns.org/tx/${note.split(':')[1].trim()}`
-                    getRef('transaction__link').classList.remove('hide')
-                }
-                if (remark !== '') {
-                    getRef('transaction__remark').textContent = remark
-                    getRef('transaction__remark').classList.remove('hide')
-                }
+                if (status === 'PAID')
+                    shouldRender['txLink'] = `https://flosight.duckdns.org/tx/${note.split(':')[1].trim()}`;
+                if (remark !== '')
+                    shouldRender.txRemark = remark
             } else if (params.type === 'wallet') {
                 transactionDetails = User.cashierRequests[params.transactionId]
                 console.log(transactionDetails)
@@ -463,45 +456,51 @@ async function showPage(targetPage, options = {}) {
                 status = tag ? tag : (note ? 'REJECTED' : "PENDING");
                 getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
                 if (status === 'COMPLETED') {
-                    getRef('transaction__link').href = `https://flosight.duckdns.org/tx/${mode === 'cash-to-token' ? note : token_txid}`
-                    getRef('transaction__link').classList.remove('hide')
+                    shouldRender['txLink'] = `https://flosight.duckdns.org/tx/${mode === 'cash-to-token' ? note : token_txid}`
                 } else if (status === 'REJECTED') {
-                    getRef('transaction__note').innerHTML = `<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${note.split(':')[1]}`
-                    getRef('transaction__note').classList.remove('hide')
+                    shouldRender.txNote = html`<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${note.split(':')[1]}`
                 }
                 if (mode === 'cash-to-token') {
                     if (status === 'COMPLETED') {
                         if (txCode) {
-                            getRef('transaction__note').textContent = `Transaction code: ${txCode}`
+                            shouldRender.txNote = `Transaction code: ${txCode}`
                         } else if (upi_txid) {
-                            getRef('transaction__note').textContent = `UPI Transaction ID: ${upi_txid}`
+                            shouldRender.txNote = `UPI Transaction ID: ${upi_txid}`
                         }
-                        getRef('transaction__note').classList.remove('hide')
                     } else if (status === 'REJECTED') {
                         const reason = cashierRejectionErrors.hasOwnProperty(note.split(':')[1]) ? cashierRejectionErrors[note.split(':')[1]] : note.split(':')[1]
-                        getRef('transaction__note').innerHTML = `
-                        <svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
-                        ${reason}
-                        `
-                        getRef('transaction__note').classList.remove('hide')
-                    } else {
-                        getRef('transaction__note').classList.add('hide')
-                        getRef('transaction__note').textContent = ''
+                        shouldRender.txNote = html` <svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${reason} `
                     }
-
                 } else {
                     if (status === 'PENDING') {
-                        getRef('transaction__note').textContent = `Pending transfer of ${formatAmount(amount)} to bank account linked to ${upi_id}`
+                        shouldRender.txNote = `Pending transfer of ${formatAmount(amount)} to bank account linked to ${upi_id}`
                     } else if (status === 'COMPLETED') {
-                        getRef('transaction__note').textContent = `Transfer of ${formatAmount(amount)} to bank account linked to ${upi_id} completed`
+                        shouldRender.txNote = `Transfer of ${formatAmount(amount)} to bank account linked to ${upi_id} completed`
                     }
-                    getRef('transaction__note').classList.remove('hide')
                 }
             }
-            const { message: { amount }, time } = transactionDetails
-            getRef('transaction__time').textContent = getFormattedTime(time)
-            getRef('transaction__amount').textContent = formatAmount(amount)
-            getRef('transaction__status').textContent = status
+            const { message: { amount }, time, note } = transactionDetails
+            let txAmount = formatAmount(amount)
+            if (status === 'COMPLETED' && note.includes('#')) {
+                const [txid,finalAmount] = note.split('#');
+                txAmount = formatAmount(parseFloat(finalAmount));
+                shouldRender.txNote = `Also received 1 FLO worth of ${formatAmount(amount - parseFloat(finalAmount))} due to low FLO balance`;
+            }
+            renderElem(getRef('transaction_details'), html`
+                <div class="grid gap-1">
+                    <div id="transaction__amount">${txAmount}</div>
+                    ${shouldRender.remark ? html`<div id="transaction__remark">${shouldRender.remark}</div>` : ''}
+                    <div class="flex align-center" style="font-size: 0.8rem;">
+                        <time id="transaction__time">${getFormattedTime(time)}</time>
+                        <div class="bullet-point"></div>
+                        <span id="transaction__status">${status}</span>
+                    </div>
+                </div>
+                ${shouldRender.txLink ? html`<a id="transaction__link" href="${shouldRender.txLink}" target="_blank">See transaction
+                   
+                    on blockchain</a>` : ''}
+                ${shouldRender.txNote ? html`<div id="transaction__note" class="flex flex-direction-column gap-0-5">${shouldRender.txNote}</div>` : ''}
+            `)
             break;
         case 'settings':
             renderSavedUpiIds()

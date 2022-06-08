@@ -587,16 +587,16 @@ const render = {
     walletRequestCard(details) {
         const { time, message: { mode, amount }, note, tag, vectorClock } = details;
         const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild.firstElementChild;
-        const type = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
+        const type = mode === 'cash-to-token' ? 'Top-up' : 'Withdraw';
         let status = tag ? tag : (note ? 'REJECTED' : "PENDING");
         clone.classList.add(status.toLowerCase());
         clone.classList.add(mode === 'cash-to-token' ? 'added' : 'withdrawn');
         clone.dataset.vc = vectorClock;
         clone.href = `#/transaction?transactionId=${vectorClock}&type=wallet`;
         clone.querySelector('.wallet-request__icon').innerHTML = mode === 'cash-to-token' ?
-            `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none" /><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>`
-            :
-            `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24" /></g><g><g><rect height="7" width="3" x="4" y="10" /><rect height="7" width="3" x="10.5" y="10" /><rect height="3" width="20" x="2" y="19" /><rect height="7" width="3" x="17" y="10" /><polygon points="12,1 2,6 2,8 22,8 22,6" /></g></g></svg>`;
+        `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none" /><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>`
+        :
+        `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24" /></g><g><g><rect height="7" width="3" x="4" y="10" /><rect height="7" width="3" x="10.5" y="10" /><rect height="3" width="20" x="2" y="19" /><rect height="7" width="3" x="17" y="10" /><polygon points="12,1 2,6 2,8 22,8 22,6" /></g></g></svg>`;
         clone.querySelector('.wallet-request__details').textContent = type;
         clone.querySelector('.wallet-request__amount').textContent = formatAmount(amount);
         clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time);
@@ -604,6 +604,12 @@ const render = {
         if (status === 'REJECTED') {
             icon = `<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`
             clone.querySelector('.wallet-request__status').innerHTML = `Failed ${icon}`;
+            clone.querySelector('.wallet-request__status').classList.add('capitalize')
+        }
+        if (status === 'COMPLETED' && note.includes('#')) {
+            const [txid,finalAmount] = note.split('#');
+            clone.querySelector('.wallet-request__amount').textContent = formatAmount(parseFloat(finalAmount));
+            clone.querySelector('.wallet-request__status').innerHTML = `<b style="color:var(--green)">+ 1 FLO</b>&nbsp; worth ${formatAmount(amount - parseFloat(finalAmount))}`;
         }
         return clone;
     },
@@ -1079,8 +1085,18 @@ function changeUpi() {
         notify(err, 'error');
     });
 }
-function getSignedIn() {
+function getSignedIn(passwordType) {
     return new Promise((resolve, reject) => {
+        if (passwordType === 'PIN/Password') {
+            getRef('private_key_field').removeAttribute('data-private-key');
+            getRef('private_key_field').setAttribute('placeholder', 'PIN');
+            getRef('private_key_field').customValidation = null
+
+        } else {
+            getRef('private_key_field').dataset.privateKey = ''
+            getRef('private_key_field').setAttribute('placeholder', 'FLO private key');
+            getRef('private_key_field').customValidation = floCrypto.getPubKeyHex
+        }
         if (window.location.hash.includes('sign_in') || window.location.hash.includes('sign_up')) {
             showPage(window.location.hash);
         } else {

@@ -77,7 +77,7 @@
             <section>
                 <h1 class="h2">Sign In</h1>
                 <p>Welcome back, glad to see you again</p>
-                <sm-form>
+                <sm-form id="sign_in_form">
                     <sm-input id="private_key_field" type="password" placeholder="FLO private key"
                         error-text="Private key is invalid" data-private-key required></sm-input>
                     <sm-button id="sign_in_button" variant="primary" disabled>Sign In</sm-button>
@@ -478,17 +478,7 @@
                 </button>
                 <h4 id="transaction__type"></h4>
             </div>
-            <div class="grid gap-1">
-                <div id="transaction__amount"></div>
-                <div id="transaction__remark" class="hide"></div>
-                <div class="flex align-center" style="font-size: 0.8rem;">
-                    <time id="transaction__time"></time>
-                    <div class="bullet-point"></div>
-                    <span id="transaction__status"></span>
-                </div>
-            </div>
-            <a id="transaction__link" target="_blank" rel="noopener noreferrer">See transaction on blockchain</a>
-            <p id="transaction__note" class="hide flex flex-direction-column gap-0-5"></p>
+            <div id="transaction_details" class="grid gap-2"></div>
         </div>
         <section id="settings" class="inner-page hide">
             <div class="page__header">
@@ -799,7 +789,7 @@
                     <h4>Top-up wallet</h4>
                     <p>Add money to your wallet</p>
                 </div>
-                <sm-input id="request_cashier_amount" type="number" min="1" error-text="Amount should al least be ₹1"
+                <sm-input id="request_cashier_amount" type="number" min="10" error-text="Amount should at least be ₹10"
                     name="amount" placeholder="Amount" autofocus animate required>
                     <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                         height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -1271,12 +1261,11 @@
             await floExchangeAPI.init("FMxYC7gYZhouzqtHZukGnPiQ8nvG4CMzXM", "exchange")
             console.log('Exchange API initialized!')
             floDapps.launchStartUp().then(result => {
+                console.log(`Welcome ${myFloID}`);
                 floGlobals.savedIds = {};
                 floGlobals.savedUserData = {
                     upiIds: {}
                 }
-
-                console.log(`Welcome ${myFloID}`);
                 document.querySelectorAll('.logged-in-user-id').forEach(elem => elem.value = myFloID);
                 floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
                 refreshBalance()
@@ -1309,7 +1298,9 @@
                         floGlobals.loaded = true
                     }).catch(error => console.error(error))
                 }
-            }).catch(error => console.error(error))
+            }).catch(error => {
+                console.error(error)
+            })
         }
     </script>
 </body>

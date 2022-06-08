@@ -1422,7 +1422,6 @@ ol li::before {
   color: rgba(var(--text-color), 0.8);
 }
 .wallet-request__status {
-  text-transform: capitalize;
   text-align: right;
 }
 .wallet-request__status .icon {
@@ -1548,6 +1547,10 @@ ol li::before {
   #saved_ids_list {
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+
+  body[data-theme=dark] #main_navbar {
+    background-color: rgba(0, 0, 0, 0.2);
   }
 }
 @media screen and (min-width: 56rem) {

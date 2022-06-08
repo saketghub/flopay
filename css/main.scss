@@ -1328,7 +1328,6 @@ ol {
     color: rgba(var(--text-color), 0.8);
   }
   &__status {
-    text-transform: capitalize;
     text-align: right;
     .icon {
       margin-left: 0.3rem;
@@ -1414,7 +1413,6 @@ ol {
   #main_header {
     grid-area: header;
   }
-
   #main_navbar {
     grid-area: nav;
     border-top: none;
@@ -1448,6 +1446,11 @@ ol {
   #saved_ids_list {
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+  body[data-theme="dark"] {
+    #main_navbar {
+      background-color: rgba(0 0 0/ 0.2);
+    }
   }
 }
 @media screen and (min-width: 56rem) {
