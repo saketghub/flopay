@@ -454,6 +454,11 @@ ol li::before {
   margin-bottom: 0.2rem;
 }
 
+.button--primary .ripple,
+.button--danger .ripple {
+  background: radial-gradient(circle, rgba(var(--background-color), 0.3) 0%, rgba(0, 0, 0, 0) 50%);
+}
+
 .ripple {
   height: 8rem;
   width: 8rem;
@@ -462,11 +467,6 @@ ol li::before {
   transform: scale(0);
   background: radial-gradient(circle, rgba(var(--text-color), 0.3) 0%, rgba(0, 0, 0, 0) 50%);
   pointer-events: none;
-}
-
-.button--primary .ripple,
-.button--danger .ripple {
-  background: radial-gradient(circle, rgba(var(--background-color), 0.3) 0%, rgba(0, 0, 0, 0) 50%);
 }
 
 .interact {

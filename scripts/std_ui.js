@@ -2,7 +2,6 @@
 // Global variables
 const { html, render: renderElem } = uhtml;
 const domRefs = {};
-const currentYear = new Date().getFullYear();
 let paymentsHistoryLoader = null;
 let walletHistoryLoader = null;
 let contactHistoryLoader = null;
