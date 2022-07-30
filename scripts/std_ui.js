@@ -1,8 +1,9 @@
 /*jshint esversion: 9 */
 // Global variables
-const { html, render: renderElem } = uhtml;
+const { html, render: renderElem,svg } = uhtml;
 const domRefs = {};
-let paymentsHistoryLoader = null;
+let rupeeHistoryLoader = null;
+let btcHistoryLoader = null;
 let walletHistoryLoader = null;
 let contactHistoryLoader = null;
 let paymentRequestsLoader = null;
@@ -93,12 +94,10 @@ document.addEventListener('popupopened', async e => {
     const frag = document.createDocumentFragment()
     switch (e.target.id) {
         case 'saved_ids_popup':
-            getArrayOfSavedIds().forEach(({ floID, details }) => {
-                frag.append(render.savedIdPickerCard(floID, details))
-            })
-            getRef('saved_ids_picker_list').innerHTML = ''
-            getRef('saved_ids_picker_list').append(frag)
-            getRef('search_saved_ids_picker').focusIn()
+            renderElem(getRef('saved_ids_picker_list'), html`${getArrayOfSavedIds().map(({ floID, details }) => render.savedIdPickerCard(floID, details))}`)
+            setTimeout(() => {
+                getRef('search_saved_ids_picker').focusIn()
+            }, 0);
             break;
         case 'topup_wallet_popup':
         case 'withdraw_wallet_popup':
@@ -112,6 +111,9 @@ document.addEventListener('popupopened', async e => {
                 getRef('select_withdraw_upi_id').append(clone)
                 getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
             }
+            break;
+        case 'send_btc_popup':
+            calculateBtcFees();
             break;
     }
 })
@@ -208,16 +210,13 @@ function notify(message, mode, options = {}) {
     }
 }
 
-function getFormattedTime(time, format) {
+function getFormattedTime(timestamp, format) {
     try {
-        if (String(time).indexOf('_'))
-            time = String(time).split('_')[0]
-        const intTime = parseInt(time)
-        if (String(intTime).length < 13)
-            time *= 1000
-        let [day, month, date, year] = new Date(intTime).toString().split(' '),
-            minutes = new Date(intTime).getMinutes(),
-            hours = new Date(intTime).getHours(),
+        if (String(timestamp).length < 13)
+            timestamp *= 1000
+        let [day, month, date, year] = new Date(timestamp).toString().split(' '),
+            minutes = new Date(timestamp).getMinutes(),
+            hours = new Date(timestamp).getHours(),
             currentTime = new Date().toString().split(' ')
 
         minutes = minutes < 10 ? `0${minutes}` : minutes
@@ -233,15 +232,22 @@ function getFormattedTime(time, format) {
         switch (format) {
             case 'date-only':
                 return `${month} ${date}, ${year}`;
-                break;
+            case 'time-only':
+                return finalHours;
+            case 'relative':
+                // check if timestamp is older than a day
+                if (Date.now() - new Date(timestamp) < 60 * 60 * 24 * 1000)
+                    return `${finalHours}`;
+                else
+                    return relativeTime.from(timestamp)
             default:
                 return `${month} ${date}, ${year} at ${finalHours}`;
         }
     } catch (e) {
         console.error(e);
-        return time;
+        return timestamp;
     }
-}
+}   
 // implement event delegation
 function delegate(el, event, selector, fn) {
     el.addEventListener(event, function (e) {
@@ -277,11 +283,17 @@ window.addEventListener("load", () => {
     })
 });
 function toggleFloIDVisibility(hide) {
-    document.querySelectorAll('.flo-id-wrapper').forEach(elem => {
+    document.querySelectorAll('.logged-in-user-id').forEach(elem => {
         if(hide)
             elem.classList.add('hide')
         else
             elem.classList.remove('hide')
+    })
+    document.querySelectorAll('.app-name').forEach(elem => {
+        if(hide)
+            elem.classList.remove('hide')
+        else
+            elem.classList.add('hide')
     })
 }
 function createRipple(event, target) {
@@ -295,6 +307,10 @@ function createRipple(event, target) {
     circle.classList.add("ripple");
     const rippleAnimation = circle.animate(
         [
+            {
+                opacity: 1,
+                transform: `scale(0)`
+            },
             {
                 transform: "scale(4)",
                 opacity: 0,
@@ -386,7 +402,13 @@ async function showPage(targetPage, options = {}) {
                 })
             break;
         case 'history':
-            render.paymentsHistory()
+            if (params.asset) {
+                if (params.asset === 'rupee') {
+                    render.rupeeHistory()
+                }else if(params.asset === 'btc'){
+                    render.btcHistory()
+                }
+            } 
             break;
         case 'wallet':
             const walletTransactions = []
@@ -516,8 +538,10 @@ async function showPage(targetPage, options = {}) {
             break;
     }
     if (pageId !== 'history') {
-        if (paymentsHistoryLoader)
-            paymentsHistoryLoader.clear()
+        if (rupeeHistoryLoader)
+            rupeeHistoryLoader.clear()
+        if (btcHistoryLoader)
+            btcHistoryLoader.clear()
     }
     if (pageId !== 'wallet') {
         if (walletHistoryLoader)
@@ -668,102 +692,121 @@ const indicatorObserver = new IntersectionObserver(entries => {
     threshold: 1
 })
 
-// class based lazy loading
-class LazyLoader {
-    constructor(container, elementsToRender, renderFn, options = {}) {
-        const { batchSize = 10, freshRender, bottomFirst = false } = options
+        // class based lazy loading
+        class LazyLoader {
+            constructor(container, elementsToRender, renderFn, options = {}) {
+                const { batchSize = 10, freshRender, bottomFirst = false, domUpdated } = options
 
-        this.elementsToRender = elementsToRender
-        this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
-        this.renderFn = renderFn
-        this.intersectionObserver
+                this.elementsToRender = elementsToRender
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+                this.renderFn = renderFn
+                this.intersectionObserver
 
-        this.batchSize = batchSize
-        this.freshRender = freshRender
-        this.bottomFirst = bottomFirst
+                this.batchSize = batchSize
+                this.freshRender = freshRender
+                this.domUpdated = domUpdated
+                this.bottomFirst = bottomFirst
 
-        this.lazyContainer = document.querySelector(container)
+                this.shouldLazyLoad = false
+                this.lastScrollTop = 0
+                this.lastScrollHeight = 0
 
-        this.update = this.update.bind(this)
-        this.render = this.render.bind(this)
-        this.init = this.init.bind(this)
-        this.clear = this.clear.bind(this)
-    }
-    get elements() {
-        return this.arrayOfElements
-    }
-    init() {
-        this.intersectionObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    observer.disconnect()
-                    this.render({ lazyLoad: true })
-                }
-            })
-        }, {
-            threshold: 0.3
-        })
-        this.mutationObserver = new MutationObserver(mutationList => {
-            mutationList.forEach(mutation => {
-                if (mutation.type === 'childList') {
-                    if (mutation.addedNodes.length) {
-                        if (this.bottomFirst)
-                            this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
-                        else
-                            this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+                this.lazyContainer = document.querySelector(container)
+
+                this.update = this.update.bind(this)
+                this.render = this.render.bind(this)
+                this.init = this.init.bind(this)
+                this.clear = this.clear.bind(this)
+            }
+            get elements() {
+                return this.arrayOfElements
+            }
+            init() {
+                this.intersectionObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            observer.disconnect()
+                            this.render({ lazyLoad: true })
+                        }
+                    })
+                })
+                this.mutationObserver = new MutationObserver(mutationList => {
+                    mutationList.forEach(mutation => {
+                        if (mutation.type === 'childList') {
+                            if (mutation.addedNodes.length) {
+                                if (this.bottomFirst) {
+                                    if (this.lazyContainer.firstElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
+                                } else {
+                                    if (this.lazyContainer.lastElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+                                }
+                            }
+                        }
+                    })
+                })
+                this.mutationObserver.observe(this.lazyContainer, {
+                    childList: true,
+                })
+                this.render()
+            }
+            update(elementsToRender) {
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+            }
+            render(options = {}) {
+                let { lazyLoad = false } = options
+                this.shouldLazyLoad = lazyLoad
+                const frag = document.createDocumentFragment();
+                if (lazyLoad) {
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.updateStartIndex
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize
+                    } else {
+                        this.updateStartIndex = this.updateEndIndex
+                        this.updateEndIndex = this.updateEndIndex + this.batchSize
                     }
+                } else {
+                    this.intersectionObserver.disconnect()
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.arrayOfElements.length
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize - 1
+                    } else {
+                        this.updateStartIndex = 0
+                        this.updateEndIndex = this.batchSize
+                    }
+                    this.lazyContainer.innerHTML = ``;
                 }
-            })
-        })
-        this.mutationObserver.observe(this.lazyContainer, {
-            childList: true,
-        })
-        this.render()
-    }
-    update(elementsToRender) {
-        this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
-    }
-    render(options = {}) {
-        let { lazyLoad = false } = options
-        const frag = document.createDocumentFragment();
-        if (lazyLoad) {
-            this.updateStartIndex = this.updateEndIndex
-            this.updateEndIndex = this.arrayOfElements.length > this.updateEndIndex + this.batchSize ? this.updateEndIndex + this.batchSize : this.arrayOfElements.length
-        } else {
-            this.intersectionObserver.disconnect()
-            this.lazyContainer.innerHTML = ``;
-            this.updateStartIndex = 0
-            this.updateEndIndex = this.arrayOfElements.length > this.batchSize ? this.batchSize : this.arrayOfElements.length
-        }
-        if (this.bottomFirst) {
-            for (let index = this.updateStartIndex; index < this.updateEndIndex; index++) {
-                frag.prepend(this.renderFn(this.arrayOfElements[index]))
+                this.lastScrollHeight = this.lazyContainer.scrollHeight
+                this.lastScrollTop = this.lazyContainer.scrollTop
+                this.arrayOfElements.slice(this.updateStartIndex, this.updateEndIndex).forEach((element, index) => {
+                    frag.append(this.renderFn(element))
+                })
+                if (this.bottomFirst) {
+                    this.lazyContainer.prepend(frag)
+                    // scroll anchoring for reverse scrolling
+                    this.lastScrollTop += this.lazyContainer.scrollHeight - this.lastScrollHeight
+                    this.lazyContainer.scrollTo({ top: this.lastScrollTop })
+                    this.lastScrollHeight = this.lazyContainer.scrollHeight
+                } else {
+                    this.lazyContainer.append(frag)
+                }
+                if (!lazyLoad && this.bottomFirst) {
+                    this.lazyContainer.scrollTop = this.lazyContainer.scrollHeight
+                }
+                // Callback to be called if elements are updated or rendered for first time
+                if (!lazyLoad && this.freshRender)
+                    this.freshRender()
             }
-            this.lazyContainer.prepend(frag)
-        } else {
-            for (let index = this.updateStartIndex; index < this.updateEndIndex; index++) {
-                frag.append(this.renderFn(this.arrayOfElements[index]))
+            clear() {
+                this.intersectionObserver.disconnect()
+                this.mutationObserver.disconnect()
+                this.lazyContainer.innerHTML = ``;
             }
-            this.lazyContainer.append(frag)
+            reset() {
+                this.arrayOfElements = (typeof this.elementsToRender === 'function') ? this.elementsToRender() : this.elementsToRender || []
+                this.render()
+            }
         }
-        if (!lazyLoad && this.bottomFirst)
-            this.lazyContainer.scrollTo({
-                top: this.lazyContainer.scrollHeight,
-            })
-        // Callback to be called if elements are updated or rendered for first time
-        if (!lazyLoad && this.freshRender)
-            this.freshRender()
-    }
-    clear() {
-        this.intersectionObserver.disconnect()
-        this.mutationObserver.disconnect()
-        this.lazyContainer.innerHTML = ``;
-    }
-    reset() {
-        this.arrayOfElements = (typeof this.elementsToRender === 'function') ? this.elementsToRender() : this.elementsToRender || []
-        this.render()
-    }
-}
 function animateTo(element, keyframes, options) {
     const anime = element.animate(keyframes, { ...options, fill: 'both' })
     anime.finished.then(() => {
@@ -780,13 +823,31 @@ function handleMobileChange(e) {
 mobileQuery.addEventListener('change', handleMobileChange)
 handleMobileChange(mobileQuery)
 
-function showChildElement(id, index) {
-    [...getRef(id).children].forEach((child, i) => {
-        if (i === index)
-            child.classList.remove('hide')
-        else
-            child.classList.add('hide')
-    })
+function showChildElement(id, index, options = {}) {
+    const { mobileView = false, entry, exit } = options
+    const animOptions = {
+        duration: 150,
+        easing: 'ease',
+        fill: 'forwards'
+    }
+    const visibleElement = [...getRef(id).children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hide'));
+    if (visibleElement === getRef(id).children[index]) return;
+    if (visibleElement) {
+        if (exit) {
+            visibleElement.animate(exit, animOptions).onfinish = () => {
+                visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hide')
+                getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hide')
+                if (entry)
+                    getRef(id).children[index].animate(entry, animOptions)
+            }
+        } else {
+            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hide')
+            getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hide')
+        }
+    } else {
+        getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hide')
+        getRef(id).children[index].animate(entry, animOptions)
+    }
 }
 
 // Reactivity system
@@ -880,4 +941,12 @@ function handleVisibilityChange() {
         if (floGlobals.loaded && floGlobals.isSubAdmin)
             startStatusInterval()
     }
+}
+
+
+function conditionalClassToggle(el, className, condition) {
+    if(condition)
+        el.classList.add(className);
+    else
+        el.classList.remove(className);
 }

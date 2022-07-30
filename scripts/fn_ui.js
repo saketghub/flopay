@@ -140,12 +140,11 @@ function transferToExchange() {
 }
 
 async function renderSavedUpiIds() {
-    const frag = document.createDocumentFragment();
+    let savedUpiIds = []
     for (const upiId in floGlobals.savedUserData.upiIds) {
-        frag.append(render.savedUpiId(upiId));
+        savedUpiIds.push(render.savedUpiId(upiId))
     }
-    getRef('saved_upi_ids_list').innerHTML = '';
-    getRef('saved_upi_ids_list').append(frag);
+    renderElem(getRef('saved_upi_ids_list'), html`${savedUpiIds}`)
 }
 function saveUpiId() {
     const frag = document.createDocumentFragment();
@@ -158,10 +157,8 @@ function saveUpiId() {
     syncUserData('savedUserData', floGlobals.savedUserData).then(() => {
         notify(`Saved ${upiId}`, 'success');
         if (pagesData.lastPage === 'settings') {
-            getRef('saved_upi_ids_list').append(render.savedUpiId(upiId));
+            getRef('saved_upi_ids_list').append(html.node`${render.savedUpiId(upiId)}`);
         } else if (pagesData.lastPage === 'home') {
-            // getRef('select_topup_upi_id').append(render.savedUpiIdOption(upiId));
-            // getRef('select_topup_upi_id').parentNode.classList.remove('hide')
             getRef('select_withdraw_upi_id').append(render.savedUpiIdOption(upiId));
             getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
         }
@@ -511,10 +508,10 @@ function getFloIdTitle(floID) {
     return floGlobals.savedIds[floID] ? floGlobals.savedIds[floID].title : floID;
 }
 
-function formatAmount(amount = 0) {
+function formatAmount(amount = 0, currency = 'inr') {
     if (!amount)
         return '₹0.00';
-    return amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' })
+    return amount.toLocaleString(currency === 'inr'? `en-IN`: 'en-US', { style: 'currency', currency })
 }
 
 const cashierRejectionErrors = {
@@ -525,34 +522,49 @@ const cashierRejectionErrors = {
 }
 
 const render = {
-    savedId(floID, details) {
+    savedId(floID, details,ref) {
         const { title } = details;
-        const clone = getRef('saved_id_template').content.cloneNode(true).firstElementChild;
-        clone.dataset.floId = floID;
-        clone.querySelector('.saved-id__initials').textContent = title.charAt(0);
-        clone.querySelector('.saved-id__title').textContent = title;
-        clone.querySelector('.saved-id__flo-id').textContent = floID;
-        return clone;
+        return html.for(ref,floID)`
+            <li class="saved-id grid interact" tabindex="0" data-flo-id="${floID}">
+                <button class="interact edit-saved icon-only" title="Edit name">
+                    <div class="saved-id__initials">${title.charAt(0)}</div>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /> </svg>
+                </button>
+                <div class="saved-id__title">${title}</div>
+                <div class="grid align-center" style="grid-template-columns: 1fr auto;">
+                    <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
+                    <button class="copy-saved-id icon-only margin-left-0-5" title="Copy FLO ID">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" /> </svg>
+                    </button>
+                </div>
+            </li>
+        `;
+        
     },
-    transactionCard(transactionDetails) {
+    rupeeTxCard(transactionDetails) {
         const { txid, time, sender, receiver, tokenAmount } = transactionDetails;
-        const clone = getRef('transaction_template').content.cloneNode(true).firstElementChild;
-        clone.dataset.txid = txid;
-        clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000);
-        clone.querySelector('.transaction__amount').textContent = formatAmount(tokenAmount);
+        let transactionReceiver 
+        let className 
+        let icon
         if (sender === myFloID) {
-            clone.classList.add('sent');
-            clone.querySelector('.transaction__receiver').textContent = `Sent to ${getFloIdTitle(receiver) || 'Myself'}`;
-            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+            className = 'transaction grid sent'
+            transactionReceiver = `Sent to ${getFloIdTitle(receiver) || 'Myself'}`;
+            icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
         } else if (receiver === myFloID) {
-            clone.classList.add('received');
-            clone.querySelector('.transaction__receiver').textContent = `Received from ${getFloIdTitle(sender)}`;
-            clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+            className = 'transaction grid received'
+            transactionReceiver = `Received from ${getFloIdTitle(sender)}`;
+            icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
         } else { //This should not happen unless API returns transaction that does not involve myFloID
-            row.insertCell().textContent = tx.sender;
-            row.insertCell().textContent = tx.receiver;
+            return html`sender: ${sender} | receiver: ${receiver}`;
         }
-        return clone;
+        return html.node`
+            <li class="${className}" data-txid="${txid}">
+                <div class="transaction__icon">${icon}</div>
+                <div class="transaction__receiver wrap-around">${transactionReceiver}</div>
+                <time class="transaction__time">${getFormattedTime(time * 1000)}</time>
+                <div class="transaction__amount">${formatAmount(tokenAmount)}</div>
+            </li>
+        `;
     },
     cashierRequestCard(details) {
         const { time, senderID, message: { mode, amount = 0 }, note, tag, vectorClock } = details;
@@ -633,23 +645,24 @@ const render = {
         return clone;
     },
     savedUpiId(upiId) {
-        const clone = getRef('saved_upi_template').content.cloneNode(true).firstElementChild;
-        clone.dataset.upiId = upiId;
-        clone.querySelector('.saved-upi__id').textContent = upiId;
-        return clone;
+        return html`
+            <li class="saved-upi" data-upi-id="${upiId}">
+                <div class="saved-upi__id">${upiId}</div>
+                <button class="delete-upi" title="Delete this UPI ID">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" /> </svg>
+                </button>
+            </li>
+        `;
     },
     savedIdPickerCard(floID, { title }) {
-        return createElement('li', {
-            className: 'saved-id grid interact',
-            attributes: { 'tabindex': '0', 'data-flo-id': floID },
-            innerHTML: `
-                            <div class="saved-id__initials">${title[0]}</div>
-                            <div class="grid gap-0-5">
-                                <h4 class="saved-id__title">${title}</h4>
-                                <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
-                            </div>
-                            `
-        })
+        return html`
+            <li class="saved-id grid interact" tabindex="0" data-flo-id="${floID}">
+                <div class="saved-id__initials">${title[0]}</div>
+                <div class="grid gap-0-5">
+                    <h4 class="saved-id__title">${title}</h4>
+                    <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
+                </div>
+            </li>`
     },
     savedUpiIdOption(upiId) {
         return createElement('sm-option', {
@@ -659,10 +672,10 @@ const render = {
             }
         })
     },
-    paymentsHistory() {
+    rupeeHistory() {
         let paymentTransactions = []
-        if (paymentsHistoryLoader)
-            paymentsHistoryLoader.clear()
+        if (rupeeHistoryLoader)
+            rupeeHistoryLoader.clear()
         getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
         floTokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
             for (const transactionId in transactions) {
@@ -678,23 +691,77 @@ const render = {
             }
             // solve sorting issue at backend
             paymentTransactions.sort((a, b) => b.time - a.time);
-            if (paymentsHistoryLoader) {
-                paymentsHistoryLoader.update(paymentTransactions);
+            if (rupeeHistoryLoader) {
+                rupeeHistoryLoader.update(paymentTransactions);
             } else {
-                paymentsHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.transactionCard);
+                rupeeHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.rupeeTxCard);
             }
-            paymentsHistoryLoader.init();
+            rupeeHistoryLoader.init();
         }).catch(e => {
             console.error(e)
         })
     },
+    btcTxCard(transactionDetails) {
+        let { amount, time, txid, sender, receiver, type, block } = transactionDetails;
+        let transactionReceiver
+        let icon
+        // block = null
+        if (block) {
+            if (type === 'out') {
+                transactionReceiver = `Sent to ${receiver}`;
+                icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+            } else if (type === 'in') {
+                transactionReceiver = `Received from ${sender}`;
+                icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+            } else if (type === 'self') {
+                transactionReceiver = `Sent to self`;
+                icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+            }
+        } else {
+            console.log(transactionDetails)
+            transactionReceiver = (type === 'out' ? `Sent to ${receiver}` : `Received from ${sender}`);
+            icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M6,2l0.01,6L10,12l-3.99,4.01L6,22h12v-6l-4-4l4-3.99V2H6z M16,16.5V20H8v-3.5l4-4L16,16.5z"/></g></svg>`;
+        }
+        const className = `btc-tx grid ${type} ${block === null ? 'unconfirmed-tx' : ''}`
+        return html.node`
+            <li class="${className}" data-txid="${txid}">
+                <div class="btc-tx__icon">${icon}</div>
+                <time class="btc-tx__time">${getFormattedTime(time)}</time>
+                <div class="btc-tx__amount amount-shown" data-btc-amount="${amount}">${formatAmount(amount, 'btc')}</div>
+                <div class="btc-tx__receiver wrap-around">${transactionReceiver}</div>
+                <div class="btc-tx__id wrap-around">TXID: ${txid}</div>
+                </li>
+                `;
+    },
+    btcHistory() {
+        try {
+            // render transactions
+            getRef('payments_history').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
+            getAddressDetails( btc_api.convert.legacy2bech(myFloID)).then(result => {
+                if (result.txs.length) {
+                    let allTransactions = result.txs;
+                    const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+                    if (filter !== 'all') {
+                        allTransactions = allTransactions.filter(t => filter === 'sent' ? t.type === 'out' : t.type === 'in')
+                    }
+                    console.log(allTransactions)
+                    if (btcHistoryLoader) {
+                        btcHistoryLoader.update(allTransactions)
+                    } else {
+                        btcHistoryLoader = new LazyLoader('#payments_history', allTransactions, render.btcTxCard)
+                    }
+                    btcHistoryLoader.init()
+                } else {
+                    getRef('payments_history').textContent = 'No transactions found';
+                }
+            }).catch(error => console.error(error))
+        } catch (err) {
+            notify(err, 'error');
+        }
+    },
     async savedIds() {
-        const frag = document.createDocumentFragment();
         await organizeSyncedData('savedIds');
-        getArrayOfSavedIds().forEach(({ floID, details }) => {
-            frag.append(render.savedId(floID, details));
-        })
-        getRef('saved_ids_list').append(frag);
+        renderElem(getRef('saved_ids_list'), html`${getArrayOfSavedIds().map(({floID, details}) => render.savedId(floID, details, getRef('saved_ids_list')))}`)
     },
     conditionalSteps() {
         if (getRef('topup_wallet__qr_wrapper').open) {
@@ -765,6 +832,14 @@ async function refreshBalance(button) {
     } catch (e) {
         console.error(e)
     }
+    btc_api.getBalance(btc_api.convert.legacy2bech(myFloID)).then(btcBalance => { 
+        if(btcBalance) {
+        const [beforeDecimal, afterDecimal = '00'] = String(btcBalance).split('.')
+        renderElem(getRef('btc_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
+        } else {
+            renderElem(getRef('btc_balance'), html`<span><b>0</b></span>`)
+        }
+    })
 }
 
 function getArrayOfSavedIds() {
@@ -785,7 +860,7 @@ async function saveFloId() {
     floGlobals.savedIds[floID] = { title }
     buttonLoader('save_flo_id_button', true);
     syncUserData('savedIds', floGlobals.savedIds).then(() => {
-        insertElementAlphabetically(title, render.savedId(floID, { title }))
+        render.savedIds()
         notify(`Saved ${floID}`, 'success');
         closePopup();
     }).catch(error => {
@@ -797,6 +872,7 @@ async function saveFloId() {
 delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
     if (e.target.closest('.edit-saved')) {
         const target = e.target.closest('.saved-id');
+        console.log(target)
         getRef('edit_saved_id').setAttribute('value', target.dataset.floId);
         getRef('get_new_title').value = getFloIdTitle(target.dataset.floId);
         openPopup('edit_saved_popup');
@@ -821,15 +897,7 @@ function saveIdChanges() {
         title = 'Unknown';
     floGlobals.savedIds[floID] = { title }
     syncUserData('savedIds', floGlobals.savedIds).then(() => {
-        const potentialTarget = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${floID}"]`)
-        if (potentialTarget) {
-            potentialTarget.querySelector('.saved-id__title').textContent = title;
-            potentialTarget.querySelector('.saved-id__initials').textContent = title.charAt(0).toUpperCase();
-            // place the renamed card in alphabetically correct position
-            const clone = potentialTarget.cloneNode(true);
-            potentialTarget.remove();
-            insertElementAlphabetically(title, clone)
-        }
+        render.savedIds()
         closePopup();
     }).catch(error => {
         notify(error, 'error');
@@ -855,7 +923,7 @@ function deleteSavedId() {
 }
 const savedIdsObserver = new MutationObserver((mutationList) => {
     mutationList.forEach(mutation => {
-        getRef('saved_ids_tip').textContent = mutation.target.children.length === 0 ? `Click 'Add FLO ID' to add a new FLO ID.` : `Tap on saved IDs to see transaction history.`
+        conditionalClassToggle(getRef('saved_ids_tip'), 'hide', !mutation.target.children.length);
     })
 })
 
@@ -883,11 +951,7 @@ getRef('search_saved_ids_picker').addEventListener('input', debounce(async e => 
         const fuse = new Fuse(allSavedIds, { keys: ['floID', 'details.title'] })
         allSavedIds = fuse.search(searchKey).map(v => v.item)
     }
-    allSavedIds.forEach(({ floID, details }) => {
-        frag.append(render.savedIdPickerCard(floID, details))
-    })
-    getRef('saved_ids_picker_list').innerHTML = '';
-    getRef('saved_ids_picker_list').append(frag);
+    renderElem(getRef('saved_ids_picker_list'), html`${allSavedIds.map(({ floID, details }) => render.savedIdPickerCard(floID, details))}`)
     if (searchKey !== '') {
         const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
         if (potentialTarget) {
@@ -1028,7 +1092,6 @@ function toggleFilters() {
 
 function applyPaymentsFilters() {
     const filter = getRef('payments_type_filter').querySelector('input:checked').value;
-    getRef('history_applied_filters').innerHTML = ``;
     if (filter !== 'all') {
         renderElem(getRef('history_applied_filters'),
             html`
@@ -1042,21 +1105,33 @@ function applyPaymentsFilters() {
             </button>`);
     }
     toggleFilters()
-    render.paymentsHistory()
+    if (pagesData.params.asset == 'rupee') {
+        render.rupeeHistory()
+    } else {
+        render.btcHistory()
+    }
     closePopup()
 }
 function resetPaymentsFilters() {
     getRef('payments_type_filter').querySelector('input[value="all"]').checked = true;
-    render.paymentsHistory()
+    if (pagesData.params.asset == 'rupee') {
+        render.rupeeHistory()
+    } else {
+        render.btcHistory()
+    }
     closePopup()
     toggleFilters()
 }
 
 delegate(getRef('history_applied_filters'), 'click', '.applied-filter', e => {
-    const filter = e.delegateTarget.dataset.filter
-    const filterValue = e.delegateTarget.dataset.value
+    // const filter = e.delegateTarget.dataset.filter
+    // const filterValue = e.delegateTarget.dataset.value
     e.delegateTarget.remove()
-    render.paymentsHistory()
+    if (pagesData.params.asset == 'rupee') {
+        render.rupeeHistory()
+    } else {
+        render.btcHistory()
+    }
     toggleFilters()
 })
 
@@ -1110,4 +1185,166 @@ function signOut() {
             }
         });
 }
-    
+function getAddressDetails(address) {
+    return new Promise((resolve, reject) => {
+        btc_api.getAddressData(address).then(data => {
+            console.debug(data);
+            let details = {};
+            details.balance = data.balance;
+            details.address = data.address;
+            details.txs = data.txs.map(tx => {
+                let d = {
+                    txid: tx.txid,
+                    time: tx.time,
+                    block: tx.block_no
+                }
+                if (tx.outgoing) {
+                    d.type = "out";
+                    d.amount = 0;
+                    d.receiver = new Set();
+                    let change = 0;
+                    tx.outgoing.outputs.forEach(o => {
+                        if (o.address !== address) {
+                            d.receiver.add(o.address)
+                            d.amount += parseFloat(o.value)
+                        } else
+                            change += parseFloat(o.value)
+                    });
+                    d.receiver = Array.from(d.receiver);
+                    d.amount = parseFloat(d.amount.toFixed(8))
+                    d.fee = parseFloat((tx.outgoing.value - (d.amount + change)).toFixed(8))
+                    if (!d.amount && change > 0) {
+                        d.type = "self";
+                        d.amount = change
+                        delete d.receiver;
+                        d.address = address;
+                    }
+                } else if (tx.incoming) {
+                    d.type = "in";
+                    d.amount = parseFloat(tx.incoming.value);
+                    d.sender = Array.from(new Set(tx.incoming.inputs.map(i => i.address)));
+                }
+                return d;
+            })
+            resolve(details);
+        }).catch(error => reject(error))
+    })
+}
+function calculateBtcFees() {
+    fetch('https://bitcoiner.live/api/fees/estimates/latest').then(res => res.json()).then(data => {
+        const satPerByte = data.estimates['60'].sat_per_vbyte;
+        const legacyBytes = 200;
+        const segwitBytes = 77;
+        const fees = (legacyBytes * satPerByte + (0.25 * satPerByte) * segwitBytes) / Math.pow(10, 8);
+        getRef('send_fee').value = fees.toFixed(8);
+    }).catch(e => {
+        console.error(e)
+    })
+}
+
+function togglePrivateKeyVisibility(input) {
+    const target = input.closest('sm-input')
+    target.type = target.type === 'password' ? 'text' : 'password';
+    target.focusIn()
+}
+const txParticipantsObserver = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+        if (mutation.type === 'childList') {
+            if (mutation.addedNodes.length > 0 && mutation.target.children.length > 1) {
+                const removeButton = mutation.target.firstElementChild.querySelector('.remove-card')
+                if (!removeButton) {
+                    const newRemoveButton = html.node`
+                        <button class="remove-card button--small">
+                            <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0V0z" fill="none"></path>
+                                <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                            </svg>
+                            Remove
+                        </button>
+                    `
+                    mutation.target.firstElementChild.querySelector('.remove-card-wrapper').appendChild(newRemoveButton)
+                }
+            } else if (mutation.removedNodes.length > 0 && mutation.target.children.length === 1) {
+                const removeButton = mutation.target.firstElementChild.querySelector('.remove-card')
+                if (removeButton) {
+                    removeButton.remove()
+                }
+            }
+        }
+    })
+})
+txParticipantsObserver.observe(getRef('receiver_container'), {
+    childList: true
+})
+let globalExchangeRate = {}
+async function getExchangeRate() {
+    return new Promise((resolve, reject) => {
+        Promise.all(['usd', 'inr'].map(cur => fetch(`https://bitpay.com/api/rates/btc/${cur}`))).then(responses => {
+            Promise.all(responses.map(res => res.json())).then(rates => {
+                rates.forEach(rate => {
+                    globalExchangeRate[rate.code.toLowerCase()] = rate.rate
+                })
+                globalExchangeRate.btc = 1
+                resolve(globalExchangeRate)
+            }).catch(err => console.log(err))
+        }).catch(err => console.log(err))
+    })
+}
+getRef('add_receiver').onclick = evt => {
+    let receiverCard = getRef('receiver_template').content.cloneNode(true)
+    if (!getRef('receiver_container').children.length) {
+        receiverCard.querySelector('.remove-card').remove()
+    }
+    receiverCard.querySelector('.currency-symbol').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg>`
+    getRef('receiver_container').appendChild(receiverCard);
+    getRef('receiver_container').querySelectorAll('sm-input[data-btc-address]').forEach(input => input.customValidation = btc_api.validateAddress)
+}
+delegate(getRef('receiver_container'), 'click', '.remove-card', e => {
+        e.target.closest('.receiver-card').remove()
+})
+
+getRef('fees_selector').addEventListener('change', e => {
+    if (e.target.value !== 'custom') {
+        getRef('send_fee').readOnly = true;
+    }
+    switch (e.target.value) {
+        case 'custom':
+            getRef('send_fee').readOnly = false;
+            getRef('send_fee').focusIn();
+            getRef('selected_fee_tip').textContent = 'Set custom fee';
+            break;
+        case 'suggested':
+            getRef('selected_fee_tip').textContent = 'Estimated time of confirmation is 1hr'
+            calculateBtcFees();
+            break;
+    }
+})
+
+
+getRef('send_transaction').onclick = evt => {
+    buttonLoader('send_transaction', true)
+    const senders = btc_api.convert.legacy2bech(myFloID);
+    const privKeys = btc_api.convert.wif(myPrivKey);
+    const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
+    const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
+        return parseFloat(input.value.trim())
+    });
+    const fee = parseFloat(getRef('send_fee').value.trim());
+    console.debug(senders, receivers, amounts, fee);
+    btc_api.sendTx(senders, privKeys, receivers, amounts, fee).then(result => {
+        console.log(result);
+        closePopup();
+        getRef('txid').value = result.txid;
+        openPopup('txid_popup');
+        getRef('send_tx').reset()
+        getExchangeRate().then(() => {
+            calculateBtcFees()
+        }).catch(e => {
+            console.error(e)
+        })
+    }).catch(error => {
+        notify(`Error sending transaction \n ${error}`, 'error');
+    }).finally(_ => {
+        buttonLoader('send_transaction', false)
+    })
+}

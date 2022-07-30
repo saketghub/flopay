@@ -94,7 +94,6 @@ button {
   border: none;
   background-color: transparent;
   overflow: hidden;
-  color: inherit;
   -webkit-tap-highlight-color: transparent;
   align-items: center;
   font-size: 0.9rem;
@@ -103,6 +102,7 @@ button {
   padding: 0.8rem;
   border-radius: 0.3rem;
   justify-content: center;
+  color: inherit;
   &:focus-visible {
     outline: var(--accent-color) solid medium;
   }
@@ -111,7 +111,11 @@ button {
   }
 }
 .button {
+  color: var(--accent-color);
   background-color: rgba(var(--text-color), 0.06);
+  .icon {
+    fill: var(--accent-color);
+  }
   &--primary,
   &--danger {
     color: rgba(var(--background-color), 1) !important;
@@ -278,7 +282,7 @@ ol {
   text-overflow: ellipsis;
 }
 
-.breakable {
+.wrap-around {
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
@@ -470,6 +474,9 @@ ol {
     background-color: var(--accent-color);
   }
 }
+.margin-right-0-3 {
+  margin-right: 0.3rem;
+}
 .margin-right-0-5 {
   margin-right: 0.5rem;
 }
@@ -493,23 +500,13 @@ ol {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1.5rem;
-    min-height: 8rem;
+    min-height: 5rem;
     .grid {
       margin-top: auto;
     }
     h1 {
-      margin-top: auto;
       font-size: 2rem;
     }
-  }
-}
-.page-layout {
-  display: grid;
-  gap: 1.5rem 0;
-  grid-template-columns: 1.5rem minmax(0, 1fr) 1.5rem;
-  align-content: flex-start;
-  & > * {
-    grid-column: 2/3;
   }
 }
 #confirmation_popup,
@@ -577,14 +574,29 @@ ol {
 
 #sign_in,
 #sign_up {
-  justify-items: center;
-  align-content: center;
-  section {
-    margin-top: -8rem;
-    width: min(24rem, 100%);
-  }
+  justify-content: center;
+  align-items: center;
   sm-form {
     margin: 2rem 0;
+  }
+}
+#sign_in {
+  display: grid;
+  padding-top: 0;
+  align-items: center;
+  align-content: center;
+  padding-bottom: 0;
+  .illustration {
+    width: 100%;
+    height: auto;
+    background-color: #4d77ff;
+    border-radius: 1rem;
+  }
+  section {
+    background-color: rgba(var(--foreground-color), 1);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-top: -2.3rem;
   }
 }
 #sign_up {
@@ -612,25 +624,39 @@ ol {
   }
 }
 #main_header {
-  padding: 1.5rem;
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem 1rem;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 4rem;
+}
+.logged-in-user-id {
+  background-color: rgba(var(--text-color), 0.06);
+  max-width: fit-content;
+  padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+  border-radius: 2rem;
+  font-weight: 500;
 }
 #main_card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
   transition: background-color 0.3s;
-  background-color: rgba(var(--foreground-color), 1);
+  background-color: rgba(var(--background-color), 1);
 }
 
 #main_navbar {
+  position: fixed;
   display: flex;
-  background: rgba(var(--text-color), 0.03);
-  &.hide-away {
-    position: absolute;
-  }
+  justify-self: center;
+  margin: 0.5rem;
   ul {
+    border-radius: 1rem;
+    background-color: rgba(var(--foreground-color), 1);
+    box-shadow: 0 0.8rem 3rem rgba(0 0 0/ 0.15);
     display: flex;
     height: 100%;
     width: 100%;
@@ -650,7 +676,7 @@ ol {
   padding: 0.5rem 0.3rem;
   color: var(--text-color);
   font-size: 0.8rem;
-  border-radius: 0.3rem;
+  border-radius: 0.7rem;
   font-weight: 500;
   .icon {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -699,10 +725,12 @@ ol {
   margin: 0.3rem;
 }
 .inner-page {
-  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0 1rem;
   flex: 1;
-  overflow-y: auto;
   align-content: start;
+  overflow-y: auto;
 }
 
 .password-field {
@@ -745,52 +773,49 @@ ol {
   align-content: flex-start;
 }
 #wallet_cards_wrapper {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
 }
 .balance-card {
-  scroll-snap-align: start;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  width: min(16rem, 90%);
-  flex-shrink: 0;
-  color: rgba(0, 0, 0, 0.8);
-  &:not(:last-of-type) {
-    margin-right: 0.5rem;
+  display: grid;
+  gap: 1.5rem;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background-color: rgba(var(--foreground-color), 1);
+  .asset-icon {
+    position: relative;
+    height: 2.5rem;
+    width: 2.5rem;
+    padding: 0.6rem;
+    border-radius: 1.1rem;
+    fill: rgba(0, 0, 0, 0.8);
+    margin-right: 0.8rem;
   }
-  &:nth-of-type(1) {
-    background: url("bg-art2.svg") no-repeat bottom right, hsl(141, 100%, 88%);
-    background-size: contain;
-    .icon {
-      background-color: hsla(141, 100%, 70%, 0.5);
+  &.rupee-card {
+    .asset-icon {
+      background-color: hsla(141, 100%, 70%);
     }
   }
-  &:nth-of-type(2) {
-    background: url("back.svg") no-repeat bottom right, hsl(62, 100%, 83%);
-    background-size: contain;
-    .icon {
-      background-color: hsla(55, 100%, 50%, 0.5);
+  &.flo-card {
+    .asset-icon {
+      fill: white;
+      background-color: #4d77ff;
     }
   }
-  & > .flex {
-    margin-bottom: 0.3rem;
-    .icon {
-      height: 2rem;
-      width: 2rem;
-      padding: 0.4rem;
-      border-radius: 0.3rem;
-      fill: rgba(0, 0, 0, 0.8);
-      margin-right: 0.5rem;
+  &.btc-card {
+    .asset-icon {
+      background-color: rgba(255, 173, 8);
     }
   }
 }
 #rupee_balance,
-#flo_balance {
+#flo_balance,
+#btc_balance {
   span:first-of-type {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
-  span:last-of-type {
+  span:nth-of-type(2) {
     font-size: 1rem;
   }
 }
@@ -805,9 +830,9 @@ ol {
   color: inherit;
   font-weight: 500;
   .icon:first-of-type {
-    height: 2.5rem;
-    width: 2.5rem;
-    padding: 0.6rem;
+    height: 2.3rem;
+    width: 2.3rem;
+    padding: 0.5rem;
     fill: rgba(var(--foreground-color), 1);
     background-color: var(--accent-color);
     border-radius: 2rem;
@@ -824,13 +849,14 @@ ol {
   font-weight: 500;
   font-size: 0.8rem;
   white-space: initial;
+  padding: 0.8rem;
   .icon {
     margin-bottom: 0.8rem;
   }
 }
 .integrated-action-button {
-  padding: 0.8rem 0;
-  justify-content: initial;
+  padding: 0;
+  justify-content: flex-start;
   .icon:first-of-type {
     margin-right: 1rem;
   }
@@ -870,25 +896,35 @@ ol {
     fill: rgba(0, 0, 0, 0.8);
   }
 }
+.remove-card-wrapper {
+  min-height: 2rem;
+}
+.receiver-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border: none;
+  &:not(:last-of-type) {
+    border-bottom: solid thin rgba(var(--text-color), 0.3);
+  }
+}
 
 #contacts {
   position: relative;
-  padding: 0;
-  .scrolling-wrapper {
-    padding: 0 1.5rem;
-  }
 }
 #saved_ids_list {
   display: grid;
+  gap: 0.5rem;
   grid-template-columns: minmax(0, 1fr);
-  padding-bottom: 5rem;
+  margin-bottom: 1.5rem;
 }
 .saved-id {
   grid-template-columns: auto 1fr;
   gap: 0 0.8rem;
-  border-radius: 0.3rem;
-  padding: 0.8rem 0;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
   user-select: none;
+  background-color: rgba(var(--foreground-color), 1);
   &.highlight {
     box-shadow: 0 0 0.1rem 0.1rem var(--accent-color) inset;
   }
@@ -930,6 +966,11 @@ ol {
   &__flo-id {
     font-size: 0.8rem;
   }
+}
+#saved_ids_tip {
+  background-color: rgba(var(--text-color), 0.03);
+  border-radius: 2rem;
+  padding: 0.5rem 0.8rem 0.5rem 0.5rem;
 }
 
 .card {
@@ -1012,7 +1053,7 @@ ol {
   position: sticky;
   top: 0;
   padding: 0.2rem 0 0.5rem 0;
-  background-color: rgba(var(--foreground-color), 1);
+  background-color: rgba(var(--background-color), 1);
   z-index: 1;
   transition: background-color 0.3s;
 }
@@ -1078,7 +1119,7 @@ ol {
 #payments_history {
   display: grid;
   gap: 2rem;
-  padding-bottom: 4rem;
+  margin-top: 1.5rem;
 }
 .transaction {
   grid-template-columns: auto 1fr auto;
@@ -1132,6 +1173,79 @@ ol {
     grid-area: 1/3/3/4;
   }
 }
+.btc-tx {
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  grid-template-areas: "icon time amount" "icon receiver receiver" "icon txid txid";
+  &:not(:last-of-type) {
+    padding-bottom: 1rem;
+  }
+  &__amount {
+    white-space: nowrap;
+  }
+  &.out {
+    .icon {
+      fill: var(--danger-color);
+    }
+    .btc-tx__amount {
+      color: var(--danger-color);
+      &::before {
+        content: "- ";
+      }
+    }
+  }
+  &.in {
+    .icon {
+      fill: var(--green);
+    }
+    .btc-tx__amount {
+      color: var(--green);
+      &::before {
+        content: "+ ";
+      }
+    }
+  }
+  &.unconfirmed-tx {
+    grid-template-areas: "icon time amount" "icon receiver receiver" "icon txid txid" "icon unconfirmed unconfirmed";
+    .icon {
+      fill: var(--yellow);
+    }
+  }
+  &__icon {
+    grid-area: icon;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgba(var(--text-color), 0.03);
+    border-radius: 2rem;
+  }
+  &__receiver {
+    grid-area: receiver;
+    font-weight: 500;
+  }
+  &__time {
+    grid-area: time;
+    font-size: 0.9rem;
+    color: rgba(var(--text-color), 0.8);
+  }
+  &__amount {
+    grid-area: amount;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  &__id {
+    grid-area: txid;
+    font-size: 0.9rem;
+    color: rgba(var(--text-color), 0.8);
+  }
+  .unconfirmed-wrapper {
+    grid-area: unconfirmed;
+    padding: 0.5rem 0;
+  }
+}
 .fab {
   position: absolute;
   right: 0;
@@ -1146,11 +1260,8 @@ ol {
 }
 #add_address_button {
   border-radius: 0.5rem;
-  color: rgba(var(--background-color), 1);
-  background-color: var(--accent-color);
-  .icon {
-    fill: rgba(var(--background-color), 1);
-  }
+  background-color: transparent;
+  border: solid 0.1rem var(--accent-color);
 }
 .user-action-result__icon {
   justify-self: center;
@@ -1194,7 +1305,7 @@ ol {
   display: flex;
   gap: 1rem;
   align-items: center;
-  padding: 0.8rem 0;
+  padding: 1rem;
   border-radius: 0.3rem;
   background-color: rgba(var(--foreground-color), 1);
   &:not(:last-of-type) {
@@ -1366,12 +1477,27 @@ ol {
   background-color: rgba(var(--text-color), 0.03);
 }
 @media screen and (max-width: 40rem) {
+  .inner-page {
+    padding-bottom: 7rem;
+  }
   #main_navbar {
+    bottom: 0.5rem;
+    justify-self: center;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    width: max-content;
+    background-color: rgba(var(--foreground-color), 0.9);
+    backdrop-filter: blur(0.5rem);
     &.hide-away {
       bottom: 0;
       left: 0;
       right: 0;
     }
+  }
+  .nav-item {
+    aspect-ratio: 1/1;
+    width: 4.5rem;
   }
   .integrated-action-button {
     .icon:last-of-type {
@@ -1383,9 +1509,6 @@ ol {
   sm-popup {
     --width: 24rem;
   }
-  .page-layout {
-    grid-template-columns: 1fr 90vw 1fr;
-  }
   .popup__header {
     grid-column: 1/-1;
     padding: 1rem 1.5rem 0 1.5rem;
@@ -1394,40 +1517,22 @@ ol {
     align-items: center;
     justify-content: center;
   }
-
-  #main_card {
-    height: calc(100vh - 2rem);
-    width: calc(100vw - 2rem);
-    grid-template-areas: "header" ".";
-    &:not(.nav-hidden) {
-      grid-template-columns: auto 1fr;
-      grid-template-rows: auto 1fr;
-      grid-template-areas: "nav header" "nav .";
-    }
-    position: relative;
-    border-radius: 0.8rem;
-    overflow: hidden;
-    box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05),
-      0 1rem 3rem rgba(0, 0, 0, 0.2);
-  }
   #main_header {
-    grid-area: header;
+    padding: 1rem 4vw;
+    background-color: rgba(var(--foreground-color), 1);
   }
   #main_navbar {
-    grid-area: nav;
-    border-top: none;
-    flex-direction: column;
-    height: calc(100% - 1rem);
-    margin: 0.5rem;
-    border-radius: 0.5rem;
-    background-color: rgba(37 110 255/ 0.03);
+    margin: 1rem;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    justify-content: center;
     ul {
       flex-direction: column;
       gap: 0.5rem;
       padding: 0.3rem;
-      li:last-of-type {
-        margin-top: auto;
-      }
+      align-self: center;
+      height: auto;
     }
   }
   .nav-item {
@@ -1443,20 +1548,23 @@ ol {
   .card {
     padding: 1.5rem;
   }
-  #saved_ids_list {
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  .balance-card {
+    padding: 1.5rem;
+    border-radius: 1rem;
   }
-  body[data-theme="dark"] {
-    #main_navbar {
-      background-color: rgba(0 0 0/ 0.2);
+  #contact {
+    & > * {
+      padding: 1rem 12vw;
+    }
+    & > :last-child {
+      padding: 0.5rem 12vw;
     }
   }
-}
-@media screen and (min-width: 56rem) {
-  #main_card {
-    width: 56rem;
-    height: min(90vh, 48rem);
+  #saved_ids_list {
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+  .inner-page {
+    padding: 1.5rem 18vw;
   }
 }
 @media (any-hover: hover) {
@@ -1468,7 +1576,6 @@ ol {
   ::-webkit-scrollbar-thumb {
     background: rgba(var(--text-color), 0.3);
     border-radius: 1rem;
-
     &:hover {
       background: rgba(var(--text-color), 0.5);
     }
