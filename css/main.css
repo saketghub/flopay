@@ -701,13 +701,13 @@ ol li::before {
   display: flex;
   justify-self: center;
   margin: 0.5rem;
-}
-#main_navbar ul {
   border-radius: 1rem;
-  background-color: rgba(var(--foreground-color), 0.9);
+  background-color: rgba(var(--foreground-color), 0.8);
   -webkit-backdrop-filter: blur(0.5rem);
           backdrop-filter: blur(0.5rem);
   box-shadow: 0 0.8rem 3rem rgba(0, 0, 0, 0.15);
+}
+#main_navbar ul {
   display: flex;
   height: 100%;
   width: 100%;
@@ -1621,11 +1621,13 @@ ol li::before {
     background-color: rgba(var(--foreground-color), 1);
   }
   #main_navbar {
-    margin: 1rem;
+    margin: auto 1rem;
     left: 0;
     top: 0;
     bottom: 0;
-    justify-content: center;
+    height: -webkit-fit-content;
+    height: -moz-fit-content;
+    height: fit-content;
   }
   #main_navbar ul {
     flex-direction: column;
