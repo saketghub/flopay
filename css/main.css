@@ -704,7 +704,9 @@ ol li::before {
 }
 #main_navbar ul {
   border-radius: 1rem;
-  background-color: rgba(var(--foreground-color), 1);
+  background-color: rgba(var(--foreground-color), 0.9);
+  -webkit-backdrop-filter: blur(0.5rem);
+          backdrop-filter: blur(0.5rem);
   box-shadow: 0 0.8rem 3rem rgba(0, 0, 0, 0.15);
   display: flex;
   height: 100%;
@@ -1578,9 +1580,6 @@ ol li::before {
     width: -webkit-max-content;
     width: -moz-max-content;
     width: max-content;
-    background-color: rgba(var(--foreground-color), 0.9);
-    -webkit-backdrop-filter: blur(0.5rem);
-            backdrop-filter: blur(0.5rem);
   }
   #main_navbar.hide-away {
     bottom: 0;
