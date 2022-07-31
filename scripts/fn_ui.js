@@ -718,7 +718,6 @@ const render = {
                 icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
             }
         } else {
-            console.log(transactionDetails)
             transactionReceiver = (type === 'out' ? `Sent to ${receiver}` : `Received from ${sender}`);
             icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M6,2l0.01,6L10,12l-3.99,4.01L6,22h12v-6l-4-4l4-3.99V2H6z M16,16.5V20H8v-3.5l4-4L16,16.5z"/></g></svg>`;
         }
@@ -730,6 +729,7 @@ const render = {
                 <div class="btc-tx__amount amount-shown" data-btc-amount="${amount}">${formatAmount(amount, 'btc')}</div>
                 <div class="btc-tx__receiver wrap-around">${transactionReceiver}</div>
                 <div class="btc-tx__id wrap-around">TXID: ${txid}</div>
+                ${!block ? html`<p class="pending-badge">Confirmation pending: amount will be deducted after transaction is confirmed</p>` : ''}
                 </li>
                 `;
     },
