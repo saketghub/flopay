@@ -633,7 +633,7 @@
                 </div>
                 <div class="card">
                     <sm-switch id="flo_id_visibility_switcher" class="w-100">
-                        <div class="flex flex-direction-column gap-0-3" slot="left">
+                        <div class="flex flex-direction-column gap-0-3 margin-right-0-5" slot="left">
                             <b>Hide address</b>
                             <p>
                                 Don't show my address on header. *Only applies to this device.
@@ -1203,14 +1203,20 @@
                 </button>
             </div>
         </header>
-        <div class="grid gap-0-5 justify-center text-center">
+        <div class="grid gap-2">
             <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
                 viewBox="0 0 24 24" width="24px" fill="#000000">
                 <path d="M0 0h24v24H0V0z" fill="none" />
                 <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
             </svg>
-            <h4>Transaction sent</h4>
-            <sm-copy id="txid"></sm-copy>
+            <div class="grid gap-0-5 justify-center text-center">
+                <h4>Transaction sent</h4>
+                <p>Confirmation of transaction might take few hours. </p>
+            </div>
+            <div class="grid">
+                <span class="label">Transaction ID</span>
+                <sm-copy id="txid"></sm-copy>
+            </div>
         </div>
     </sm-popup>
     <sm-popup id="change_cashier_upi_popup">

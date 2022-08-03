@@ -196,7 +196,7 @@ customElements.define('sm-form', class extends HTMLElement {
         this.submitButton.disabled = this.invalidFields.length;
     }
     handleKeydown(e) {
-        if (e.key === 'Enter' && !e.target.tagName.includes('TEXTAREA')) {
+        if (e.key === 'Enter' && e.target.tagName.includes('SM-INPUT')) {
             if (!this.invalidFields.length) {
                 if (this.submitButton) {
                     this.submitButton.click()
