@@ -254,6 +254,10 @@ strip-option {
           user-select: none;
 }
 
+sm-copy {
+  font-size: 0.9rem;
+}
+
 ul,
 ol {
   list-style: none;
@@ -831,14 +835,22 @@ ol li::before {
   display: grid;
   gap: 0.5rem;
   grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  align-items: flex-start;
 }
 
 .balance-card {
   display: grid;
-  gap: 1.5rem;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  overflow: hidden;
+  border-radius: 0.8rem;
   background-color: rgba(var(--foreground-color), 1);
+  border: solid 0.1rem rgba(var(--text-color), 0.1);
+}
+.balance-card > * {
+  padding: 1rem;
+  gap: 1.5rem;
+}
+.balance-card > :last-child:not(:only-child) {
+  border-top: thin solid rgba(var(--text-color), 0.2);
 }
 .balance-card .asset-icon {
   position: relative;
@@ -1649,9 +1661,8 @@ ol li::before {
   .card {
     padding: 1.5rem;
   }
-  .balance-card {
+  .balance-card > * {
     padding: 1.5rem;
-    border-radius: 1rem;
   }
   #contact > * {
     padding: 1rem 12vw;

@@ -313,20 +313,6 @@ window.addEventListener("load", () => {
         })
     })
 });
-function toggleFloIDVisibility(hide) {
-    document.querySelectorAll('.logged-in-user-id').forEach(elem => {
-        if(hide)
-            elem.classList.add('hide')
-        else
-            elem.classList.remove('hide')
-    })
-    document.querySelectorAll('.app-name').forEach(elem => {
-        if(hide)
-            elem.classList.remove('hide')
-        else
-            elem.classList.add('hide')
-    })
-}
 function createRipple(event, target) {
     const circle = document.createElement("span");
     const diameter = Math.max(target.clientWidth, target.clientHeight);
