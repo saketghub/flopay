@@ -202,6 +202,7 @@ function notify(message, mode, options = {}) {
             break;
         case 'error':
             icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+            options.pinned = true
             break;
     }
     getRef("notification_drawer").push(message, { icon, ...options });
@@ -259,8 +260,38 @@ function delegate(el, event, selector, fn) {
     })
 }
 
+// detect browser version
+function detectBrowser() {
+    let ua = navigator.userAgent,
+        tem,
+        M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+    if (/trident/i.test(M[1])) {
+        tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+        return 'IE ' + (tem[1] || '');
+    }
+    if (M[1] === 'Chrome') {
+        tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+        if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+    }
+    M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+    if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+    return M.join(' ');
+}
 window.addEventListener('hashchange', e => showPage(window.location.hash))
 window.addEventListener("load", () => {
+    const [browserName, browserVersion] = detectBrowser().split(' ');
+    const supportedVersions = {
+        Chrome: 85,
+        Firefox: 75,
+        Safari: 13,
+    }
+    if (browserName in supportedVersions) {
+        if (parseInt(browserVersion) < supportedVersions[browserName]) {
+            notify(`${browserName} ${browserVersion} is not fully supported, some features may not work properly. Please update to ${supportedVersions[browserName]} or higher.`, 'error')
+        }
+    } else {
+        notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
+    }
     document.body.classList.remove('hide')
     document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
     document.addEventListener('keyup', (e) => {
