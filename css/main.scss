@@ -179,7 +179,6 @@ details[open] {
 
 sm-input,
 sm-textarea {
-  font-size: 0.9rem;
   --border-radius: 0.3rem;
   --background-color: rgba(var(--foreground-color), 1);
   button {
@@ -407,7 +406,61 @@ ol {
 .space-between {
   justify-content: space-between;
 }
+.margin-right-0-3 {
+  margin-right: 0.3rem;
+}
+.margin-right-0-5 {
+  margin-right: 0.5rem;
+}
 
+.margin-left-0-5 {
+  margin-left: 0.5rem;
+}
+.margin-top-1-5 {
+  margin-top: 1.5rem;
+}
+.margin-bottom-0-5 {
+  margin-bottom: 0.5rem;
+}
+.margin-bottom-1 {
+  margin-bottom: 1rem;
+}
+.margin-bottom-1-5 {
+  margin-bottom: 1.5rem;
+}
+.margin-bottom-2 {
+  margin-bottom: 2rem;
+}
+.padding-0-3 {
+  padding: 0.3rem;
+}
+.padding-0-5 {
+  padding: 0.5rem;
+}
+.padding-1 {
+  padding: 1rem;
+}
+.padding-inline-0-5 {
+  padding-inline: 0.5rem;
+}
+.padding-inline-1 {
+  padding-inline: 1rem;
+}
+.padding-block-0-5 {
+  padding-block: 0.5rem;
+}
+.padding-block-1 {
+  padding-block: 1rem;
+}
+.border-radius-0-3 {
+  border-radius: 0.3rem;
+}
+.border-radius-0-5 {
+  border-radius: 0.5rem;
+}
+.font-0-9 {
+  font-size: 0.9rem;
+}
 .w-100 {
   width: 100%;
 }
@@ -476,16 +529,6 @@ ol {
     border-radius: 0.5em;
     background-color: var(--accent-color);
   }
-}
-.margin-right-0-3 {
-  margin-right: 0.3rem;
-}
-.margin-right-0-5 {
-  margin-right: 0.5rem;
-}
-
-.margin-left-0-5 {
-  margin-left: 0.5rem;
 }
 
 .icon-button {
@@ -585,21 +628,21 @@ ol {
 }
 #sign_in {
   display: grid;
-  padding-top: 0;
-  align-items: center;
   align-content: center;
-  padding-bottom: 0;
+  padding: 0;
+  justify-items: center;
   .illustration {
-    width: 100%;
     height: auto;
     background-color: #4d77ff;
     border-radius: 1rem;
+    width: min(24rem, 100%);
   }
   section {
+    width: min(24rem, 100%);
     background-color: rgba(var(--foreground-color), 1);
-    padding: 2rem;
+    padding: max(1.5rem, 2vw);
     border-radius: 0.5rem;
-    margin-top: -2.3rem;
+    margin-top: -1.6rem;
   }
 }
 #sign_up {
@@ -763,18 +806,32 @@ ol {
   overflow-y: auto;
 }
 #home {
+  position: relative;
   display: flex;
   flex-direction: column;
-  position: relative;
-  & > * {
-    margin-bottom: 2rem;
-  }
 }
 #user,
 #cashier {
   position: relative;
   padding-bottom: 1rem;
   align-content: flex-start;
+}
+.swap-input {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  background-color: rgba(var(--text-color), 0.06);
+  border-radius: 0.5rem;
+  padding: 0 0.2rem;
+  sm-input {
+    --background: transparent;
+  }
+  sm-select {
+    margin: 0.2rem 0;
+    --background: rgba(var(--foreground-color), 1);
+    &[open] {
+      z-index: 10;
+    }
+  }
 }
 #wallet_cards_wrapper {
   display: grid;
@@ -787,7 +844,6 @@ ol {
   overflow: hidden;
   border-radius: 0.8rem;
   background-color: rgba(var(--foreground-color), 1);
-  border: solid 0.1rem rgba(var(--text-color), 0.1);
   & > * {
     padding: 1rem;
     gap: 1.5rem;
@@ -797,29 +853,22 @@ ol {
     border-top: thin solid rgba(var(--text-color), 0.2);
   }
   .asset-icon {
-    position: relative;
     height: 2.5rem;
     width: 2.5rem;
     padding: 0.6rem;
     border-radius: 1.1rem;
-    fill: rgba(0, 0, 0, 0.8);
     margin-right: 0.8rem;
+    fill: rgba(var(--background-color), 1);
   }
-  &.rupee-card {
-    .asset-icon {
-      background-color: hsla(141, 100%, 70%);
-    }
+  .asset-icon--rupee {
+    background-color: var(--green);
   }
-  &.flo-card {
-    .asset-icon {
-      fill: white;
-      background-color: #4d77ff;
-    }
+  .asset-icon--flo {
+    fill: white;
+    background-color: #4d77ff;
   }
-  &.btc-card {
-    .asset-icon {
-      background-color: rgba(255, 173, 8);
-    }
+  .asset-icon--btc {
+    background-color: rgba(255, 173, 8);
   }
 }
 #rupee_balance,

@@ -392,13 +392,17 @@ async function showPage(targetPage, options = {}) {
             setTimeout(() => {
                 getRef('private_key_field').focusIn()
             }, 0);
-            targetPage = 'sign_in'
             break;
         case 'sign_up':
             const { floID, privKey } = floCrypto.generateNewID()
             getRef('generated_flo_id').value = floID
             getRef('generated_private_key').value = privKey
-            targetPage = 'sign_up'
+            break;
+        case 'home':
+            getExchangeRate().then(rate => { 
+                console.log(rate)
+                getRef('conversion_rate').textContent = `1BTC = ${formatAmount(rate.inr)}`;
+            })
             break;
         case 'contact':
             getRef('contact__title').textContent = getFloIdTitle(params.floId)
@@ -550,8 +554,6 @@ async function showPage(targetPage, options = {}) {
             break;
         case 'settings':
             renderSavedUpiIds()
-            break;
-        default:
             break;
     }
     if (pageId !== 'history') {

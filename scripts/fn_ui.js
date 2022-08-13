@@ -817,6 +817,14 @@ async function refreshBalance(button) {
         if (button)
             buttonLoader(button, false)
     })
+    btc_api.getBalance(btc_api.convert.legacy2bech(myFloID)).then(btcBalance => { 
+        if(btcBalance) {
+        const [beforeDecimal, afterDecimal = '00'] = String(btcBalance).split('.')
+        renderElem(getRef('btc_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
+        } else {
+            renderElem(getRef('btc_balance'), html`<span><b>0</b></span>`)
+        }
+    })
     try {
         const [floBal, floRates] = await Promise.all([floBlockchainAPI.getBalance(myFloID), floExchangeAPI.getRates('FLO')])
         const [beforeDecimal, afterDecimal = '00'] = String(floBal).split('.')
@@ -832,15 +840,53 @@ async function refreshBalance(button) {
     } catch (e) {
         console.error(e)
     }
-    btc_api.getBalance(btc_api.convert.legacy2bech(myFloID)).then(btcBalance => { 
-        if(btcBalance) {
-        const [beforeDecimal, afterDecimal = '00'] = String(btcBalance).split('.')
-        renderElem(getRef('btc_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
-        } else {
-            renderElem(getRef('btc_balance'), html`<span><b>0</b></span>`)
-        }
-    })
 }
+
+const assetIcons = {
+    btc: ` <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg> `,
+    usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
+    rupee: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
+}
+function setCorrectInputParams({fromAsset, toAsset}) {
+    getRef('from_amount').setAttribute('min', fromAsset === 'rupee' ? '50' : '0.00000001');
+    getRef('from_amount').setAttribute('step', fromAsset === 'rupee' ? '0.01' : '0.00000001');
+    getRef('from_amount').setAttribute('error-text', `Minimum amount is ${fromAsset === 'rupee' ? '₹50' : '0.000001BTC'}`);
+
+    getRef('to_amount').setAttribute('min', toAsset === 'rupee' ? '50' : '0.00000001');
+    getRef('to_amount').setAttribute('step', toAsset === 'rupee' ? '0.01' : '0.00000001');
+    getRef('to_amount').setAttribute('error-text', `Minimum amount is ${toAsset === 'rupee' ? '₹50' : '0.000001BTC'}`);
+    
+    getRef('from_asset_icon').innerHTML = assetIcons[fromAsset]
+    getRef('to_asset_icon').innerHTML = assetIcons[toAsset]
+}
+getRef('from_asset_selector').addEventListener('change', e => {
+    const fromAsset = e.target.value;
+    const toAsset = fromAsset === 'rupee' ? 'btc' : 'rupee';
+    setCorrectInputParams({fromAsset, toAsset});
+    getRef('to_asset_selector').value = toAsset
+})
+getRef('to_asset_selector').addEventListener('change', e => {
+    const toAsset = e.target.value
+    const fromAsset = toAsset === 'rupee' ? 'btc' : 'rupee';
+    setCorrectInputParams({fromAsset, toAsset});
+    getRef('from_asset_selector').value = fromAsset
+})
+getRef('from_amount').addEventListener('input', e => {
+    const fromAsset = getRef('from_asset_selector').value;
+    let fromAmount = parseFloat(e.target.value.trim());
+    if (fromAmount && !Number.isNaN(fromAmount)) 
+        getRef('to_amount').value = fromAsset === 'rupee' ? parseFloat((fromAmount / globalExchangeRate.inr).toFixed(8)) : parseFloat((fromAmount * globalExchangeRate.inr).toFixed(2))
+    else 
+        getRef('to_amount').value = ''
+})
+getRef('to_amount').addEventListener('input', e => { 
+    const toAsset = getRef('to_asset_selector').value;
+    let toAmount = parseFloat(e.target.value.trim());
+    if (toAmount && !Number.isNaN(toAmount)) 
+        getRef('from_amount').value = toAsset === 'rupee' ? parseFloat((toAmount / globalExchangeRate.inr).toFixed(8)) : parseFloat((toAmount * globalExchangeRate.inr).toFixed(2))
+    else
+        getRef('from_amount').value = ''
+})
 
 function getArrayOfSavedIds() {
     const arr = [];
