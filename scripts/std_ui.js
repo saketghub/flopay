@@ -109,7 +109,7 @@ document.addEventListener('popupopened', async e => {
             if (hasSavedIds) {
                 const clone = frag.cloneNode(true)
                 getRef('select_withdraw_upi_id').append(clone)
-                getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
+                getRef('select_withdraw_upi_id').parentNode.classList.remove('hidden')
             }
             break;
         case 'send_btc_popup':
@@ -128,7 +128,7 @@ document.addEventListener('popupclosed', e => {
             showChildElement('topup_wallet_process', 0)
             break;
         case 'withdraw_wallet_popup':
-            getRef('select_withdraw_upi_id').parentNode.classList.add('hide')
+            getRef('select_withdraw_upi_id').parentNode.classList.add('hidden')
             getRef('select_withdraw_upi_id').innerHTML = ''
             showChildElement('withdraw_wallet_process', 0)
             break;
@@ -292,7 +292,7 @@ window.addEventListener("load", () => {
     } else {
         notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
     }
-    document.body.classList.remove('hide')
+    document.body.classList.remove('hidden')
     document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
     document.addEventListener('keyup', (e) => {
         if (e.key === 'Escape') {
@@ -356,10 +356,11 @@ async function showPage(targetPage, options = {}) {
     let params = {}
     let searchParams
     if (targetPage === '') {
-        if (typeof myFloID === "undefined") {
+        try {
+            if(floDapps.user.id)
+                pageId = 'home'   
+        }catch(e){
             pageId = 'sign_in'
-        } else {
-            pageId = 'home'
         }
     } else {
         if (targetPage.includes('/')) {
@@ -378,10 +379,13 @@ async function showPage(targetPage, options = {}) {
             pageId = targetPage
         }
     }
-    if (typeof myFloID === "undefined" && !(['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) return
-    else if (typeof myFloID !== "undefined" && (['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) {
-        history.replaceState(null, null, '#/home');
-        pageId = 'home'
+    try {
+        if (floDapps.user.id && (['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) {
+            history.replaceState(null, null, '#/home');
+            pageId = 'home'
+        }
+    }catch(e){
+        if ( !(['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) return
     }
     if (searchParams) {
         const urlSearchParams = new URLSearchParams('?' + searchParams);
@@ -400,7 +404,6 @@ async function showPage(targetPage, options = {}) {
             break;
         case 'home':
             getExchangeRate().then(rate => { 
-                console.log(rate)
                 getRef('conversion_rate').textContent = `1BTC = ${formatAmount(rate.inr)}`;
             })
             break;
@@ -408,8 +411,8 @@ async function showPage(targetPage, options = {}) {
             getRef('contact__title').textContent = getFloIdTitle(params.floId)
             getRef('contact__transactions').innerHTML = '<sm-spinner></sm-spinner>'
             Promise.all([
-                floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${myFloID}&destFloAddress=${params.floId}`),
-                floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${params.floId}&destFloAddress=${myFloID}`)])
+                floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${floDapps.user.id}&destFloAddress=${params.floId}`),
+                floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${params.floId}&destFloAddress=${floDapps.user.id}`)])
                 .then(([sentTransactions, receivedTransactions]) => {
                     const allTransactions = Object.values({ ...sentTransactions.transactions, ...receivedTransactions.transactions }).sort((a, b) => b.transactionDetails.time - a.transactionDetails.time)
                     if (contactHistoryLoader) {
@@ -585,9 +588,9 @@ async function showPage(targetPage, options = {}) {
         const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
         if (currentActiveElement) {
             getRef('main_card').classList.remove('nav-hidden')
-            if (getRef('main_navbar').classList.contains('hide')) {
+            if (getRef('main_navbar').classList.contains('hidden')) {
                 getRef('main_navbar').classList.remove('hide-away')
-                getRef('main_navbar').classList.remove('hide')
+                getRef('main_navbar').classList.remove('hidden')
                 getRef('main_navbar').animate([
                     {
                         transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
@@ -642,7 +645,7 @@ async function showPage(targetPage, options = {}) {
             currentActiveElement.classList.add('nav-item--active')
         } else {
             getRef('main_card').classList.add('nav-hidden')
-            if (!getRef('main_navbar').classList.contains('hide')) {
+            if (!getRef('main_navbar').classList.contains('hidden')) {
                 getRef('main_navbar').classList.add('hide-away')
                 getRef('main_navbar').animate([
                     {
@@ -658,14 +661,14 @@ async function showPage(targetPage, options = {}) {
                     fill: 'forwards',
                     easing: 'ease'
                 }).onfinish = () => {
-                    getRef('main_navbar').classList.add('hide')
+                    getRef('main_navbar').classList.add('hidden')
                 }
             }
         }
-        document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
-        getRef(pageId).closest('.page').classList.remove('hide')
-        document.querySelectorAll('.inner-page').forEach(page => page.classList.add('hide'))
-        getRef(pageId).classList.remove('hide')
+        document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'))
+        getRef(pageId).closest('.page').classList.remove('hidden')
+        document.querySelectorAll('.inner-page').forEach(page => page.classList.add('hidden'))
+        getRef(pageId).classList.remove('hidden')
         getRef('main_card').style.overflowY = "hidden";
         getRef(pageId).animate([
             {
@@ -849,22 +852,22 @@ function showChildElement(id, index, options = {}) {
         easing: 'ease',
         fill: 'forwards'
     }
-    const visibleElement = [...getRef(id).children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hide'));
+    const visibleElement = [...getRef(id).children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
     if (visibleElement === getRef(id).children[index]) return;
     if (visibleElement) {
         if (exit) {
             visibleElement.animate(exit, animOptions).onfinish = () => {
-                visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hide')
-                getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hide')
+                visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
                 if (entry)
                     getRef(id).children[index].animate(entry, animOptions)
             }
         } else {
-            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hide')
-            getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hide')
+            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+            getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
         }
     } else {
-        getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hide')
+        getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
         getRef(id).children[index].animate(entry, animOptions)
     }
 }

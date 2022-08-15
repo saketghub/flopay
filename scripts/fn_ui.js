@@ -13,11 +13,11 @@ const relativeTime = new RelativeTime({ style: 'narrow' });
 // use floDapps.storeContact() to store contacts that can be used by other apps on same device 
 function syncUserData(obsName, data) {
     const dataToSend = Crypto.AES.encrypt(JSON.stringify(data), myPrivKey);
-    return floCloudAPI.sendApplicationData(dataToSend, obsName, { receiverID: myFloID });
+    return floCloudAPI.sendApplicationData(dataToSend, obsName, { receiverID: floDapps.user.id });
 }
 // store user data in separate IDB 
 async function organizeSyncedData(obsName) {
-    const fetchedData = await floCloudAPI.requestApplicationData(obsName, { mostRecent: true, senderIDs: [myFloID], receiverID: myFloID });
+    const fetchedData = await floCloudAPI.requestApplicationData(obsName, { mostRecent: true, senderIDs: [floDapps.user.id], receiverID: floDapps.user.id });
     if (fetchedData.length && await compactIDB.readData(obsName, 'lastSyncTime') !== fetchedData[0].time) {
         await compactIDB.clearData(obsName);
         const dataToDecrypt = floCloudAPI.util.decodeMessage(fetchedData[0].message);
@@ -94,13 +94,13 @@ function withdrawMoneyFromWallet() {
     if (!upiId)
         return notify("Please add an UPI ID to continue", 'error');
     buttonLoader('withdraw_rupee_button', true);
-    getRef('withdrawal_blockchain_link').classList.add('hide');
+    getRef('withdrawal_blockchain_link').classList.add('hidden');
     User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
         console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
         User.tokenToCash(cashier, amount, txid, upiId).then(result => {
             showChildElement('withdraw_wallet_process', 1);
             refreshBalance();
-            getRef('withdrawal_blockchain_link').classList.remove('hide');
+            getRef('withdrawal_blockchain_link').classList.remove('hidden');
             getRef('withdrawal_blockchain_link').href = `https://flosight.duckdns.org/tx/${txid}`
             console.log(result);
         }).catch(error => {
@@ -121,7 +121,7 @@ function withdrawMoneyFromWallet() {
 function transferToExchange() {
     const amount = parseFloat(getRef('exchange_transfer__amount').value.trim());
     buttonLoader('exchange_transfer__button', true);
-    floExchangeAPI.depositToken('rupee', amount, myFloID, 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm', myPrivKey).then(txid => {
+    floExchangeAPI.depositToken('rupee', amount, floDapps.user.id, 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm', myPrivKey).then(txid => {
         console.log(txid);
         showChildElement('exchange_transfer_process', 1);
         getRef('exchange_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to exchange`;
@@ -160,7 +160,7 @@ function saveUpiId() {
             getRef('saved_upi_ids_list').append(html.node`${render.savedUpiId(upiId)}`);
         } else if (pagesData.lastPage === 'home') {
             getRef('select_withdraw_upi_id').append(render.savedUpiIdOption(upiId));
-            getRef('select_withdraw_upi_id').parentNode.classList.remove('hide')
+            getRef('select_withdraw_upi_id').parentNode.classList.remove('hidden')
         }
         closePopup();
     }).catch(error => {
@@ -231,9 +231,9 @@ const pendingTransactionsObserver = new MutationObserver((mutations) => {
     mutations.forEach(mutation => {
         if (mutation.type === 'childList') {
             if (mutation.target.children.length)
-                mutation.target.parentNode.classList.remove('hide')
+                mutation.target.parentNode.classList.remove('hidden')
             else
-                mutation.target.parentNode.classList.add('hide')
+                mutation.target.parentNode.classList.add('hidden')
 
         }
     })
@@ -447,9 +447,9 @@ function confirmTopUp(button) {
 getRef('top_up__reason_selector').addEventListener('change', e => {
     console.log(e.target.value);
     if (e.target.value === 'other') {
-        getRef('top_up__specified_reason').parentNode.classList.remove('hide');
+        getRef('top_up__specified_reason').parentNode.classList.remove('hidden');
     } else {
-        getRef('top_up__specified_reason').parentNode.classList.add('hide');
+        getRef('top_up__specified_reason').parentNode.classList.add('hidden');
     }
 })
 function declineTopUp() {
@@ -546,15 +546,15 @@ const render = {
         let transactionReceiver 
         let className 
         let icon
-        if (sender === myFloID) {
+        if (sender === floDapps.user.id) {
             className = 'transaction grid sent'
             transactionReceiver = `Sent to ${getFloIdTitle(receiver) || 'Myself'}`;
             icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
-        } else if (receiver === myFloID) {
+        } else if (receiver === floDapps.user.id) {
             className = 'transaction grid received'
             transactionReceiver = `Received from ${getFloIdTitle(sender)}`;
             icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
-        } else { //This should not happen unless API returns transaction that does not involve myFloID
+        } else { //This should not happen unless API returns transaction that does not involve floDapps.user.id
             return html`sender: ${sender} | receiver: ${receiver}`;
         }
         return html.node`
@@ -634,7 +634,7 @@ const render = {
     },
     transactionMessage(details) {
         const { tokenAmount, time, sender, receiver, flodata } = floTokenAPI.util.parseTxData(details)
-        let messageType = sender === receiver ? 'self' : sender === myFloID ? 'sent' : 'received';
+        let messageType = sender === receiver ? 'self' : sender === floDapps.user.id ? 'sent' : 'received';
         const clone = getRef('transaction_message_template').content.cloneNode(true).firstElementChild;
         clone.classList.add(messageType);
         clone.querySelector('.transaction-message__amount').textContent = formatAmount(tokenAmount);
@@ -677,7 +677,7 @@ const render = {
         if (rupeeHistoryLoader)
             rupeeHistoryLoader.clear()
         getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
-        floTokenAPI.getAllTxs(myFloID).then(({ transactions }) => {
+        floTokenAPI.getAllTxs(floDapps.user.id).then(({ transactions }) => {
             for (const transactionId in transactions) {
                 paymentTransactions.push({
                     ...floTokenAPI.util.parseTxData(transactions[transactionId]),
@@ -687,7 +687,7 @@ const render = {
             const filter = getRef('payments_type_filter').querySelector('input:checked').value;
             if (filter !== 'all') {
                 let propToCheck = filter === 'sent' ? 'sender' : 'receiver';
-                paymentTransactions = paymentTransactions.filter(v => v[propToCheck] === myFloID)
+                paymentTransactions = paymentTransactions.filter(v => v[propToCheck] === floDapps.user.id)
             }
             // solve sorting issue at backend
             paymentTransactions.sort((a, b) => b.time - a.time);
@@ -737,7 +737,7 @@ const render = {
         try {
             // render transactions
             getRef('payments_history').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
-            getAddressDetails( btc_api.convert.legacy2bech(myFloID)).then(result => {
+            getAddressDetails( btc_api.convert.legacy2bech(floDapps.user.id)).then(result => {
                 if (result.txs.length) {
                     let allTransactions = result.txs;
                     const filter = getRef('payments_type_filter').querySelector('input:checked').value;
@@ -811,13 +811,13 @@ function buttonLoader(id, show) {
 async function refreshBalance(button) {
     if (button)
         buttonLoader(button, true)
-    floTokenAPI.getBalance(myFloID).then((balance = 0) => {
+    floTokenAPI.getBalance(floDapps.user.id).then((balance = 0) => {
         const [beforeDecimal, afterDecimal] = formatAmount(balance).split('₹')[1].split('.')
         renderElem(getRef('rupee_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
         if (button)
             buttonLoader(button, false)
     })
-    btc_api.getBalance(btc_api.convert.legacy2bech(myFloID)).then(btcBalance => { 
+    btc_api.getBalance(btc_api.convert.legacy2bech(floDapps.user.id)).then(btcBalance => { 
         if(btcBalance) {
         const [beforeDecimal, afterDecimal = '00'] = String(btcBalance).split('.')
         renderElem(getRef('btc_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
@@ -826,14 +826,14 @@ async function refreshBalance(button) {
         }
     })
     try {
-        const [floBal, floRates] = await Promise.all([floBlockchainAPI.getBalance(myFloID), floExchangeAPI.getRates('FLO')])
+        const [floBal, floRates] = await Promise.all([floBlockchainAPI.getBalance(floDapps.user.id), floExchangeAPI.getRates('FLO')])
         const [beforeDecimal, afterDecimal = '00'] = String(floBal).split('.')
         renderElem(getRef('flo_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
         if (floBal < floGlobals.settings.user_flo_threshold) {
             getRef('low_user_flo_warning').textContent = `Your FLO balance is low. You will receive ${floGlobals.settings.send_user_flo} FLO of worth ₹${parseFloat(floRates.rate.toFixed(2))} deducted from top-up amount.`;
-            getRef('low_user_flo_warning').classList.remove('hide');
+            getRef('low_user_flo_warning').classList.remove('hidden');
         } else {
-            getRef('low_user_flo_warning').classList.add('hide');
+            getRef('low_user_flo_warning').classList.add('hidden');
         }
         if (button)
             buttonLoader(button, false)
@@ -969,7 +969,7 @@ function deleteSavedId() {
 }
 const savedIdsObserver = new MutationObserver((mutationList) => {
     mutationList.forEach(mutation => {
-        conditionalClassToggle(getRef('saved_ids_tip'), 'hide', !mutation.target.children.length);
+        conditionalClassToggle(getRef('saved_ids_tip'), 'hidden', !mutation.target.children.length);
     })
 })
 
@@ -1031,10 +1031,10 @@ function showTokenTransfer(type) {
     if (pagesData.lastPage === 'contact') {
         getRef('token_transfer__receiver').value = pagesData.params.floId;
         getRef('token_transfer__receiver').readOnly = true;
-        getRef('token_transfer__receiver').querySelector('button').classList.add('hide');
+        getRef('token_transfer__receiver').querySelector('button').classList.add('hidden');
     } else {
         getRef('token_transfer__receiver').readOnly = false;
-        getRef('token_transfer__receiver').querySelector('button').classList.remove('hide');
+        getRef('token_transfer__receiver').querySelector('button').classList.remove('hidden');
     }
     openPopup('token_transfer_popup');
     if (pagesData.lastPage === 'contact') {
@@ -1091,8 +1091,8 @@ function toggleFilters() {
         easing: 'ease',
         fill: 'forwards',
     }
-    if (getRef('history_applied_filters_wrapper').classList.contains('hide') && getRef('history_applied_filters').children.length > 0) {
-        getRef('history_applied_filters_wrapper').classList.remove('hide')
+    if (getRef('history_applied_filters_wrapper').classList.contains('hidden') && getRef('history_applied_filters').children.length > 0) {
+        getRef('history_applied_filters_wrapper').classList.remove('hidden')
         const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
         getRef('history_applied_filters_wrapper').animate([
             {
@@ -1108,7 +1108,7 @@ function toggleFilters() {
             { transform: `translateY(-${filtersContainerDimensions.height}px)` },
             { transform: `translateY(0)` },
         ], animOptions)
-    } else if (!getRef('history_applied_filters_wrapper').classList.contains('hide') && getRef('history_applied_filters').children.length === 0) {
+    } else if (!getRef('history_applied_filters_wrapper').classList.contains('hidden') && getRef('history_applied_filters').children.length === 0) {
         getRef('history_applied_filters_wrapper').animate([
             {
                 transform: `translateY(0)`,
@@ -1120,7 +1120,7 @@ function toggleFilters() {
             },
         ], animOptions)
             .onfinish = () => {
-                getRef('history_applied_filters_wrapper').classList.add('hide')
+                getRef('history_applied_filters_wrapper').classList.add('hidden')
             }
         const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
         const historyDimensions = getRef('payments_history').getBoundingClientRect();
@@ -1184,7 +1184,7 @@ delegate(getRef('history_applied_filters'), 'click', '.applied-filter', e => {
 function changeUpi() {
     const upiId = getRef('upi_id').value.trim();
     Cashier.updateUPI(upiId).then(() => {
-        getRef('my_upi_id').classList.remove('hide')
+        getRef('my_upi_id').classList.remove('hidden')
         getRef('my_upi_id').value = upiId;
         getRef('change_upi_button').textContent = 'Change UPI ID';
         notify('UPI ID updated successfully', 'success');
@@ -1195,31 +1195,36 @@ function changeUpi() {
 }
 function getSignedIn(passwordType) {
     return new Promise((resolve, reject) => {
-        if (passwordType === 'PIN/Password') {
-            getRef('private_key_field').removeAttribute('data-private-key');
-            getRef('private_key_field').setAttribute('placeholder', 'PIN');
-            getRef('private_key_field').customValidation = null
-
-        } else {
-            getRef('private_key_field').dataset.privateKey = ''
-            getRef('private_key_field').setAttribute('placeholder', 'FLO private key');
-            getRef('private_key_field').customValidation = floCrypto.getPubKeyHex
+        try {
+            console.log(floDapps.user.id)
+            
+        }catch(err) {
+            if (passwordType === 'PIN/Password') {
+                getRef('private_key_field').removeAttribute('data-private-key');
+                getRef('private_key_field').setAttribute('placeholder', 'Password');
+                getRef('private_key_field').customValidation = null
+    
+            } else {
+                getRef('private_key_field').dataset.privateKey = ''
+                getRef('private_key_field').setAttribute('placeholder', 'FLO private key');
+                getRef('private_key_field').customValidation = floCrypto.getPubKeyHex
+            }
+            if (window.location.hash.includes('sign_in') || window.location.hash.includes('sign_up')) {
+                showPage(window.location.hash);
+            } else {
+                location.hash = `#/sign_in`;
+            }
+            getRef('sign_in_button').onclick = () => {
+                resolve(getRef('private_key_field').value.trim());
+                getRef('private_key_field').value = '';
+                showPage('loading');
+            };
+            getRef('sign_up_button').onclick = () => {
+                resolve(getRef('generated_private_key').value.trim());
+                getRef('generated_private_key').value = '';
+                showPage('loading');
+            };
         }
-        if (window.location.hash.includes('sign_in') || window.location.hash.includes('sign_up')) {
-            showPage(window.location.hash);
-        } else {
-            location.hash = `#/sign_in`;
-        }
-        getRef('sign_in_button').onclick = () => {
-            resolve(getRef('private_key_field').value.trim());
-            getRef('private_key_field').value = '';
-            showPage('loading');
-        };
-        getRef('sign_up_button').onclick = () => {
-            resolve(getRef('generated_private_key').value.trim());
-            getRef('generated_private_key').value = '';
-            showPage('loading');
-        };
     });
 }
 function signOut() {
@@ -1369,7 +1374,7 @@ getRef('fees_selector').addEventListener('change', e => {
 
 getRef('send_transaction').onclick = evt => {
     buttonLoader('send_transaction', true)
-    const senders = btc_api.convert.legacy2bech(myFloID);
+    const senders = btc_api.convert.legacy2bech(floDapps.user.id);
     const privKeys = btc_api.convert.wif(myPrivKey);
     const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
     const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
@@ -1400,7 +1405,7 @@ function convertAsset() {
     const fromAsset = getRef('from_asset_selector').value;
     const fromAmount = parseFloat(getRef('from_amount').value.trim());
     if (fromAsset === 'BTC') {
-        btc_api.getBalance(btc_api.convert.legacy2bech(myFloID)).then(btcBalance => {
+        btc_api.getBalance(btc_api.convert.legacy2bech(floDapps.user.id)).then(btcBalance => {
             if (btcBalance < fromAmount) {
                 notify('You do not have enough BTC to convert', 'error');
                 buttonLoader('convert_asset_button', false)
@@ -1408,7 +1413,7 @@ function convertAsset() {
             }
         })
     } else {
-        floTokenAPI.getBalance(myFloID).then((balance = 0) => {
+        floTokenAPI.getBalance(floDapps.user.id).then((balance = 0) => {
             if(balance < fromAmount) {
                 notify('You do not have enough rupee tokens to convert', 'error');
                 buttonLoader('convert_asset_button', false)

@@ -27,7 +27,7 @@
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" defer></script>
 </head>
 
-<body onload="onLoadStartUp()" class="hide">
+<body onload="onLoadStartUp()" class="hidden">
     <sm-notifications id="notification_drawer"></sm-notifications>
     <sm-popup id="confirmation_popup">
         <h4 id="confirm_title"></h4>
@@ -48,7 +48,7 @@
             </div>
         </sm-form>
     </sm-popup>
-    <div id="secondary_pages" class="page hide">
+    <div id="secondary_pages" class="page hidden">
         <header class="flex align-center gap-1">
             <div class="flex align-center flex-1">
                 <svg class="icon flo-icon" width="64" height="64" viewBox="0 0 64 64" fill="none"
@@ -68,7 +68,7 @@
             </div>
             <theme-toggle></theme-toggle>
         </header>
-        <article id="landing" class="inner-page hide">
+        <article id="landing" class="inner-page hidden">
             <section class="grid justify-center gap-1">
                 <h1 class="h1">Send.request</h1>
                 <div class="flex gap-0-5">
@@ -77,7 +77,7 @@
                 </div>
             </section>
         </article>
-        <article id="sign_in" class="inner-page hide">
+        <article id="sign_in" class="inner-page hidden">
             <svg class="illustration" width="673" height="417" viewBox="0 0 673 417" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
                 <g clip-path="url(#clip0_2_41)">
@@ -161,7 +161,26 @@
                 <p>Welcome back, glad to see you again</p>
                 <sm-form id="sign_in_form">
                     <sm-input id="private_key_field" type="password" placeholder="FLO private key"
-                        error-text="Private key is invalid" data-private-key required></sm-input>
+                        class="password-field" error-text="Private key is invalid" data-private-key required>
+                        <label slot="right" class="interact">
+                            <input type="checkbox" class="hidden" autocomplete="off" readonly
+                                onchange="togglePrivateKeyVisibility(this)">
+                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <title>Hide password</title>
+                                <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                            </svg>
+                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <title>Show password</title>
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                            </svg>
+                        </label>
+                    </sm-input>
                     <sm-button id="sign_in_button" variant="primary" disabled>Sign In</sm-button>
                 </sm-form>
                 <p>
@@ -169,7 +188,7 @@
                 </p>
             </section>
         </article>
-        <article id="sign_up" class="inner-page hide">
+        <article id="sign_up" class="inner-page hidden">
             <section class="grid">
                 <div id="flo_id_warning" class="grid justify-center gap-0-5">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
@@ -203,7 +222,7 @@
             </div>
         </div>
     </div>
-    <div id="main_card" class="page hide">
+    <div id="main_card" class="page hidden">
         <header id="main_header">
             <div class="flex align-center flex-1 app-name">
                 <svg class="icon flo-icon" width="64" height="64" viewBox="0 0 64 64" fill="none"
@@ -223,7 +242,7 @@
             </div>
             <theme-toggle style="margin-left: -1rem;"></theme-toggle>
         </header>
-        <section id="home" class="inner-page hide">
+        <section id="home" class="inner-page hidden">
             <div id="wallet_section" class="grid gap-1 margin-bottom-2">
                 <div class="flex align-center space-between">
                     <h4>My crypto holdings</h4>
@@ -447,7 +466,7 @@
                     </div>
                 </div>
             </div>
-            <div class="hide">
+            <div class="hidden">
                 <h4 class="margin-bottom-1">Convert assets</h4>
                 <div class="card user-element" style="width: min(26rem, 100%);">
                     <sm-form>
@@ -527,7 +546,7 @@
                     </sm-form>
                 </div>
             </div>
-            <section id="cashier" class=" grid gap-1 hide admin-element">
+            <section id="cashier" class=" grid gap-1 hidden admin-element">
                 <div class="flex align-center space-between">
                     <h4>Requests</h4>
                     <strip-select id="cashier_requests_selector">
@@ -542,7 +561,7 @@
                             <p>No requests to process</p>
                         </div>
                     </div>
-                    <div class="hide">
+                    <div class="hidden">
                         <ul id="cashier_processed_request_list" class="observe-empty-state"></ul>
                         <div class="empty-state">
                             <p>No requests to process</p>
@@ -551,7 +570,7 @@
                 </div>
             </section>
         </section>
-        <section id="history" class="inner-page hide">
+        <section id="history" class="inner-page hidden">
             <div class="flex sticky top-0" style="background-color: rgba(var(--background-color),1); z-index: 1;">
                 <a href="#/home" class="button icon-only margin-right-0-5">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
@@ -575,7 +594,7 @@
                     Filters
                 </button>
             </div>
-            <div id="history_applied_filters_wrapper" class="flex align-center hide gap-1">
+            <div id="history_applied_filters_wrapper" class="flex align-center hidden gap-1">
                 <h5>Applied filters</h5>
                 <div id="history_applied_filters" class="flex gap-0-5"></div>
             </div>
@@ -584,7 +603,7 @@
                 <p>No transactions</p>
             </div>
         </section>
-        <section id="wallet" class="inner-page hide">
+        <section id="wallet" class="inner-page hidden">
             <div class="flex sticky top-0" style="background-color: rgba(var(--background-color),1); z-index: 1;">
                 <a href="#/home" class="button icon-only margin-right-0-5">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
@@ -601,7 +620,7 @@
                 </div>
             </div>
             <div id="wallet_history_wrapper" class="grid gap-1-5">
-                <div class="hide grid gap-1">
+                <div class="hidden grid gap-1">
                     <h4>Pending</h4>
                     <ul id="pending_wallet_transactions" class="grid gap-0-5"></ul>
                 </div>
@@ -614,7 +633,7 @@
                 </div>
             </div>
         </section>
-        <section id="contacts" class="inner-page hide flex flex-direction-column">
+        <section id="contacts" class="inner-page hidden flex flex-direction-column">
             <div class="page__header">
                 <div class="grid gap-0-5 w-100">
                     <div class="flex align-center space-between">
@@ -688,7 +707,7 @@
                 <span>Tap on saved IDs to see transaction history</span>
             </p>
         </section>
-        <section id="contact" class="inner-page hide">
+        <section id="contact" class="inner-page hidden">
             <div class="flex align-center">
                 <a href="#/contacts" class="button icon-only margin-right-0-5">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
@@ -708,7 +727,7 @@
                 <button class="button" onclick="showTokenTransfer('send')">Pay</button>
             </div>
         </section>
-        <section id="requests" class="inner-page hide">
+        <section id="requests" class="inner-page hidden">
             <div class="page__header">
                 <div class="grid">
                     <h4>Payment</h4>
@@ -716,7 +735,7 @@
                 </div>
             </div>
             <div id="requests_history_wrapper" class="grid gap-1-5">
-                <div class="hide grid gap-1">
+                <div class="hidden grid gap-1">
                     <h4>Pending requests</h4>
                     <ul id="pending_payment_requests" class="grid gap-0-5"></ul>
                 </div>
@@ -729,7 +748,7 @@
                 </div>
             </div>
         </section>
-        <div id="transaction" class="inner-page hide grid gap-2">
+        <div id="transaction" class="inner-page hidden grid gap-2">
             <div class="grid gap-1 justify-start">
                 <button class="button icon-only margin-right-0-5" onclick="history.back()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
@@ -742,7 +761,7 @@
             </div>
             <div id="transaction_details" class="grid gap-2"></div>
         </div>
-        <section id="settings" class="inner-page hide">
+        <section id="settings" class="inner-page hidden">
             <div class="page__header">
                 <div class="grid">
                     <h1>Settings</h1>
@@ -795,7 +814,7 @@
                 </div>
             </section>
         </section>
-        <nav id="main_navbar" class="hide nav-hidden">
+        <nav id="main_navbar" class="hidden nav-hidden">
             <ul>
                 <li>
                     <a href="#/home" class="nav-item interact">
@@ -807,7 +826,7 @@
                         <span class="nav-item__title">Home</span>
                     </a>
                 </li>
-                <li class="user-element hide">
+                <li class="user-element hidden">
                     <a href="#/contacts" class="nav-item interact" title='View payment requests'>
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
@@ -818,7 +837,7 @@
                         <span class="nav-item__title">Contacts</span>
                     </a>
                 </li>
-                <li class="user-element hide">
+                <li class="user-element hidden">
                     <a id="requests_page_button" href="#/requests" class="nav-item interact"
                         title='View payment requests'>
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -1062,11 +1081,11 @@
                         </g>
                     </svg>
                 </sm-input>
-                <strong id="low_user_flo_warning" class="hide warning"></strong>
+                <strong id="low_user_flo_warning" class="hidden warning"></strong>
                 <button class="button button--primary cta" onclick="continueWalletTopup()"
                     type="submit">Continue</button>
             </sm-form>
-            <sm-form id="confirm_topup_form" class="hide">
+            <sm-form id="confirm_topup_form" class="hidden">
                 <h4>Transfer money</h4>
                 <ol id="topup_steps" type="1">
                     <li>
@@ -1109,7 +1128,7 @@
                         type="submit">Confirm</button>
                 </div>
             </sm-form>
-            <div class="grid gap-0-5 hide justify-center text-center">
+            <div class="grid gap-0-5 hidden justify-center text-center">
                 <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
                     viewBox="0 0 24 24" width="24px" fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1118,7 +1137,7 @@
                 <h4>Sent top-up request</h4>
                 <p>This may take upto 30 mins to complete</p>
             </div>
-            <div class="grid gap-0-5 hide justify-center text-center">
+            <div class="grid gap-0-5 hidden justify-center text-center">
                 <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px"
                     viewBox="0 0 24 24" width="24px" fill="#000000">
                     <path d="M0 0h24v24H0z" fill="none" />
@@ -1129,7 +1148,7 @@
                 <p id="topup_failed_reason"></p>
             </div>
         </div>
-        <div class="cashier-status hide flex align-center">
+        <div class="cashier-status hidden flex align-center">
             <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                 width="24px" fill="#000000">
                 <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
@@ -1170,7 +1189,7 @@
                     </svg>
                 </sm-input>
                 <div class="grid gap-1">
-                    <div class="grid gap-0-5 hide">
+                    <div class="grid gap-0-5 hidden">
                         <p>
                             <b>Select UPI ID to receive money</b>
                         </p>
@@ -1190,7 +1209,7 @@
                         onclick="withdrawMoneyFromWallet()" type="submit">Withdraw</button>
                 </div>
             </sm-form>
-            <div class="grid gap-0-5 hide justify-center text-center">
+            <div class="grid gap-0-5 hidden justify-center text-center">
                 <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
                     viewBox="0 0 24 24" width="24px" fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1198,10 +1217,10 @@
                 </svg>
                 <h4>Sent transfer to bank request</h4>
                 <p>This may take upto 30 mins to complete</p>
-                <a href="" class="hide" target="_blank" id="withdrawal_blockchain_link">Check transaction on
+                <a href="" class="hidden" target="_blank" id="withdrawal_blockchain_link">Check transaction on
                     blockchain</a>
             </div>
-            <div class="grid gap-0-5 hide justify-center text-center">
+            <div class="grid gap-0-5 hidden justify-center text-center">
                 <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px"
                     viewBox="0 0 24 24" width="24px" fill="#000000">
                     <path d="M0 0h24v24H0z" fill="none" />
@@ -1212,7 +1231,7 @@
                 <p id="withdrawal_failed_reason"></p>
             </div>
         </div>
-        <div class="cashier-status hide flex align-center">
+        <div class="cashier-status hidden flex align-center">
             <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                 width="24px" fill="#000000">
                 <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
@@ -1394,7 +1413,7 @@
                         onclick="transferToExchange()" type="submit">Send</button>
                 </div>
             </sm-form>
-            <div class="grid gap-0-5 hide justify-center text-center">
+            <div class="grid gap-0-5 hidden justify-center text-center">
                 <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
                     viewBox="0 0 24 24" width="24px" fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -1403,7 +1422,7 @@
                 <b id="exchange_transfer__success_message">Sent rupee tokens</b>
                 <p>Amount may take upto 30 mins to show up in exchange</p>
             </div>
-            <div class="grid gap-0-5 hide justify-center text-center">
+            <div class="grid gap-0-5 hidden justify-center text-center">
                 <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px"
                     viewBox="0 0 24 24" width="24px" fill="#000000">
                     <path d="M0 0h24v24H0z" fill="none" />
@@ -1457,7 +1476,7 @@
                     </div>
                 </div>
             </div>
-            <div class="flex flex-direction-column gap-1-5 hide" style="height: 24rem;">
+            <div class="flex flex-direction-column gap-1-5 hidden" style="height: 24rem;">
                 <div class="grid gap-0-3">
                     <p>Select reason</p>
                     <sm-select id="top_up__reason_selector">
@@ -1467,7 +1486,7 @@
                         <sm-option value="other">Other</sm-option>
                     </sm-select>
                 </div>
-                <div class="grid gap-0-3 hide">
+                <div class="grid gap-0-3 hidden">
                     <p>Describe reason</p>
                     <sm-textarea id="top_up__specified_reason" rows="4"></sm-textarea>
                 </div>
@@ -1630,14 +1649,14 @@
                     cashierUI.renderRequests(Cashier.Requests);
                     Cashier.init().then(result => {
                         console.log(result);
-                        document.querySelectorAll('.admin-element').forEach(elem => elem.classList.remove('hide'))
-                        document.querySelectorAll('.user-element').forEach(elem => elem.classList.add('hide'))
+                        document.querySelectorAll('.admin-element').forEach(elem => elem.classList.remove('hidden'))
+                        document.querySelectorAll('.user-element').forEach(elem => elem.classList.add('hidden'))
                         if (cashierUPI[myFloID]) {
-                            getRef('my_upi_id').classList.remove('hide')
+                            getRef('my_upi_id').classList.remove('hidden')
                             getRef('my_upi_id').value = cashierUPI[myFloID];
                             getRef('change_upi_button').textContent = 'Change UPI ID';
                         } else {
-                            getRef('my_upi_id').classList.add('hide')
+                            getRef('my_upi_id').classList.add('hidden')
                             getRef('change_upi_button').textContent = 'Add UPI ID';
                         }
                         showPage(window.location.hash, { firstLoad: true })
@@ -1649,8 +1668,8 @@
                     User.init().then(result => {
                         console.log(result);
                         console.log("Cashiers:", cashierUPI);
-                        document.querySelectorAll('.admin-element').forEach(elem => elem.classList.add('hide'))
-                        document.querySelectorAll('.user-element').forEach(elem => elem.classList.remove('hide'))
+                        document.querySelectorAll('.admin-element').forEach(elem => elem.classList.add('hidden'))
+                        document.querySelectorAll('.user-element').forEach(elem => elem.classList.remove('hidden'))
                         showPage(window.location.hash, { firstLoad: true })
                         floGlobals.loaded = true
                     }).catch(error => console.error(error))

@@ -1,7 +1,143 @@
-(function(EXPORTS) { //floDapps v2.2.1
+(function(EXPORTS) { //floDapps v2.3.2c
     /* General functions for FLO Dapps*/
-    //'use strict';
+    'use strict';
     const floDapps = EXPORTS;
+
+    const DEFAULT = {
+        root: "floDapps",
+        application: floGlobals.application,
+        adminID: floGlobals.adminID
+    };
+
+    Object.defineProperties(floDapps, {
+        application: {
+            get: () => DEFAULT.application
+        },
+        adminID: {
+            get: () => DEFAULT.adminID
+        },
+        root: {
+            get: () => DEFAULT.root
+        }
+    });
+
+    var user_priv_raw, aes_key, user_priv_wrap; //private variable inside capsule
+    const raw_user = {
+        get private() {
+            if (!user_priv_raw)
+                throw "User not logged in";
+            return Crypto.AES.decrypt(user_priv_raw, aes_key);
+        }
+    }
+
+    var user_id, user_public, user_private;
+    const user = floDapps.user = {
+        get id() {
+            if (!user_id)
+                throw "User not logged in";
+            return user_id;
+        },
+        get public() {
+            if (!user_public)
+                throw "User not logged in";
+            return user_public;
+        },
+        get private() {
+            if (!user_private)
+                throw "User not logged in";
+            else if (user_private instanceof Function)
+                return user_private();
+            else
+                return Crypto.AES.decrypt(user_private, aes_key);
+        },
+        sign(message) {
+            return floCrypto.signData(message, raw_user.private);
+        },
+        decrypt(data) {
+            return floCrypto.decryptData(data, raw_user.private);
+        },
+        encipher(message) {
+            return Crypto.AES.encrypt(message, raw_user.private);
+        },
+        decipher(data) {
+            return Crypto.AES.decrypt(data, raw_user.private);
+        },
+        get db_name() {
+            return "floDapps#" + user.id;
+        },
+        lock() {
+            user_private = user_priv_wrap;
+        },
+        async unlock() {
+            if (await user.private === raw_user.private)
+                user_private = user_priv_raw;
+        },
+        clear() {
+            user_id = user_public = user_private = undefined;
+            user_priv_raw = aes_key = undefined;
+            delete user.contacts;
+            delete user.pubKeys;
+            delete user.messages;
+        }
+    };
+
+    Object.defineProperties(window, {
+        myFloID: {
+            get: () => {
+                try {
+                    return user.id;
+                } catch {
+                    return;
+                }
+            }
+        },
+        myUserID: {
+            get: () => {
+                try {
+                    return user.id;
+                } catch {
+                    return;
+                }
+            }
+        },
+        myPubKey: {
+            get: () => {
+                try {
+                    return user.public;
+                } catch {
+                    return;
+                }
+            }
+        },
+        myPrivKey: {
+            get: () => {
+                try {
+                    return user.private;
+                } catch {
+                    return;
+                }
+            }
+        }
+    });
+
+    var subAdmins, settings
+    Object.defineProperties(floGlobals, {
+        subAdmins: {
+            get: () => subAdmins
+        },
+        settings: {
+            get: () => settings
+        },
+        contacts: {
+            get: () => user.contacts
+        },
+        pubKeys: {
+            get: () => user.pubKeys
+        },
+        messages: {
+            get: () => user.messages
+        }
+    })
 
     function initIndexedDB() {
         return new Promise((resolve, reject) => {
@@ -28,41 +164,41 @@
             }
             //add other given objectStores
             initIndexedDB.appObs = initIndexedDB.appObs || {}
-            for (o in initIndexedDB.appObs)
+            for (let o in initIndexedDB.appObs)
                 if (!(o in obs_a))
                     obs_a[o] = initIndexedDB.appObs[o]
             Promise.all([
-                compactIDB.initDB(floGlobals.application, obs_a),
-                compactIDB.initDB("floDapps", obs_g)
+                compactIDB.initDB(DEFAULT.application, obs_a),
+                compactIDB.initDB(DEFAULT.root, obs_g)
             ]).then(result => {
-                compactIDB.setDefaultDB(floGlobals.application)
+                compactIDB.setDefaultDB(DEFAULT.application)
                 resolve("IndexedDB App Storage Initated Successfully")
             }).catch(error => reject(error));
         })
     }
 
-    function initUserDB(floID) {
+    function initUserDB() {
         return new Promise((resolve, reject) => {
             var obs = {
                 contacts: {},
                 pubKeys: {},
                 messages: {}
             }
-            compactIDB.initDB(`floDapps#${floID}`, obs).then(result => {
+            compactIDB.initDB(user.db_name, obs).then(result => {
                 resolve("UserDB Initated Successfully")
             }).catch(error => reject('Init userDB failed'));
         })
     }
 
-    function loadUserDB(floID) {
+    function loadUserDB() {
         return new Promise((resolve, reject) => {
             var loadData = ["contacts", "pubKeys", "messages"]
             var promises = []
             for (var i = 0; i < loadData.length; i++)
-                promises[i] = compactIDB.readAllData(loadData[i], `floDapps#${floID}`)
+                promises[i] = compactIDB.readAllData(loadData[i], user.db_name)
             Promise.all(promises).then(results => {
                 for (var i = 0; i < loadData.length; i++)
-                    floGlobals[loadData[i]] = results[i]
+                    user[loadData[i]] = results[i]
                 resolve("Loaded Data from userDB")
             }).catch(error => reject('Load userDB failed'))
         })
@@ -72,7 +208,7 @@
 
     startUpFunctions.push(function readSupernodeListFromAPI() {
         return new Promise((resolve, reject) => {
-            compactIDB.readData("lastTx", floCloudAPI.SNStorageID, "floDapps").then(lastTx => {
+            compactIDB.readData("lastTx", floCloudAPI.SNStorageID, DEFAULT.root).then(lastTx => {
                 floBlockchainAPI.readData(floCloudAPI.SNStorageID, {
                     ignoreOld: lastTx,
                     sentOnly: true,
@@ -80,14 +216,14 @@
                 }).then(result => {
                     for (var i = result.data.length - 1; i >= 0; i--) {
                         var content = JSON.parse(result.data[i]).SuperNodeStorage;
-                        for (sn in content.removeNodes)
-                            compactIDB.removeData("supernodes", sn, "floDapps");
-                        for (sn in content.newNodes)
-                            compactIDB.writeData("supernodes", content.newNodes[sn], sn, "floDapps");
+                        for (let sn in content.removeNodes)
+                            compactIDB.removeData("supernodes", sn, DEFAULT.root);
+                        for (let sn in content.newNodes)
+                            compactIDB.writeData("supernodes", content.newNodes[sn], sn, DEFAULT.root);
                     }
-                    compactIDB.writeData("lastTx", result.totalTxs, floCloudAPI.SNStorageID, "floDapps");
-                    compactIDB.readAllData("supernodes", "floDapps").then(result => {
-                        floCloudAPI.init(result)
+                    compactIDB.writeData("lastTx", result.totalTxs, floCloudAPI.SNStorageID, DEFAULT.root);
+                    compactIDB.readAllData("supernodes", DEFAULT.root).then(nodes => {
+                        floCloudAPI.init(nodes)
                             .then(result => resolve("Loaded Supernode list\n" + result))
                             .catch(error => reject(error))
                     })
@@ -98,14 +234,14 @@
 
     startUpFunctions.push(function readAppConfigFromAPI() {
         return new Promise((resolve, reject) => {
-            compactIDB.readData("lastTx", `${floGlobals.application}|${floGlobals.adminID}`, "floDapps").then(lastTx => {
-                floBlockchainAPI.readData(floGlobals.adminID, {
+            compactIDB.readData("lastTx", `${DEFAULT.application}|${DEFAULT.adminID}`, DEFAULT.root).then(lastTx => {
+                floBlockchainAPI.readData(DEFAULT.adminID, {
                     ignoreOld: lastTx,
                     sentOnly: true,
-                    pattern: floGlobals.application
+                    pattern: DEFAULT.application
                 }).then(result => {
                     for (var i = result.data.length - 1; i >= 0; i--) {
-                        var content = JSON.parse(result.data[i])[floGlobals.application];
+                        var content = JSON.parse(result.data[i])[DEFAULT.application];
                         if (!content || typeof content !== "object")
                             continue;
                         if (Array.isArray(content.removeSubAdmin))
@@ -118,11 +254,11 @@
                             for (let l in content.settings)
                                 compactIDB.writeData("settings", content.settings[l], l)
                     }
-                    compactIDB.writeData("lastTx", result.totalTxs, `${floGlobals.application}|${floGlobals.adminID}`, "floDapps");
+                    compactIDB.writeData("lastTx", result.totalTxs, `${DEFAULT.application}|${DEFAULT.adminID}`, DEFAULT.root);
                     compactIDB.readAllData("subAdmins").then(result => {
-                        floGlobals.subAdmins = Object.keys(result);
+                        subAdmins = Object.keys(result);
                         compactIDB.readAllData("settings").then(result => {
-                            floGlobals.settings = result;
+                            settings = result;
                             resolve("Read app configuration from blockchain");
                         })
                     })
@@ -186,7 +322,7 @@
         });
 
         const getPrivateKeyCredentials = () => new Promise((resolve, reject) => {
-            var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
+            var indexArr = localStorage.getItem(`${DEFAULT.application}#privKey`)
             if (indexArr) {
                 readSharesFromIDB(JSON.parse(indexArr))
                     .then(result => resolve(result))
@@ -197,7 +333,7 @@
                     if (!result)
                         return reject("Empty Private Key")
                     var floID = floCrypto.getFloID(result)
-                    if (!floID || !floCrypto.validateAddr(floID))
+                    if (!floID || !floCrypto.validateFloID(floID))
                         return reject("Invalid Private Key")
                     privKey = result;
                 }).catch(error => {
@@ -210,7 +346,7 @@
                     var shares = floCrypto.createShamirsSecretShares(privKey, threshold, threshold)
                     writeSharesToIDB(shares).then(resultIndexes => {
                         //store index keys in localStorage
-                        localStorage.setItem(`${floGlobals.application}#privKey`, JSON.stringify(resultIndexes))
+                        localStorage.setItem(`${DEFAULT.application}#privKey`, JSON.stringify(resultIndexes))
                         //also add a dummy privatekey to the IDB
                         var randomPrivKey = floCrypto.generateNewID().privKey
                         var randomThreshold = floCrypto.randInt(10, 20)
@@ -242,9 +378,14 @@
             getPrivateKeyCredentials().then(key => {
                 checkIfPinRequired(key).then(privKey => {
                     try {
-                        myPrivKey = privKey
-                        myPubKey = floCrypto.getPubKeyHex(myPrivKey)
-                        myFloID = floCrypto.getFloID(myPubKey)
+                        user_public = floCrypto.getPubKeyHex(privKey);
+                        user_id = floCrypto.getAddress(privKey);
+                        floCloudAPI.user(user_id, privKey); //Set user for floCloudAPI
+                        user_priv_wrap = () => checkIfPinRequired(key);
+                        let n = floCrypto.randInt(12, 20);
+                        aes_key = floCrypto.randString(n);
+                        user_priv_raw = Crypto.AES.encrypt(privKey, aes_key);
+                        user_private = user_priv_wrap;
                         resolve('Login Credentials loaded successful')
                     } catch (error) {
                         console.log(error)
@@ -305,8 +446,8 @@
                 });
                 let p2 = new Promise((res, rej) => {
                     callAndLog(getCredentials()).then(r => {
-                        callAndLog(initUserDB(myFloID)).then(r => {
-                            callAndLog(loadUserDB(myFloID))
+                        callAndLog(initUserDB()).then(r => {
+                            callAndLog(loadUserDB())
                                 .then(r => res(true))
                                 .catch(e => rej(false))
                         }).catch(e => rej(false))
@@ -315,7 +456,10 @@
                 Promise.all([p1, p2])
                     .then(r => resolve('App Startup finished successful'))
                     .catch(e => reject('App Startup failed'))
-            }).catch(error => reject("App database initiation failed"))
+            }).catch(error => {
+                startUpLog(false, error);
+                reject("App database initiation failed")
+            })
         })
     }
 
@@ -331,10 +475,10 @@
 
     floDapps.storeContact = function(floID, name) {
         return new Promise((resolve, reject) => {
-            if (!floCrypto.validateAddr(floID))
+            if (!floCrypto.validateFloID(floID))
                 return reject("Invalid floID!")
-            compactIDB.writeData("contacts", name, floID, `floDapps#${myFloID}`).then(result => {
-                floGlobals.contacts[floID] = name;
+            compactIDB.writeData("contacts", name, floID, user.db_name).then(result => {
+                user.contacts[floID] = name;
                 resolve("Contact stored")
             }).catch(error => reject(error))
         });
@@ -342,14 +486,14 @@
 
     floDapps.storePubKey = function(floID, pubKey) {
         return new Promise((resolve, reject) => {
-            if (floID in floGlobals.pubKeys)
+            if (floID in user.pubKeys)
                 return resolve("pubKey already stored")
-            if (!floCrypto.validateAddr(floID))
+            if (!floCrypto.validateFloID(floID))
                 return reject("Invalid floID!")
             if (floCrypto.getFloID(pubKey) != floID)
                 return reject("Incorrect pubKey")
-            compactIDB.writeData("pubKeys", pubKey, floID, `floDapps#${myFloID}`).then(result => {
-                floGlobals.pubKeys[floID] = pubKey;
+            compactIDB.writeData("pubKeys", pubKey, floID, user.db_name).then(result => {
+                user.pubKeys[floID] = pubKey;
                 resolve("pubKey stored")
             }).catch(error => reject(error))
         });
@@ -359,11 +503,11 @@
         return new Promise((resolve, reject) => {
             let options = {
                 receiverID: floID,
-                application: "floDapps",
-                comment: floGlobals.application
+                application: DEFAULT.root,
+                comment: DEFAULT.application
             }
-            if (floID in floGlobals.pubKeys)
-                message = floCrypto.encryptData(JSON.stringify(message), floGlobals.pubKeys[floID])
+            if (floID in user.pubKeys)
+                message = floCrypto.encryptData(JSON.stringify(message), user.pubKeys[floID])
             floCloudAPI.sendApplicationData(message, "Message", options)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
@@ -372,20 +516,21 @@
 
     floDapps.requestInbox = function(callback) {
         return new Promise((resolve, reject) => {
-            let lastVC = Object.keys(floGlobals.messages).sort().pop()
+            let lastVC = Object.keys(user.messages).sort().pop()
             let options = {
-                receiverID: myFloID,
-                application: "floDapps",
+                receiverID: user.id,
+                application: DEFAULT.root,
                 lowerVectorClock: lastVC + 1
             }
+            let privKey = raw_user.private;
             options.callback = (d, e) => {
                 for (let v in d) {
                     try {
                         if (d[v].message instanceof Object && "secret" in d[v].message)
-                            d[v].message = floCrypto.decryptData(d[v].message, myPrivKey)
+                            d[v].message = floCrypto.decryptData(d[v].message, privKey)
                     } catch (error) {}
-                    compactIDB.writeData("messages", d[v], v, `floDapps#${myFloID}`)
-                    floGlobals.messages[v] = d[v]
+                    compactIDB.writeData("messages", d[v], v, user.db_name)
+                    user.messages[v] = d[v]
                 }
                 if (callback instanceof Function)
                     callback(d, e)
@@ -404,14 +549,14 @@
             if (!addList && !rmList && !settings)
                 return reject("No configuration change")
             var floData = {
-                [floGlobals.application]: {
+                [DEFAULT.application]: {
                     addSubAdmin: addList,
                     removeSubAdmin: rmList,
                     settings: settings
                 }
             }
             var floID = floCrypto.getFloID(adminPrivKey)
-            if (floID != floGlobals.adminID)
+            if (floID != DEFAULT.adminID)
                 reject('Access Denied for Admin privilege')
             else
                 floBlockchainAPI.writeData(floID, JSON.stringify(floData), adminPrivKey)
@@ -422,9 +567,9 @@
 
     const clearCredentials = floDapps.clearCredentials = function() {
         return new Promise((resolve, reject) => {
-            compactIDB.clearData('credentials', floGlobals.application).then(result => {
-                localStorage.removeItem(`${floGlobals.application}#privKey`)
-                myPrivKey = myPubKey = myFloID = undefined;
+            compactIDB.clearData('credentials', DEFAULT.application).then(result => {
+                localStorage.removeItem(`${DEFAULT.application}#privKey`);
+                user.clear();
                 resolve("privKey credentials deleted!")
             }).catch(error => reject(error))
         })
@@ -433,7 +578,7 @@
     floDapps.deleteUserData = function(credentials = false) {
         return new Promise((resolve, reject) => {
             let p = []
-            p.push(compactIDB.deleteDB(`floDapps#${myFloID}`))
+            p.push(compactIDB.deleteDB(user.db_name))
             if (credentials)
                 p.push(clearCredentials())
             Promise.all(p)
@@ -444,10 +589,10 @@
 
     floDapps.deleteAppData = function() {
         return new Promise((resolve, reject) => {
-            compactIDB.deleteDB(floGlobals.application).then(result => {
-                localStorage.removeItem(`${floGlobals.application}#privKey`)
-                myPrivKey = myPubKey = myFloID = undefined;
-                compactIDB.removeData('lastTx', `${floGlobals.application}|${floGlobals.adminID}`, 'floDapps')
+            compactIDB.deleteDB(DEFAULT.application).then(result => {
+                localStorage.removeItem(`${DEFAULT.application}#privKey`)
+                user.clear();
+                compactIDB.removeData('lastTx', `${DEFAULT.application}|${DEFAULT.adminID}`, DEFAULT.root)
                     .then(result => resolve("App database(local) deleted"))
                     .catch(error => reject(error))
             }).catch(error => reject(error))
@@ -455,17 +600,17 @@
     }
 
     floDapps.securePrivKey = function(pwd) {
-        return new Promise((resolve, reject) => {
-            let indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
+        return new Promise(async (resolve, reject) => {
+            let indexArr = localStorage.getItem(`${DEFAULT.application}#privKey`)
             if (!indexArr)
                 return reject("PrivKey not found");
             indexArr = JSON.parse(indexArr)
-            let encryptedKey = Crypto.AES.encrypt(myPrivKey, pwd);
+            let encryptedKey = Crypto.AES.encrypt(await user.private, pwd);
             let threshold = indexArr.length;
             let shares = floCrypto.createShamirsSecretShares(encryptedKey, threshold, threshold)
             let promises = [];
             let overwriteFn = (share, index) =>
-                compactIDB.writeData("credentials", share, index, floGlobals.application);
+                compactIDB.writeData("credentials", share, index, DEFAULT.application);
             for (var i = 0; i < threshold; i++)
                 promises.push(overwriteFn(shares[i], indexArr[i]));
             Promise.all(promises)
@@ -494,7 +639,7 @@
             })
         }
         return new Promise((resolve, reject) => {
-            var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
+            var indexArr = localStorage.getItem(`${DEFAULT.application}#privKey`)
             console.info(indexArr)
             if (!indexArr)
                 reject('No login credentials found')
@@ -535,7 +680,7 @@
                     filteredResult[d] = JSON.parse(JSON.stringify(floGlobals.generalData[fk][d]))
         }
         if (options.decrypt) {
-            let decryptionKey = (options.decrypt === true) ? myPrivKey : options.decrypt;
+            let decryptionKey = (options.decrypt === true) ? raw_user.private : options.decrypt;
             if (!Array.isArray(decryptionKey))
                 decryptionKey = [decryptionKey];
             for (let f in filteredResult) {
@@ -561,14 +706,14 @@
 
     syncData.oldDevice = () => new Promise((resolve, reject) => {
         let sync = {
-            contacts: floGlobals.contacts,
-            pubKeys: floGlobals.pubKeys,
-            messages: floGlobals.messages
+            contacts: user.contacts,
+            pubKeys: user.pubKeys,
+            messages: user.messages
         }
-        let message = Crypto.AES.encrypt(JSON.stringify(sync), myPrivKey)
+        let message = Crypto.AES.encrypt(JSON.stringify(sync), raw_user.private)
         let options = {
-            receiverID: myFloID,
-            application: "floDapps"
+            receiverID: user.id,
+            application: DEFAULT.root
         }
         floCloudAPI.sendApplicationData(message, "syncData", options)
             .then(result => resolve(result))
@@ -577,20 +722,20 @@
 
     syncData.newDevice = () => new Promise((resolve, reject) => {
         var options = {
-            receiverID: myFloID,
-            senderID: myFloID,
-            application: "floDapps",
+            receiverID: user.id,
+            senderID: user.id,
+            application: DEFAULT.root,
             mostRecent: true,
         }
         floCloudAPI.requestApplicationData("syncData", options).then(response => {
             let vc = Object.keys(response).sort().pop()
-            let sync = JSON.parse(Crypto.AES.decrypt(response[vc].message, myPrivKey))
+            let sync = JSON.parse(Crypto.AES.decrypt(response[vc].message, raw_user.private))
             let promises = []
-            let store = (key, val, obs) => promises.push(compactIDB.writeData(obs, val, key, `floDapps#${floID}`));
+            let store = (key, val, obs) => promises.push(compactIDB.writeData(obs, val, key, user.db_name));
             ["contacts", "pubKeys", "messages"].forEach(c => {
                 for (let i in sync[c]) {
                     store(i, sync[c][i], c)
-                    floGlobals[c][i] = sync[c][i]
+                    user[c][i] = sync[c][i]
                 }
             })
             Promise.all(promises)
