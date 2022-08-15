@@ -1394,3 +1394,27 @@ getRef('send_transaction').onclick = evt => {
         buttonLoader('send_transaction', false)
     })
 }
+
+function convertAsset() {
+    buttonLoader('convert_asset_button', true)
+    const fromAsset = getRef('from_asset_selector').value;
+    const fromAmount = parseFloat(getRef('from_amount').value.trim());
+    if (fromAsset === 'BTC') {
+        btc_api.getBalance(btc_api.convert.legacy2bech(myFloID)).then(btcBalance => {
+            if (btcBalance < fromAmount) {
+                notify('You do not have enough BTC to convert', 'error');
+                buttonLoader('convert_asset_button', false)
+                return;
+            }
+        })
+    } else {
+        floTokenAPI.getBalance(myFloID).then((balance = 0) => {
+            if(balance < fromAmount) {
+                notify('You do not have enough rupee tokens to convert', 'error');
+                buttonLoader('convert_asset_button', false)
+                return;
+            }
+        })
+    }
+    // use api to convert asset
+}
