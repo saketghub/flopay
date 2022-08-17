@@ -1117,13 +1117,13 @@ customElements.define('sm-notifications', class extends HTMLElement {
 
     createNotification(message, options = {}) {
         const { pinned = false, icon = '', action } = options;
-        const notification = document.createElement('output')
+        const notification = document.createElement('div')
         notification.id = this.randString(8)
         notification.classList.add('notification');
         let composition = ``;
         composition += `
                     <div class="icon-container">${icon}</div>
-                    <p>${message}</p>
+                    <output>${message}</output>
                     `;
         if (action) {
             composition += `
@@ -1177,6 +1177,7 @@ customElements.define('sm-notifications', class extends HTMLElement {
     }
 
     removeNotification(notification, direction = 'left') {
+        if (!notification) return;
         const sign = direction === 'left' ? '-' : '+';
         notification.animate([
             {
@@ -1218,8 +1219,10 @@ customElements.define('sm-notifications', class extends HTMLElement {
 
         this.mediaQuery.addEventListener('change', this.handleOrientationChange);
         this.notificationPanel.addEventListener('pointerdown', e => {
-            if (e.target.closest('.notification')) {
-                this.swipeThreshold = this.clientWidth / 2;
+            if (e.target.closest('.close')) {
+                this.removeNotification(e.target.closest('.notification'));
+            } else if (e.target.closest('.notification')) {
+                this.swipeThreshold = e.target.closest('.notification').getBoundingClientRect().width / 2;
                 this.currentTarget = e.target.closest('.notification');
                 this.currentTarget.setPointerCapture(e.pointerId);
                 this.startTime = Date.now();
@@ -1262,12 +1265,6 @@ customElements.define('sm-notifications', class extends HTMLElement {
             this.notificationPanel.releasePointerCapture(e.pointerId);
             this.currentX = 0;
         });
-        this.notificationPanel.addEventListener('click', e => {
-            if (e.target.closest('.close')) {
-                this.removeNotification(e.target.closest('.notification'));
-            }
-        });
-
         const observer = new MutationObserver(mutationList => {
             mutationList.forEach(mutation => {
                 if (mutation.type === 'childList') {

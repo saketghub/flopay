@@ -134,6 +134,7 @@ document.addEventListener('popupclosed', e => {
             break;
         case 'transfer_to_exchange_popup':
             showChildElement('exchange_transfer_process', 0);
+            buttonLoader('exchange_transfer__button', false);
             break;
         case 'confirm_topup_popup':
             showChildElement('confirm_topup_wrapper', 0);

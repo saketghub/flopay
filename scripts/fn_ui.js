@@ -11,9 +11,16 @@
 const relativeTime = new RelativeTime({ style: 'narrow' });
 
 // use floDapps.storeContact() to store contacts that can be used by other apps on same device 
-function syncUserData(obsName, data) {
-    const dataToSend = Crypto.AES.encrypt(JSON.stringify(data), myPrivKey);
-    return floCloudAPI.sendApplicationData(dataToSend, obsName, { receiverID: floDapps.user.id });
+async function syncUserData(obsName, data) {
+    floDapps.user.private.then(privateKey => {
+        if (!privateKey) return;
+        const encryptedData = Crypto.AES.encrypt(JSON.stringify(data), privateKey);
+        return floCloudAPI.sendApplicationData(encryptedData, obsName, { receiverID: floDapps.user.id }); 
+     }).catch(error => {
+        console.log(error);
+        notify('Invalid password', 'error');
+        return false;
+    })
 }
 // store user data in separate IDB 
 async function organizeSyncedData(obsName) {
@@ -21,13 +28,20 @@ async function organizeSyncedData(obsName) {
     if (fetchedData.length && await compactIDB.readData(obsName, 'lastSyncTime') !== fetchedData[0].time) {
         await compactIDB.clearData(obsName);
         const dataToDecrypt = floCloudAPI.util.decodeMessage(fetchedData[0].message);
-        const decryptedData = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, myPrivKey));
-        for (let key in decryptedData) {
-            floGlobals[obsName][key] = decryptedData[key];
-            compactIDB.addData(obsName, decryptedData[key], key);
-        }
-        compactIDB.addData(obsName, fetchedData[0].time, 'lastSyncTime');
-        return true;
+        floDapps.user.private.then(privateKey => {
+            if (!privateKey) return;
+            const decryptedData = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, privateKey));
+            for (let key in decryptedData) {
+                floGlobals[obsName][key] = decryptedData[key];
+                compactIDB.addData(obsName, decryptedData[key], key);
+            }
+            compactIDB.addData(obsName, fetchedData[0].time, 'lastSyncTime');
+            return true;
+        }).catch(error => {
+            console.log(error);
+            notify('Invalid password', 'error');
+            return false;
+        })
     } else {
         const idbData = await compactIDB.readAllData(obsName);
         for (const key in idbData) {
@@ -121,22 +135,30 @@ function withdrawMoneyFromWallet() {
 function transferToExchange() {
     const amount = parseFloat(getRef('exchange_transfer__amount').value.trim());
     buttonLoader('exchange_transfer__button', true);
-    floExchangeAPI.depositToken('rupee', amount, floDapps.user.id, 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm', myPrivKey).then(txid => {
-        console.log(txid);
-        showChildElement('exchange_transfer_process', 1);
-        getRef('exchange_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to exchange`;
-    }).catch(error => {
+    floDapps.user.private.then(privateKey => {
+        if (!privateKey) return;
+        floExchangeAPI.depositToken('rupee', amount, floDapps.user.id, 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm', privateKey).then(txid => {
+            console.log(txid);
+            showChildElement('exchange_transfer_process', 1);
+            getRef('exchange_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to exchange`;
+        }).catch(error => {
+            console.log(error);
+            if (error.code) {
+                error = error.message;
+            }
+            if (error === 'Insufficient rupee# balance')
+                error = 'Insufficient rupee token balance in your wallet, please top-up your wallet.';
+            getRef('exchange_transfer__failed_reason').textContent = error;
+            showChildElement('exchange_transfer_process', 2);
+        }).finally(() => {
+            buttonLoader('exchange_transfer__button', false);
+        });
+     }).catch(error => {
         console.log(error);
-        if (error.code) {
-            error = error.message;
-        }
-        if (error === 'Insufficient rupee# balance')
-            error = 'Insufficient rupee token balance in your wallet, please top-up your wallet.';
-        getRef('exchange_transfer__failed_reason').textContent = error;
-        showChildElement('exchange_transfer_process', 2);
-    }).finally(() => {
-        buttonLoader('exchange_transfer__button', false);
-    });
+        notify('Invalid password', 'error');
+        closePopup(); 
+        return false;
+    })
 }
 
 async function renderSavedUpiIds() {
@@ -470,12 +492,13 @@ function declineTopUp() {
 }
 
 
-function completeTokenToCashRequest(request) {
+async function completeTokenToCashRequest(request) {
     const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request;
     var upiID;
     if (upi_id instanceof Object && "secret" in upi_id) {
         try {
-            upiID = floCrypto.decryptData(upi_id, myPrivKey);
+            const privateKey = await floGlobals.user.private
+            upiID = floCrypto.decryptData(upi_id, privateKey);
         } catch (error) {
             console.error("UPI ID is not encrypted with a proper key", error);
             return notify("Invalid UPI ID", 'error');
@@ -1197,17 +1220,26 @@ function getSignedIn(passwordType) {
     return new Promise((resolve, reject) => {
         try {
             console.log(floDapps.user.id)
-            
+            getPromptInput('Enter password', '', {
+                isPassword: true,
+            }).then(password => {
+                if (password) {
+                    resolve(password)
+                }
+            })
         }catch(err) {
             if (passwordType === 'PIN/Password') {
+                floGlobals.isPrivKeySecured = true;
                 getRef('private_key_field').removeAttribute('data-private-key');
                 getRef('private_key_field').setAttribute('placeholder', 'Password');
                 getRef('private_key_field').customValidation = null
-    
+                getRef('secure_pwd_button').closest('.card').classList.add('hidden');
             } else {
+                floGlobals.isPrivKeySecured = false;
                 getRef('private_key_field').dataset.privateKey = ''
                 getRef('private_key_field').setAttribute('placeholder', 'FLO private key');
-                getRef('private_key_field').customValidation = floCrypto.getPubKeyHex
+                getRef('private_key_field').customValidation = floCrypto.getPubKeyHex;
+                getRef('secure_pwd_button').closest('.card').classList.remove('hidden');
             }
             if (window.location.hash.includes('sign_in') || window.location.hash.includes('sign_up')) {
                 showPage(window.location.hash);
@@ -1226,6 +1258,19 @@ function getSignedIn(passwordType) {
             };
         }
     });
+}
+function setSecurePassword() {
+    if (!floGlobals.isPrivKeySecured) {  
+        const password = getRef('secure_pwd_input').value.trim();
+        floDapps.securePrivKey(password).then(() => {
+            floGlobals.isPrivKeySecured = true;
+            notify('Password set successfully', 'success');
+            getRef('secure_pwd_button').closest('.card').classList.add('hidden');
+            closePopup();
+        }).catch(err => {
+            notify(err, 'error');
+        })
+    }
 }
 function signOut() {
     getConfirmation('Sign out?', 'You are about to sign out of the app, continue?', 'Stay', 'Leave')
@@ -1372,31 +1417,38 @@ getRef('fees_selector').addEventListener('change', e => {
 })
 
 
-getRef('send_transaction').onclick = evt => {
+getRef('send_transaction').onclick =  evt => {
     buttonLoader('send_transaction', true)
-    const senders = btc_api.convert.legacy2bech(floDapps.user.id);
-    const privKeys = btc_api.convert.wif(myPrivKey);
-    const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
-    const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
-        return parseFloat(input.value.trim())
-    });
-    const fee = parseFloat(getRef('send_fee').value.trim());
-    console.debug(senders, receivers, amounts, fee);
-    btc_api.sendTx(senders, privKeys, receivers, amounts, fee).then(result => {
-        console.log(result);
-        closePopup();
-        getRef('txid').value = result.txid;
-        openPopup('txid_popup');
-        getRef('send_tx').reset()
-        getExchangeRate().then(() => {
-            calculateBtcFees()
-        }).catch(e => {
-            console.error(e)
+    floGlobals.user.private.then(privateKey => { 
+        const privKeys = btc_api.convert.wif(privateKey);
+        const senders = btc_api.convert.legacy2bech(floDapps.user.id);
+        const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
+        const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
+            return parseFloat(input.value.trim())
+        });
+        const fee = parseFloat(getRef('send_fee').value.trim());
+        console.debug(senders, receivers, amounts, fee);
+        btc_api.sendTx(senders, privKeys, receivers, amounts, fee).then(result => {
+            console.log(result);
+            closePopup();
+            getRef('txid').value = result.txid;
+            openPopup('txid_popup');
+            getRef('send_tx').reset()
+            getExchangeRate().then(() => {
+                calculateBtcFees()
+            }).catch(e => {
+                console.error(e)
+            })
+        }).catch(error => {
+            notify(`Error sending transaction \n ${error}`, 'error');
+        }).finally(_ => {
+            buttonLoader('send_transaction', false)
         })
     }).catch(error => {
-        notify(`Error sending transaction \n ${error}`, 'error');
-    }).finally(_ => {
-        buttonLoader('send_transaction', false)
+        console.log(error);
+        notify('Invalid password', 'error');
+        closePopup();
+        return false;
     })
 }
 
