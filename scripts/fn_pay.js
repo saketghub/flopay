@@ -142,9 +142,15 @@ User.tokenToCash = function (cashier, amount, blkTxID, upiID) {
 
 User.sendToken = function (receiverID, amount, remark = '', options = {}) {
     return new Promise((resolve, reject) => {
-        floTokenAPI.sendToken(myPrivKey, amount, receiverID, remark, floTokenAPI.currency, options)
-            .then(result => resolve(result))
-            .catch(error => reject(error))
+        floDapps.user.private.then(privateKey => {
+            floTokenAPI.sendToken(privateKey, amount, receiverID, remark, floTokenAPI.currency, options)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
+        }).catch(error => {
+            console.log(error);
+            notify('Invalid password', 'error');
+            reject(error);
+        })
     })
 }
 
