@@ -497,12 +497,10 @@ async function completeTokenToCashRequest(request) {
     let upiID;
     if (upi_id instanceof Object && "secret" in upi_id) {
         try {
-            const privateKey = await floDapps.user.private
-            console.log(upiID)
-            upiID = floCrypto.decryptData(upi_id, privateKey);
+            upiID = floDapps.user.decrypt(upi_id);
         } catch (error) {
             console.error("UPI ID is not encrypted with a proper key", error);
-            return notify("Invalid UPI ID", 'error');
+            return notify("UPI ID is not encrypted with a proper key", 'error');
         }
     } else
         upiID = upi_id;
