@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCloudAPI v2.4.2b
+(function(EXPORTS) { //floCloudAPI v2.4.2c
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -384,7 +384,7 @@
         if (!address)
             return;
         var bytes;
-        if (address.length == 34) { //legacy encoding
+        if (address.length == 33 || address.length == 34) { //legacy encoding
             let decode = bitjs.Base58.decode(address);
             bytes = decode.slice(0, decode.length - 4);
             let checksum = decode.slice(decode.length - 4),

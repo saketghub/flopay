@@ -1,4 +1,4 @@
-(function(GLOBAL) { //lib v1.3.0b
+(function(GLOBAL) { //lib v1.3.0c
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -7814,7 +7814,7 @@
                     } else if (this.ins[index].script.chunks[0] == 0 && this.ins[index].script.chunks[this.ins[index].script.chunks.length - 1][this.ins[index].script.chunks[this.ins[index].script.chunks.length - 1].length - 1] == 174) { // OP_CHECKMULTISIG
                         // multisig script, with signature(s) included
                         var sigcount = 0;
-                        for (i = 1; i < this.ins[index].script.chunks.length - 1; i++) {
+                        for (let i = 1; i < this.ins[index].script.chunks.length - 1; i++) {
                             if (this.ins[index].script.chunks[i] != 0) {
                                 sigcount++;
                             }
@@ -8057,8 +8057,8 @@
 
                 s.writeOp(0);
 
-                for (x in pubkeyList) {
-                    for (y in sigsList) {
+                for (let x in pubkeyList) {
+                    for (let y in sigsList) {
                         this.ins[index].script.buffer = redeemScript;
                         sighash = Crypto.util.hexToBytes(this.transactionHash(index, sigsList[y].slice(-1)[0] * 1));
                         if (coinjs.verifySignature(sighash, sigsList[y], pubkeyList[x])) {

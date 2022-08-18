@@ -494,10 +494,11 @@ function declineTopUp() {
 
 async function completeTokenToCashRequest(request) {
     const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request;
-    var upiID;
+    let upiID;
     if (upi_id instanceof Object && "secret" in upi_id) {
         try {
-            const privateKey = await floGlobals.user.private
+            const privateKey = await floDapps.user.private
+            console.log(upiID)
             upiID = floCrypto.decryptData(upi_id, privateKey);
         } catch (error) {
             console.error("UPI ID is not encrypted with a proper key", error);
@@ -1419,7 +1420,7 @@ getRef('fees_selector').addEventListener('change', e => {
 
 getRef('send_transaction').onclick =  evt => {
     buttonLoader('send_transaction', true)
-    floGlobals.user.private.then(privateKey => { 
+    floDapps.user.private.then(privateKey => { 
         const privKeys = btc_api.convert.wif(privateKey);
         const senders = btc_api.convert.legacy2bech(floDapps.user.id);
         const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
