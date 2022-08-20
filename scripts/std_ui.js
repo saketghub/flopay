@@ -132,9 +132,10 @@ document.addEventListener('popupclosed', e => {
             getRef('select_withdraw_upi_id').innerHTML = ''
             showChildElement('withdraw_wallet_process', 0)
             break;
-        case 'transfer_to_exchange_popup':
-            showChildElement('exchange_transfer_process', 0);
-            buttonLoader('exchange_transfer__button', false);
+        case 'external_transfer_popup':
+            showChildElement('external_transfer_process', 0);
+            buttonLoader('external_transfer__button', false);
+            document.getElementById('external_transfer__amount').value = '';
             break;
         case 'confirm_topup_popup':
             showChildElement('confirm_topup_wrapper', 0);
@@ -853,23 +854,24 @@ function showChildElement(id, index, options = {}) {
         easing: 'ease',
         fill: 'forwards'
     }
-    const visibleElement = [...getRef(id).children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
-    if (visibleElement === getRef(id).children[index]) return;
+    const parent = typeof id === 'string' ? document.getElementById(id) : id;
+    const visibleElement = [...parent.children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
+    if (visibleElement === parent.children[index]) return;
     if (visibleElement) {
         if (exit) {
             visibleElement.animate(exit, animOptions).onfinish = () => {
                 visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
-                getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
                 if (entry)
-                    getRef(id).children[index].animate(entry, animOptions)
+                    parent.children[index].animate(entry, animOptions)
             }
         } else {
             visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
-            getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+            parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
         }
     } else {
-        getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
-        getRef(id).children[index].animate(entry, animOptions)
+        parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+        parent.children[index].animate(entry, animOptions)
     }
 }
 

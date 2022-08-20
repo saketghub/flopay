@@ -454,6 +454,10 @@ ol li::before {
   margin-left: 0.5rem;
 }
 
+.margin-top-1 {
+  margin-top: 1rem;
+}
+
 .margin-top-1-5 {
   margin-top: 1.5rem;
 }
@@ -970,12 +974,9 @@ ol li::before {
 }
 .wallet-action .icon:first-of-type,
 .integrated-action-button .icon:first-of-type {
-  height: 2.3rem;
-  width: 2.3rem;
-  padding: 0.5rem;
-  fill: rgba(var(--foreground-color), 1);
-  background-color: var(--accent-color);
-  border-radius: 2rem;
+  height: 1.5rem;
+  width: 1.5rem;
+  fill: var(--accent-color);
 }
 .wallet-action .badge,
 .integrated-action-button .badge {
@@ -987,10 +988,13 @@ ol li::before {
   flex-direction: column;
   text-align: center;
   align-items: center;
-  font-weight: 500;
   font-size: 0.8rem;
   white-space: initial;
   padding: 0.8rem;
+  border: solid thin rgba(var(--text-color), 0.1);
+}
+.wallet-action:hover {
+  border: solid thin rgba(var(--text-color), 0.5);
 }
 .wallet-action .icon {
   margin-bottom: 0.8rem;

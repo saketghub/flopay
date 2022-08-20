@@ -296,8 +296,7 @@
                                     </svg>
                                     Request
                                 </button>
-                                <button class="wallet-action cashier-option"
-                                    onclick="openPopup('topup_wallet_popup', true)">
+                                <button class="wallet-action" onclick="openPopup('topup_wallet_popup', true)">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
                                         viewBox="0 0 24 24" width="24px" fill="#000000">
                                         <path d="M0 0h24v24H0z" fill="none" />
@@ -306,8 +305,7 @@
                                     </svg>
                                     Top-up
                                 </button>
-                                <button class="wallet-action cashier-option"
-                                    onclick="openPopup('withdraw_wallet_popup')">
+                                <button class="wallet-action" onclick="openPopup('withdraw_wallet_popup')">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg"
                                         enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px"
                                         fill="#000000">
@@ -335,7 +333,7 @@
                                     <path
                                         d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z" />
                                 </svg>
-                                View rupee top-up and withdrawal history
+                                View top-up and withdrawal history
                                 <svg class="icon justify-self-end" xmlns="http://www.w3.org/2000/svg" height="24px"
                                     viewBox="0 0 24 24" width="24px" fill="#000000">
                                     <path d="M0 0h24v24H0z" fill="none" />
@@ -363,21 +361,39 @@
                                     <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
                                 </svg>
                             </a>
-                            <button class="integrated-action-button align-center"
-                                onclick="openPopup('transfer_to_exchange_popup')">
-                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                    width="24px" fill="#000000">
-                                    <path d="M0 0h24v24H0z" fill="none" />
-                                    <path
-                                        d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
-                                </svg>
-                                Send rupee tokens to exchange
-                                <svg class="icon justify-self-end" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                    viewBox="0 0 24 24" width="24px" fill="#000000">
-                                    <path d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                                </svg>
-                            </button>
+                            <div class="grid gap-1"
+                                style="border-top: solid thin rgba(var(--text-color), 0.5); padding-top: 1rem">
+                                <h5>Transfer rupee tokens to other RanchiMall Products</h5>
+                                <div class="actions-wrapper">
+                                    <button class="wallet-action" onclick="openExternalTransferPopup('exchange')">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                                            <path d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                                d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                                        </svg>
+                                        Exchange market
+                                    </button>
+                                    <button class="wallet-action" onclick="openExternalTransferPopup('btc-bonds')">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                                            <path d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                                d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                                        </svg>
+                                        Blockchain Bonds
+                                    </button>
+                                    <button class="wallet-action" onclick="openExternalTransferPopup('bobs-fund')">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                                            <path d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                                d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                                        </svg>
+                                        Bob's fund
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex flex-direction-column gap-0-5">
@@ -1396,7 +1412,7 @@
             </button>
         </sm-form>
     </sm-popup>
-    <sm-popup id="transfer_to_exchange_popup">
+    <sm-popup id="external_transfer_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close justify-self-start">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
@@ -1407,42 +1423,7 @@
                 </svg>
             </button>
         </header>
-        <div id="exchange_transfer_process">
-            <sm-form>
-                <div class="grid gap-0-5">
-                    <h4>Send</h4>
-                    <p>
-                        Deposit rupee tokens to RanchiMall Exchange.
-                    </p>
-                </div>
-                <sm-input id="exchange_transfer__amount" type="number" placeholder="Amount" min="1" step="0.01"
-                    error-text="minimum amount is ₹1" animate required autofocus>
-                </sm-input>
-                <div class="multi-state-button">
-                    <button id="exchange_transfer__button" class="button button--primary cta"
-                        onclick="transferToExchange()" type="submit">Send</button>
-                </div>
-            </sm-form>
-            <div class="grid gap-0-5 hidden justify-center text-center">
-                <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
-                    viewBox="0 0 24 24" width="24px" fill="#000000">
-                    <path d="M0 0h24v24H0V0z" fill="none" />
-                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                </svg>
-                <b id="exchange_transfer__success_message">Sent rupee tokens</b>
-                <p>Amount may take upto 30 mins to show up in exchange</p>
-            </div>
-            <div class="grid gap-0-5 hidden justify-center text-center">
-                <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px"
-                    viewBox="0 0 24 24" width="24px" fill="#000000">
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                </svg>
-                <b>Failed to Send</b>
-                <p id="exchange_transfer__failed_reason"></p>
-            </div>
-        </div>
+        <div id="external_transfer_process"></div>
     </sm-popup>
     <sm-popup id="secure_pwd_popup">
         <header slot="header" class="popup__header">

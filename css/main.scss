@@ -416,6 +416,9 @@ ol {
 .margin-left-0-5 {
   margin-left: 0.5rem;
 }
+.margin-top-1 {
+  margin-top: 1rem;
+}
 .margin-top-1-5 {
   margin-top: 1.5rem;
 }
@@ -893,12 +896,9 @@ ol {
   color: inherit;
   font-weight: 500;
   .icon:first-of-type {
-    height: 2.3rem;
-    width: 2.3rem;
-    padding: 0.5rem;
-    fill: rgba(var(--foreground-color), 1);
-    background-color: var(--accent-color);
-    border-radius: 2rem;
+    height: 1.5rem;
+    width: 1.5rem;
+    fill: var(--accent-color);
   }
   .badge {
     left: 0;
@@ -909,10 +909,13 @@ ol {
   flex-direction: column;
   text-align: center;
   align-items: center;
-  font-weight: 500;
   font-size: 0.8rem;
   white-space: initial;
   padding: 0.8rem;
+  border: solid thin rgba(var(--text-color), 0.1);
+  &:hover {
+    border: solid thin rgba(var(--text-color), 0.5);
+  }
   .icon {
     margin-bottom: 0.8rem;
   }

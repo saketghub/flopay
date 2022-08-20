@@ -131,33 +131,117 @@ function withdrawMoneyFromWallet() {
         console.error(error)
     })
 }
+function openExternalTransferPopup(type) {
+    let title = ``;
+    let description = ``;
+    let successTitle = '';
+    let successDescription = null;
+    switch (type) {
+        case 'exchange': {
+            title = 'Transfer to Exchange';
+            description = 'Deposit rupee tokens in RanchiMall Exchange';
+            successTitle = 'Rupees transfer initiated';
+            successDescription = html`<p>Amount may take upto 30 mins to show up in exchange</p>`;
+        } break;
+        case 'btc-bonds': {
+            title = 'Transfer to Blockchain Bonds';
+            description = 'Buy Blockchain Bonds with rupee tokens';
+            successTitle = 'Rupees transferred for Blockchain Bonds';
+        } break;
+        case 'bobs-fund': {
+            title = `Transfer to Bob's fund`;
+            description = `Buy Bob's fund with rupee tokens`;
+            successTitle = `Rupees transferred for Bob's fund`;
+        } break;
+    }   
+    renderElem(getRef('external_transfer_process'), html`
+        <sm-form>
+            <div class="grid gap-0-5">
+                <h4>${title}</h4>
+                <p>${description}</p>
+            </div>
+            <sm-input id="external_transfer__amount" type="number" placeholder="Amount" min="1" step="0.01" error-text="minimum amount is ₹1" animate required autofocus> </sm-input>
+            <div class="multi-state-button">
+                <button id="external_transfer__button" class="button button--primary cta" onclick={externalTransfer()} data-type="${type}" type="submit">Transfer</button>
+            </div>
+        </sm-form>
+        <div class="grid gap-0-5 hidden justify-center text-center">
+            <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+            <b id="external_transfer__success_message">${successTitle}</b>
+            ${successDescription}
+            ${(type === 'btc-bonds'|| type === 'bobs-fund') ? html`<a id="external_transfer__link" target="_blank" class="margin-top-1">View transaction on blockchain</a>`: ''}
+        </div>
+        <div class="grid gap-0-5 hidden justify-center text-center">
+            <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /> </svg>
+            <b>Failed to transfer</b>
+            <p id="external_transfer__failed_reason"></p>
+        </div>
+    `)
+    openPopup('external_transfer_popup');
+}
 
-function transferToExchange() {
-    const amount = parseFloat(getRef('exchange_transfer__amount').value.trim());
-    buttonLoader('exchange_transfer__button', true);
-    floDapps.user.private.then(privateKey => {
-        if (!privateKey) return;
-        floExchangeAPI.depositToken('rupee', amount, floDapps.user.id, 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm', privateKey).then(txid => {
-            console.log(txid);
-            showChildElement('exchange_transfer_process', 1);
-            getRef('exchange_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to exchange`;
-        }).catch(error => {
-            console.log(error);
-            if (error.code) {
-                error = error.message;
-            }
-            if (error === 'Insufficient rupee# balance')
-                error = 'Insufficient rupee token balance in your wallet, please top-up your wallet.';
-            getRef('exchange_transfer__failed_reason').textContent = error;
-            showChildElement('exchange_transfer_process', 2);
-        }).finally(() => {
-            buttonLoader('exchange_transfer__button', false);
-        });
-     }).catch(error => {
-        console.log(error);
-        notify('Invalid password', 'error');
-        closePopup(); 
-        return false;
+function externalTransfer() {
+    const type = document.getElementById('external_transfer__button').dataset.type;
+    let confirmationMessage = '';
+    let amount = parseFloat(document.getElementById('external_transfer__amount').value.trim());
+    let receiverFloID = '';
+    let remarks = '';
+    let name = '';
+    switch (type) {
+        case 'exchange': {
+            confirmationMessage = `You are depositing ${amount} rupee tokens to exchange`;
+            receiverFloID = 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm';
+            name = 'RanchiMall Exchange';
+        } break;
+        case 'btc-bonds': {
+            receiverFloID = 'FBBstZ2GretgQqDP55yt8iVd4KNZkdvEzH';
+            confirmationMessage = `You are transferring ${amount} rupee tokens to blockchain bond at FLO address ${receiverFloID}`;
+            remarks = '|blockchain-bond';
+            name = 'Blockchain Bonds';
+        } break;
+        case 'bobs-fund': {
+            receiverFloID = 'FFXy5pJnfzu2fCDLhpUremyXQjGtFpgCDN';
+            confirmationMessage = `You are transferring ${amount} rupee tokens to Bob's fund at FLO address ${receiverFloID}`;
+            remarks = '|bobs-fund';
+            name = `Bob's Fund`;
+        } break;
+    }   
+    getConfirmation('Continue?', { message: confirmationMessage, confirmText: 'Transfer' }).then(confirmation => {
+        if (confirmation) {
+            floDapps.user.private.then(async privateKey => {
+                if (!privateKey) return;
+                try {
+                    buttonLoader('external_transfer__button', true);
+                    let result
+                    if (type === 'btc-bonds' || type === 'bobs-fund') {
+                        result = await User.sendToken(receiverFloID, amount, remarks)
+                        document.getElementById('external_transfer__link').href = `https://flosight.duckdns.org/tx/${result}`;
+                    } else if (type === 'exchange') {
+                        result = await floExchangeAPI.depositToken('rupee', amount, floDapps.user.id, receiverFloID, privateKey)
+                    }
+                    console.log(result);
+                    showChildElement('external_transfer_process', 1);
+                    document.getElementById('external_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to ${name}`;
+                } catch (error) {
+                    let errorText = error;
+                    console.log(error);
+                    if (error.code) {
+                        errorText = error.message;
+                    }
+                    if (error === 'Insufficient rupee# balance')
+                        errorText = 'Insufficient rupee token balance in your wallet, please top-up your wallet.';
+                    document.getElementById('external_transfer__failed_reason').textContent = errorText;
+                    showChildElement('external_transfer_process', 2);
+                } finally {
+                    buttonLoader('external_transfer__button', false);
+                }
+             }).catch(error => {
+                console.log(error);
+                notify('Invalid password', 'error');
+                closePopup(); 
+                return false;
+            })
+        }
     })
 }
 
@@ -804,7 +888,7 @@ const render = {
 };
 
 function buttonLoader(id, show) {
-    const button = typeof id === 'string' ? getRef(id) : id;
+    const button = typeof id === 'string' ? document.getElementById(id) : id;
     button.disabled = show;
     const animOptions = {
         duration: 200,
