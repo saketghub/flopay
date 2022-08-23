@@ -44,19 +44,6 @@ body[data-theme="dark"] {
   }
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  &,
-  & > * {
-    font-weight: 400;
-    font-family: "Calistoga", cursive;
-  }
-}
-
 p,
 strong {
   font-size: 0.9rem;
@@ -913,6 +900,7 @@ ol {
   white-space: initial;
   padding: 0.8rem;
   border: solid thin rgba(var(--text-color), 0.1);
+  border-radius: 0.5rem;
   &:hover {
     border: solid thin rgba(var(--text-color), 0.5);
   }

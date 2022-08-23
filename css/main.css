@@ -45,21 +45,6 @@ body[data-theme=dark] sm-popup::part(popup) {
   background-color: rgba(var(--foreground-color), 1);
 }
 
-h1, h1 > *,
-h2,
-h2 > *,
-h3,
-h3 > *,
-h4,
-h4 > *,
-h5,
-h5 > *,
-h6,
-h6 > * {
-  font-weight: 400;
-  font-family: "Calistoga", cursive;
-}
-
 p,
 strong {
   font-size: 0.9rem;
@@ -992,6 +977,7 @@ ol li::before {
   white-space: initial;
   padding: 0.8rem;
   border: solid thin rgba(var(--text-color), 0.1);
+  border-radius: 0.5rem;
 }
 .wallet-action:hover {
   border: solid thin rgba(var(--text-color), 0.5);
