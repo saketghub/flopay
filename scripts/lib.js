@@ -1,10 +1,41 @@
-(function(GLOBAL) { //lib v1.3.0c
+(function(GLOBAL) { //lib v1.3.1
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
      * For more info (including license and terms of use), please visit respective source.
      */
     GLOBAL.cryptocoin = (typeof floGlobals === 'undefined' ? null : floGlobals.blockchain) || 'FLO';
+
+    const getRandomBytes = (function() {
+        if (typeof require === 'function') {
+            const crypto = require('crypto');
+            return function(buf) {
+                var bytes = crypto.randomBytes(buf.length);
+                buf.set(bytes);
+                return buf;
+            }
+        } else if (GLOBAL.crypto && GLOBAL.crypto.getRandomValues) {
+            return function(buf) {
+                return GLOBAL.crypto.getRandomValues(buf);
+            }
+        } else
+            throw Error('Unable to define getRandomBytes');
+    })();
+
+
+    GLOBAL.securedMathRandom = (function() {
+        if (typeof require === 'function') {
+            const crypto = require('crypto');
+            return function() {
+                return crypto.randomBytes(4).readUInt32LE() / 0xffffffff;
+            }
+        } else if (GLOBAL.crypto && GLOBAL.crypto.getRandomValues) {
+            return function() {
+                return (GLOBAL.crypto.getRandomValues(new Uint32Array(1))[0] / 0xffffffff);
+            }
+        } else
+            throw Error('Unable to define securedMathRandom');
+    })();
 
     //Crypto.js
     (function() {
@@ -52,7 +83,7 @@
                 // Generate an array of any length of random bytes
                 randomBytes: function(n) {
                     for (var bytes = []; n > 0; n--)
-                        bytes.push(Math.floor(Math.random() * 256));
+                        bytes.push(Math.floor(securedMathRandom() * 256));
                     return bytes;
                 },
 
@@ -405,16 +436,6 @@
     //SecureRandom.js
     (function() {
 
-        const getRandomValues = function(buf) {
-            if (typeof require === 'function') {
-                var bytes = require('crypto').randomBytes(buf.length);
-                buf.set(bytes)
-                return buf;
-            } else if (GLOBAL.crypto && GLOBAL.crypto.getRandomValues)
-                return GLOBAL.crypto.getRandomValues(buf);
-            else
-                return null;
-        }
 
         /*!
          * Random number generator with ArcFour PRNG
@@ -446,10 +467,10 @@
         // ba: byte array
         sr.prototype.nextBytes = function(ba) {
             var i;
-            if (getRandomValues && GLOBAL.Uint8Array) {
+            if (getRandomBytes && GLOBAL.Uint8Array) {
                 try {
                     var rvBytes = new Uint8Array(ba.length);
-                    getRandomValues(rvBytes);
+                    getRandomBytes(rvBytes);
                     for (i = 0; i < ba.length; ++i)
                         ba[i] = sr.getByte() ^ rvBytes[i];
                     return;
@@ -549,23 +570,23 @@
             sr.pool = new Array();
             sr.pptr = 0;
             var t;
-            if (getRandomValues && GLOBAL.Uint8Array) {
+            if (getRandomBytes && GLOBAL.Uint8Array) {
                 try {
                     // Use webcrypto if available
                     var ua = new Uint8Array(sr.poolSize);
-                    getRandomValues(ua);
+                    getRandomBytes(ua);
                     for (t = 0; t < sr.poolSize; ++t)
                         sr.pool[sr.pptr++] = ua[t];
                 } catch (e) {
                     alert(e);
                 }
             }
-            while (sr.pptr < sr.poolSize) { // extract some randomness from Math.random()
-                t = Math.floor(65536 * Math.random());
+            while (sr.pptr < sr.poolSize) { // extract some randomness from securedMathRandom()
+                t = Math.floor(65536 * securedMathRandom());
                 sr.pool[sr.pptr++] = t >>> 8;
                 sr.pool[sr.pptr++] = t & 255;
             }
-            sr.pptr = Math.floor(sr.poolSize * Math.random());
+            sr.pptr = Math.floor(sr.poolSize * securedMathRandom());
             sr.seedTime();
             // entropy
             var entropyStr = "";
@@ -1654,7 +1675,7 @@
             var a = nbi();
             for (var i = 0; i < t; ++i) {
                 //Pick bases at random, instead of starting at 2
-                a.fromInt(lowprimes[Math.floor(Math.random() * lowprimes.length)]);
+                a.fromInt(lowprimes[Math.floor(securedMathRandom() * lowprimes.length)]);
                 var y = a.modPow(r, this);
                 if (y.compareTo(BigInteger.ONE) != 0 && y.compareTo(n1) != 0) {
                     var j = 1;
@@ -2612,7 +2633,7 @@
                 pad: function(cipher, message) {
                     var reqd = _requiredPadding(cipher, message);
                     for (var i = 1; i < reqd; i++) {
-                        message.push(Math.floor(Math.random() * 256));
+                        message.push(Math.floor(securedMathRandom() * 256));
                     }
                     message.push(reqd);
                 },
@@ -4782,8 +4803,8 @@
                 } else if (floDataCount < 253) {
                     floDataCountString = floDataCount.toString(16);
                 } else if (floDataCount <= 1040) {
-                    floDataCountAdjusted = (floDataCount - 253) + parseInt("0xfd00fd");
-                    floDataCountStringAdjusted = floDataCountAdjusted.toString(16);
+                    let floDataCountAdjusted = (floDataCount - 253) + parseInt("0xfd00fd");
+                    let floDataCountStringAdjusted = floDataCountAdjusted.toString(16);
                     floDataCountString = floDataCountStringAdjusted.substr(0, 2) + floDataCountStringAdjusted.substr(4, 2) + floDataCountStringAdjusted.substr(2, 2);
                 } else {
                     floDataCountString = "Character Limit Exceeded";
@@ -6690,7 +6711,7 @@
 
         /* retreive the balance from a given address */
         coinjs.addressBalance = function(address, callback) {
-            coinjs.ajax(coinjs.host + '?uid=' + coinjs.uid + '&key=' + coinjs.key + '&setmodule=addresses&request=bal&address=' + address + '&r=' + Math.random(), callback, "GET");
+            coinjs.ajax(coinjs.host + '?uid=' + coinjs.uid + '&key=' + coinjs.key + '&setmodule=addresses&request=bal&address=' + address + '&r=' + securedMathRandom(), callback, "GET");
         }
 
         /* decompress an compressed public key */
@@ -7469,12 +7490,12 @@
 
             /* list unspent transactions */
             r.listUnspent = function(address, callback) {
-                coinjs.ajax(coinjs.host + '?uid=' + coinjs.uid + '&key=' + coinjs.key + '&setmodule=addresses&request=unspent&address=' + address + '&r=' + Math.random(), callback, "GET");
+                coinjs.ajax(coinjs.host + '?uid=' + coinjs.uid + '&key=' + coinjs.key + '&setmodule=addresses&request=unspent&address=' + address + '&r=' + securedMathRandom(), callback, "GET");
             }
 
             /* list transaction data */
             r.getTransaction = function(txid, callback) {
-                coinjs.ajax(coinjs.host + '?uid=' + coinjs.uid + '&key=' + coinjs.key + '&setmodule=bitcoin&request=gettransaction&txid=' + txid + '&r=' + Math.random(), callback, "GET");
+                coinjs.ajax(coinjs.host + '?uid=' + coinjs.uid + '&key=' + coinjs.key + '&setmodule=bitcoin&request=gettransaction&txid=' + txid + '&r=' + securedMathRandom(), callback, "GET");
             }
 
             /* add unspent to transaction */
@@ -8566,7 +8587,7 @@
             var l = length || 25;
             var chars = "!$%^&*()_+{}:@~?><|\./;'#][=-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
             for (let x = 0; x < l; x++) {
-                r += chars.charAt(Math.floor(Math.random() * 62));
+                r += chars.charAt(Math.floor(securedMathRandom() * 62));
             }
             return r;
         }
@@ -8595,7 +8616,7 @@
             ],
 
             // warning for insecure PRNG
-            warning: 'WARNING:\nA secure random number generator was not found.\nUsing Math.random(), which is NOT cryptographically strong!'
+            warning: 'WARNING:\nA secure random number generator was not found.\nUsing securedMathRandom(), which is NOT cryptographically strong!'
         };
 
         // Protected settings object
@@ -8715,7 +8736,7 @@
                     str = null;
                 while (str === null) {
                     for (var i = 0; i < elems; i++) {
-                        arr[i] = Math.floor(Math.random() * max + 1);
+                        arr[i] = Math.floor(securedMathRandom() * max + 1);
                     }
                     str = construct(bits, arr, 10, bitsPerNum);
                 }
@@ -8724,7 +8745,7 @@
         };
 
         // Warn about using insecure rng.
-        // Called when Math.random() is being used.
+        // Called when securedMathRandom() is being used.
         function warn() {
             GLOBAL['console']['warn'](defaults.warning);
             if (typeof GLOBAL['alert'] === 'function' && config.alert) {
@@ -9148,22 +9169,12 @@
 
     //kbucket.js
     (function() {
-        const getRandomValues = function(buf) {
-            if (typeof require === 'function') {
-                var bytes = require('crypto').randomBytes(buf.length);
-                buf.set(bytes)
-                return buf;
-            } else if (GLOBAL.crypto && GLOBAL.crypto.getRandomValues)
-                return GLOBAL.crypto.getRandomValues(buf);
-            else
-                return null;
-        }
         // Kademlia DHT K-bucket implementation as a binary tree.
         // by 'Tristan Slominski' under 'MIT License'
         GLOBAL.BuildKBucket = function KBucket(options = {}) {
             if (!(this instanceof KBucket))
                 return new KBucket(options);
-            this.localNodeId = options.localNodeId || getRandomValues(new Uint8Array(20))
+            this.localNodeId = options.localNodeId || getRandomBytes(new Uint8Array(20))
             this.numberOfNodesPerKBucket = options.numberOfNodesPerKBucket || 20
             this.numberOfNodesToPing = options.numberOfNodesToPing || 3
             this.distance = options.distance || this.distance

@@ -1016,6 +1016,7 @@ smNotifications.innerHTML = `
                 padding: 0.3rem;
                 transition: background-color 0.3s, transform 0.3s;
                 background-color: transparent;
+                flex-shrink: 0;
             }
             .close:active{
                 transform: scale(0.9);

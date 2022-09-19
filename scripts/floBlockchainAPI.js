@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floBlockchainAPI v2.3.3a
+(function(EXPORTS) { //floBlockchainAPI v2.3.3b
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -6,7 +6,7 @@
     const DEFAULT = {
         blockchain: floGlobals.blockchain,
         apiURL: {
-            FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+            FLO: ['https://flosight.duckdns.org/'],
             FLO_TEST: ['https://testnet-flosight.duckdns.org', 'https://testnet.flocha.in/']
         },
         sendAmt: 0.001,
@@ -49,7 +49,7 @@
     const allServerList = new Set(floGlobals.apiURL && floGlobals.apiURL[DEFAULT.blockchain] ? floGlobals.apiURL[DEFAULT.blockchain] : DEFAULT.apiURL[DEFAULT.blockchain]);
 
     var serverList = Array.from(allServerList);
-    var curPos = floCrypto.randInt(0, serverList - 1);
+    var curPos = floCrypto.randInt(0, serverList.length - 1);
 
     function fetch_retry(apicall, rm_flosight) {
         return new Promise((resolve, reject) => {
@@ -371,18 +371,18 @@
                     })
                 //Calculate totalSentAmount and check if totalBalance is sufficient
                 let totalSendAmt = totalFee;
-                for (floID in receivers)
+                for (let floID in receivers)
                     totalSendAmt += receivers[floID];
                 if (totalBalance < totalSendAmt)
                     return reject("Insufficient total Balance");
                 //Get the UTXOs of the senders
                 let promises = [];
-                for (floID in senders)
+                for (let floID in senders)
                     promises.push(promisedAPI(`api/addr/${floID}/utxo`));
                 Promise.all(promises).then(results => {
                     let wifSeq = [];
                     var trx = bitjs.transaction();
-                    for (floID in senders) {
+                    for (let floID in senders) {
                         let utxos = results.shift();
                         let sendAmt;
                         if (preserveRatio) {
@@ -406,7 +406,7 @@
                         if (change > 0)
                             trx.addoutput(floID, change);
                     }
-                    for (floID in receivers)
+                    for (let floID in receivers)
                         trx.addoutput(floID, receivers[floID]);
                     trx.addflodata(floData.replace(/\n/g, ' '));
                     for (let i = 0; i < wifSeq.length; i++)

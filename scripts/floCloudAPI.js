@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCloudAPI v2.4.2c
+(function(EXPORTS) { //floCloudAPI v2.4.2d
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -317,6 +317,7 @@
             data => {
                 data = objectifier(data);
                 let filtered = {},
+                    proxy = proxyID(request.receiverID),
                     r = request;
                 for (let v in data) {
                     let d = data[v];
@@ -325,7 +326,7 @@
                         (r.atVectorClock || !r.upperVectorClock || r.upperVectorClock >= v) &&
                         (!r.afterTime || r.afterTime < d.log_time) &&
                         r.application == d.application &&
-                        r.receiverID == d.receiverID &&
+                        (proxy == d.receiverID || proxy == d.proxyID) &&
                         (!r.comment || r.comment == d.comment) &&
                         (!r.type || r.type == d.type) &&
                         (!r.senderID || r.senderID.includes(d.senderID)))

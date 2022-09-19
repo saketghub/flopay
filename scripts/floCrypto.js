@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCrypto v2.3.3b
+(function(EXPORTS) { //floCrypto v2.3.3d
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -81,7 +81,7 @@
     floCrypto.randInt = function(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        return Math.floor(securedMathRandom() * (max - min + 1)) + min;
     }
 
     //generate a random String within length (options : alphaNumeric chars only)
@@ -90,7 +90,7 @@
         var characters = alphaNumeric ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' :
             'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_+-./*?@#&$<>=[]{}():';
         for (var i = 0; i < length; i++)
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
+            result += characters.charAt(Math.floor(securedMathRandom() * characters.length));
         return result;
     }
 
@@ -245,101 +245,96 @@
 
     //Check if the given address (any blockchain) is valid or not
     floCrypto.validateAddr = function(address, std = true, bech = true) {
-        if (address.length == 33 || address.length == 34) { //legacy or segwit encoding
-            if (std === false)
+        let raw = decodeAddress(address);
+        if (!raw)
+            return false;
+        if (typeof raw.version !== 'undefined') { //legacy or segwit
+            if (std == false)
                 return false;
-            let decode = bitjs.Base58.decode(address);
-            var raw = decode.slice(0, decode.length - 4),
-                checksum = decode.slice(decode.length - 4);
-            var hash = Crypto.SHA256(Crypto.SHA256(raw, {
-                asBytes: true
-            }), {
-                asBytes: true
-            });
-            if (hash[0] != checksum[0] || hash[1] != checksum[1] || hash[2] != checksum[2] || hash[3] != checksum[3])
-                return false;
-            else if (std === true || (!Array.isArray(std) && std === raw[0]) || (Array.isArray(std) && std.includes(raw[0])))
+            else if (std === true || (!Array.isArray(std) && std === raw.version) || (Array.isArray(std) && std.includes(raw.version)))
                 return true;
             else
                 return false;
-        } else if (address.length == 42 || address.length == 62) { //bech encoding
+        } else if (typeof raw.bech_version !== 'undefined') { //bech32
             if (bech === false)
                 return false;
-            let decode = coinjs.bech32_decode(address);
-            if (!decode)
-                return false;
-            var raw = decode.data;
-            if (bech === true || (!Array.isArray(bech) && bech === raw[0]) || (Array.isArray(bech) && bech.includes(raw[0])))
+            else if (bech === true || (!Array.isArray(bech) && bech === raw.bech_version) || (Array.isArray(bech) && bech.includes(raw.bech_version)))
                 return true;
             else
                 return false;
-        } else //unknown length
+        } else //unknown
             return false;
     }
 
     //Check the public-key for the address (any blockchain)
     floCrypto.verifyPubKey = function(pubKeyHex, address) {
-        let pub_hash = Crypto.util.bytesToHex(ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(pubKeyHex), {
-            asBytes: true
-        })));
-        if (address.length == 33 || address.length == 34) { //legacy encoding
-            let decode = bitjs.Base58.decode(address);
-            var raw = decode.slice(0, decode.length - 4),
-                checksum = decode.slice(decode.length - 4);
-            var hash = Crypto.SHA256(Crypto.SHA256(raw, {
+        let raw = decodeAddress(address),
+            pub_hash = Crypto.util.bytesToHex(ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(pubKeyHex), {
                 asBytes: true
-            }), {
-                asBytes: true
-            });
-            if (hash[0] != checksum[0] || hash[1] != checksum[1] || hash[2] != checksum[2] || hash[3] != checksum[3])
-                return false;
-            raw.shift();
-            return pub_hash === Crypto.util.bytesToHex(raw);
-        } else if (address.length == 42 || address.length == 62) { //bech encoding
-            let decode = coinjs.bech32_decode(address);
-            if (!decode)
-                return false;
-            var raw = decode.data;
-            raw.shift();
-            raw = coinjs.bech32_convert(raw, 5, 8, false);
-            return pub_hash === Crypto.util.bytesToHex(raw);
-        } else //unknown length
-            return false;
+            })));
+        return raw ? pub_hash === raw.hex : false;
     }
 
     //Convert the given address (any blockchain) to equivalent floID
     floCrypto.toFloID = function(address) {
         if (!address)
             return;
-        var bytes;
-        if (address.length == 33 || address.length == 34) { //legacy encoding
+        let raw = decodeAddress(address);
+        if (!raw)
+            return;
+        raw.bytes.unshift(bitjs.pub);
+        let hash = Crypto.SHA256(Crypto.SHA256(raw.bytes, {
+            asBytes: true
+        }), {
+            asBytes: true
+        });
+        return bitjs.Base58.encode(raw.bytes.concat(hash.slice(0, 4)));
+    }
+
+    //Checks if the given addresses (any blockchain) are same (w.r.t keys)
+    floCrypto.isSameAddr = function(addr1, addr2) {
+        if (!addr1 || !addr2)
+            return;
+        let raw1 = decodeAddress(addr1),
+            raw2 = decodeAddress(addr2);
+        if (!raw1 || !raw2)
+            return false;
+        else
+            return raw1.hex === raw2.hex;
+    }
+
+    const decodeAddress = floCrypto.decodeAddr = function(address) {
+        if (!address)
+            return;
+        else if (address.length == 33 || address.length == 34) { //legacy encoding
             let decode = bitjs.Base58.decode(address);
-            bytes = decode.slice(0, decode.length - 4);
+            let bytes = decode.slice(0, decode.length - 4);
             let checksum = decode.slice(decode.length - 4),
                 hash = Crypto.SHA256(Crypto.SHA256(bytes, {
                     asBytes: true
                 }), {
                     asBytes: true
                 });
-            hash[0] != checksum[0] || hash[1] != checksum[1] || hash[2] != checksum[2] || hash[3] != checksum[3] ?
-                bytes = undefined : bytes.shift();
+            return (hash[0] != checksum[0] || hash[1] != checksum[1] || hash[2] != checksum[2] || hash[3] != checksum[3]) ? null : {
+                version: bytes.shift(),
+                hex: Crypto.util.bytesToHex(bytes),
+                bytes
+            }
         } else if (address.length == 42) { //bech encoding
             let decode = coinjs.bech32_decode(address);
             if (decode) {
-                bytes = decode.data;
-                bytes.shift();
+                let bytes = decode.data;
+                let bech_version = bytes.shift();
                 bytes = coinjs.bech32_convert(bytes, 5, 8, false);
-            }
+                return {
+                    bech_version,
+                    hrp: decode.hrp,
+                    hex: Crypto.util.bytesToHex(bytes),
+                    bytes
+                }
+            } else
+                return null;
         }
-        if (!bytes)
-            return;
-        bytes.unshift(bitjs.pub);
-        let hash = Crypto.SHA256(Crypto.SHA256(bytes, {
-            asBytes: true
-        }), {
-            asBytes: true
-        });
-        return bitjs.Base58.encode(bytes.concat(hash.slice(0, 4)));
     }
 
     //Split the str using shamir's Secret and Returns the shares 

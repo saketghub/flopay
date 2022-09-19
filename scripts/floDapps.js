@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.3.2c
+(function(EXPORTS) { //floDapps v2.3.2d
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -63,7 +63,7 @@
             return Crypto.AES.decrypt(data, raw_user.private);
         },
         get db_name() {
-            return "floDapps#" + user.id;
+            return "floDapps#" + floCrypto.toFloID(user.id);
         },
         lock() {
             user_private = user_priv_wrap;
@@ -71,6 +71,30 @@
         async unlock() {
             if (await user.private === raw_user.private)
                 user_private = user_priv_raw;
+        },
+        get_contact(id) {
+            if (!user.contacts)
+                throw "Contacts not available";
+            else if (user.contacts[id])
+                return user.contacts[id];
+            else {
+                let id_raw = floCrypto.decodeAddr(id).hex;
+                for (let i in user.contacts)
+                    if (floCrypto.decodeAddr(i).hex == id_raw)
+                        return user.contacts[i];
+            }
+        },
+        get_pubKey(id) {
+            if (!user.pubKeys)
+                throw "Contacts not available";
+            else if (user.pubKeys[id])
+                return user.pubKeys[id];
+            else {
+                let id_raw = floCrypto.decodeAddr(id).hex;
+                for (let i in user.pubKeys)
+                    if (floCrypto.decodeAddr(i).hex == id_raw)
+                        return user.pubKeys[i];
+            }
         },
         clear() {
             user_id = user_public = user_private = undefined;
@@ -475,7 +499,7 @@
 
     floDapps.storeContact = function(floID, name) {
         return new Promise((resolve, reject) => {
-            if (!floCrypto.validateFloID(floID))
+            if (!floCrypto.validateAddr(floID))
                 return reject("Invalid floID!")
             compactIDB.writeData("contacts", name, floID, user.db_name).then(result => {
                 user.contacts[floID] = name;
@@ -488,9 +512,9 @@
         return new Promise((resolve, reject) => {
             if (floID in user.pubKeys)
                 return resolve("pubKey already stored")
-            if (!floCrypto.validateFloID(floID))
+            if (!floCrypto.validateAddr(floID))
                 return reject("Invalid floID!")
-            if (floCrypto.getFloID(pubKey) != floID)
+            if (!floCrypto.verifyPubKey(pubKey, floID))
                 return reject("Incorrect pubKey")
             compactIDB.writeData("pubKeys", pubKey, floID, user.db_name).then(result => {
                 user.pubKeys[floID] = pubKey;
