@@ -848,104 +848,37 @@ mobileQuery.addEventListener('change', handleMobileChange)
 handleMobileChange(mobileQuery)
 
 function showChildElement(id, index, options = {}) {
-    const { mobileView = false, entry, exit } = options
-    const animOptions = {
-        duration: 150,
-        easing: 'ease',
-        fill: 'forwards'
-    }
-    const parent = typeof id === 'string' ? document.getElementById(id) : id;
-    const visibleElement = [...parent.children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
-    if (visibleElement === parent.children[index]) return;
-    if (visibleElement) {
-        if (exit) {
-            visibleElement.animate(exit, animOptions).onfinish = () => {
+    return new Promise((resolve) => {
+        const { mobileView = false, entry, exit } = options
+        const animOptions = {
+            duration: 150,
+            easing: 'ease',
+            fill: 'forwards'
+        }
+        const parent = typeof id === 'string' ? document.getElementById(id) : id;
+        const visibleElement = [...parent.children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
+        if (visibleElement === parent.children[index]) return;
+        visibleElement.getAnimations().forEach(anim => anim.cancel())
+        parent.children[index].getAnimations().forEach(anim => anim.cancel())
+        if (visibleElement) {
+            if (exit) {
+                visibleElement.animate(exit, animOptions).onfinish = () => {
+                    visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                    parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                    if (entry)
+                        parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+                }
+            } else {
                 visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
                 parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
-                if (entry)
-                    parent.children[index].animate(entry, animOptions)
+                resolve()
             }
         } else {
-            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
             parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+            parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
         }
-    } else {
-        parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
-        parent.children[index].animate(entry, animOptions)
-    }
+    })
 }
-
-// Reactivity system
-class ReactiveState {
-    constructor() {
-        this.state = {}
-    }
-    setState(key, value, callback) {
-        if (this.state[key].value === value) return
-        this.state[key].value = value
-        this.state[key].refs.forEach(ref => {
-            ref.textContent = value
-        })
-        if (callback)
-            callback(value)
-    }
-    getState(key) {
-        return this.state[key].value
-    }
-    subscribe(key, dom) {
-        if (!this.state.hasOwnProperty(key)) {
-            this.state[key] = {
-                refs: new Set(),
-                value: '',
-            }
-        }
-        this.state[key].refs.add(dom)
-        dom.textContent = this.state[key].value
-    }
-    unsubscribe(key, dom) {
-        this.state[key].refs.delete(dom)
-    }
-    createState(defaultValue, key, callback) {
-        if (!key)
-            key = Math.random().toString(36).substr(2, 9);
-        if (!this.state.hasOwnProperty(key)) {
-            this.state[key] = {
-                refs: new Set()
-            }
-        }
-        this.setState(key, defaultValue, callback)
-        return [
-            () => this.getState(key),
-            value => this.setState(key, value, callback)
-        ]
-    }
-}
-const reactiveState = new ReactiveState()
-function createState(defaultValue, key, callback) {
-    return reactiveState.createState(defaultValue, key, callback)
-}
-const smState = document.createElement('template')
-smState.innerHTML = `
-<style>
-    font-size: inherit;
-    font-weight: inherit;
-    font-family: inherit;
-</style>
-`
-class SmState extends HTMLElement {
-    constructor() {
-        super();
-        this.appendChild(smState.content.cloneNode(true));
-    }
-    connectedCallback() {
-        reactiveState.subscribe(this.getAttribute('sid'), this)
-    }
-    disconnectedCallback() {
-        reactiveState.unsubscribe(this.getAttribute('sid'), this)
-    }
-}
-window.customElements.define('r-s', SmState);
-
 
 // generate random string with numbers and capital and small letters
 function randomString(length) {
@@ -974,4 +907,9 @@ function conditionalClassToggle(el, className, condition) {
         el.classList.add(className);
     else
         el.classList.remove(className);
+}
+function togglePrivateKeyVisibility(input) {
+    const target = input.closest('sm-input')
+    target.type = target.type === 'password' ? 'text' : 'password';
+    target.focusIn()
 }

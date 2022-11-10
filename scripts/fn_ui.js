@@ -611,7 +611,7 @@ async function completeTokenToCashRequest(request) {
 }
 
 function getFloIdTitle(floID) {
-    return floGlobals.savedIds[floID] ? floGlobals.savedIds[floID].title : floID;
+    return floGlobals.contacts[floID] || floID;
 }
 
 function formatAmount(amount = 0, currency = 'inr') {
@@ -628,8 +628,7 @@ const cashierRejectionErrors = {
 }
 
 const render = {
-    savedId(floID, details,ref) {
-        const { title } = details;
+    savedId(floID, title,ref) {
         return html.for(ref,floID)`
             <li class="saved-id grid interact" tabindex="0" data-flo-id="${floID}">
                 <button class="interact edit-saved icon-only" title="Edit name">
@@ -866,8 +865,8 @@ const render = {
         }
     },
     async savedIds() {
-        await organizeSyncedData('savedIds');
-        renderElem(getRef('saved_ids_list'), html`${getArrayOfSavedIds().map(({floID, details}) => render.savedId(floID, details, getRef('saved_ids_list')))}`)
+        // await organizeSyncedData('savedIds');
+        renderElem(getRef('saved_ids_list'), html`${getArrayOfSavedIds().map(({floID, title}) => render.savedId(floID, title, getRef('saved_ids_list')))}`)
     },
     conditionalSteps() {
         if (getRef('topup_wallet__qr_wrapper').open) {
@@ -996,22 +995,21 @@ getRef('to_amount').addEventListener('input', e => {
 
 function getArrayOfSavedIds() {
     const arr = [];
-    for (const key in floGlobals.savedIds) {
+    for (const key in floGlobals.contacts) {
         arr.push({
             floID: key,
-            details: floGlobals.savedIds[key]
+            title: floGlobals.contacts[key]
         });
     }
-    return arr.sort((a, b) => a.details.title.localeCompare(b.details.title));
+    return arr.sort((a, b) => a.title.localeCompare(b.title));
 }
 async function saveFloId() {
     const floID = getRef('flo_id_to_save').value.trim();
-    if (floGlobals.savedIds.hasOwnProperty(floID))
+    if (floGlobals.contacts.hasOwnProperty(floID))
         return notify('This FLO ID is already saved', 'error');
     const title = getRef('flo_id_title_to_save').value.trim();
-    floGlobals.savedIds[floID] = { title }
     buttonLoader('save_flo_id_button', true);
-    syncUserData('savedIds', floGlobals.savedIds).then(() => {
+    floDapps.storeContact(floID,title).then(() => {
         render.savedIds()
         notify(`Saved ${floID}`, 'success');
         closePopup();
@@ -1047,8 +1045,7 @@ function saveIdChanges() {
     let title = getRef('get_new_title').value.trim();
     if (title == '')
         title = 'Unknown';
-    floGlobals.savedIds[floID] = { title }
-    syncUserData('savedIds', floGlobals.savedIds).then(() => {
+    floDapps.storeContact(floID,title).then(() => {
         render.savedIds()
         closePopup();
     }).catch(error => {
@@ -1060,13 +1057,13 @@ function deleteSavedId() {
         confirmText: 'Delete',
     }).then(res => {
         if (res) {
-            const toDelete = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${getRef('edit_saved_id').value}"]`);
+            const floID = getRef('edit_saved_id').value;
+            const toDelete = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${floID}`);
             if (toDelete)
                 toDelete.remove();
-            delete floGlobals.savedIds[getRef('edit_saved_id').value];
             closePopup();
-            syncUserData('savedIds', floGlobals.savedIds).then(() => {
-                notify(`Deleted saved ID`, 'success');
+            compactIDB.removeData('contacts',floID, floDapps.user.db_name).then(() => {
+                notify(`Deleted flo address`, 'success');
             }).catch(error => {
                 notify(error, 'error');
             });
@@ -1085,7 +1082,7 @@ savedIdsObserver.observe(getRef('saved_ids_list'), {
 function insertElementAlphabetically(name, elementToInsert) {
     const elementInserted = [...getRef('saved_ids_list').children].some(child => {
         const floID = child.dataset.floId;
-        if (floGlobals.savedIds[floID].title.localeCompare(name) > 0) {
+        if (floGlobals.contacts[floID].localeCompare(name) > 0) {
             child.before(elementToInsert)
             return true
         }
@@ -1100,7 +1097,7 @@ getRef('search_saved_ids_picker').addEventListener('input', debounce(async e => 
     const searchKey = e.target.value.trim();
     let allSavedIds = getArrayOfSavedIds();
     if (searchKey !== '') {
-        const fuse = new Fuse(allSavedIds, { keys: ['floID', 'details.title'] })
+        const fuse = new Fuse(allSavedIds, { keys: ['floID', 'title'] })
         allSavedIds = fuse.search(searchKey).map(v => v.item)
     }
     renderElem(getRef('saved_ids_picker_list'), html`${allSavedIds.map(({ floID, details }) => render.savedIdPickerCard(floID, details))}`)
@@ -1419,12 +1416,6 @@ function calculateBtcFees() {
     }).catch(e => {
         console.error(e)
     })
-}
-
-function togglePrivateKeyVisibility(input) {
-    const target = input.closest('sm-input')
-    target.type = target.type === 'password' ? 'text' : 'password';
-    target.focusIn()
 }
 const txParticipantsObserver = new MutationObserver(mutations => {
     mutations.forEach(mutation => {
