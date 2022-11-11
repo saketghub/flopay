@@ -1022,7 +1022,6 @@ async function saveFloId() {
 delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
     if (e.target.closest('.edit-saved')) {
         const target = e.target.closest('.saved-id');
-        console.log(target)
         getRef('edit_saved_id').setAttribute('value', target.dataset.floId);
         getRef('get_new_title').value = getFloIdTitle(target.dataset.floId);
         openPopup('edit_saved_popup');

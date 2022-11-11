@@ -33,9 +33,9 @@
     <sm-popup id="confirmation_popup">
         <h4 id="confirm_title"></h4>
         <p id="confirm_message"></p>
-        <div class="flex align-center">
-            <sm-button variant="no-outline" class="cancel-btn">Cancel</sm-button>
-            <sm-button variant="no-outline" class="submit-btn">OK</sm-button>
+        <div class="flex align-center gap-0-5 margin-left-auto">
+            <button class="button cancel-button">Cancel</button>
+            <button class="button button--primary confirm-button">OK</button>
         </div>
     </sm-popup>
     <sm-popup id="prompt_popup">
@@ -44,8 +44,8 @@
         <sm-form>
             <sm-input id="prompt_input"></sm-input>
             <div class="flex align-center">
-                <sm-button variant="no-outline" class="cancel-btn">Cancel</sm-button>
-                <sm-button variant="no-outline" class="submit-btn" type="submit">OK</sm-button>
+                <button class="button cancel-btn">Cancel</button>
+                <button class="button submit-btn button--primary" type="submit">OK</button>
             </div>
         </sm-form>
     </sm-popup>
@@ -182,7 +182,7 @@
                             </svg>
                         </label>
                     </sm-input>
-                    <sm-button id="sign_in_button" variant="primary" disabled>Sign In</sm-button>
+                    <button id="sign_in_button" class="button button--primary" type="submit" disabled>Sign In</button>
                 </sm-form>
                 <p>
                     New here? <a href="#/sign_up">get your FLO login credentials</a>
@@ -211,13 +211,13 @@
                         <sm-copy id="generated_private_key"></sm-copy>
                     </div>
                 </div>
-                <sm-button id="sign_up_button" variant="primary">Sign in with these credentials</sm-button>
+                <button id="sign_up_button" class="button button--primary">Sign in with these credentials</button>
                 <p style="margin-top: 2rem;">You can use these FLO credentials with FLO Pay other RanchiMall apps
                     too. </p>
             </section>
         </article>
         <div id="loading" class="inner-page flex align-center justify-center">
-            <div class="grid gap-1 text-center">
+            <div class="grid gap-1 text-center justify-items-center">
                 <sm-spinner></sm-spinner>
                 <h4>Loading FLO Pay</h4>
             </div>
@@ -567,10 +567,10 @@
             <section id="cashier" class=" grid gap-1 hidden admin-element">
                 <div class="flex align-center space-between">
                     <h4>Requests</h4>
-                    <strip-select id="cashier_requests_selector">
-                        <strip-option value="pending" selected>Pending</strip-option>
-                        <strip-option value="processed">Processed</strip-option>
-                    </strip-select>
+                    <sm-chips id="cashier_requests_selector">
+                        <sm-chip value="pending" selected>Pending</sm-chip>
+                        <sm-chip value="processed">Processed</sm-chip>
+                    </sm-chips>
                 </div>
                 <div id="cashier_requests_wrapper">
                     <div>
@@ -804,7 +804,7 @@
                         <b>My Bitcoin address</b>
                         <sm-copy class="user-btc-id" clip-text></sm-copy>
                     </div>
-                    <sm-button class="danger justify-self-start" onclick="signOut()">Sign out</sm-button>
+                    <button class="button button--danger justify-self-start" onclick="signOut()">Sign out</button>
                 </div>
                 <div class="grid gap-1 card">
                     <h4>Secure private key</h4>
@@ -919,17 +919,15 @@
     </sm-popup>
     <sm-popup id="edit_saved_popup">
         <header slot="header" class="popup__header">
-            <div class="flex align-center">
-                <button class="popup__header__close">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
-                        fill="#000000">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-                    </svg>
-                </button>
-                <h3>Edit</h3>
-            </div>
+            <button class="popup__header__close">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Edit</h3>
         </header>
         <section class="grid gap-1-5">
             <div class="grid gap-0-5">
@@ -1024,17 +1022,15 @@
     </sm-popup>
     <sm-popup id="payments_filters_popup">
         <header slot="header" class="popup__header">
-            <div class="grid gap-1">
-                <button class="popup__header__close justify-self-start">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
-                        fill="#000000">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-                    </svg>
-                </button>
-                <h3>Filters</h3>
-            </div>
+            <button class="popup__header__close justify-self-start">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Filters</h3>
         </header>
         <div id="history_filters_container" class="grid gap-2">
             <div class="grid gap-1" id="payments_type_filter">
@@ -1336,10 +1332,10 @@
             <div class="grid gap-0-5">
                 <div class="flex align-center space-between">
                     <h4>Fees</h4>
-                    <strip-select id="fees_selector">
-                        <strip-option value="suggested" selected>Suggested</strip-option>
-                        <strip-option value="custom">Custom</strip-option>
-                    </strip-select>
+                    <sm-chips id="fees_selector">
+                        <sm-chip value="suggested" selected>Suggested</sm-chip>
+                        <sm-chip value="custom">Custom</sm-chip>
+                    </sm-chips>
                 </div>
                 <p id="selected_fee_tip">Estimated time of confirmation is 1hr</p>
                 <sm-input type="number" id="send_fee" placeholder="Fee" min="0.00000001" step="0.00000001"
@@ -1367,16 +1363,14 @@
     </sm-popup>
     <sm-popup id="txid_popup">
         <header slot="header" class="popup__header">
-            <div class="flex align-center">
-                <button class="popup__header__close" onclick="closePopup()">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
-                        fill="#000000">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-                    </svg>
-                </button>
-            </div>
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
         </header>
         <div class="grid gap-2">
             <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
