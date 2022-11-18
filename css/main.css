@@ -443,6 +443,10 @@ ol li::before {
   margin-left: 0.5rem;
 }
 
+.margin-left-auto {
+  margin-left: auto;
+}
+
 .margin-top-1 {
   margin-top: 1rem;
 }
@@ -608,19 +612,9 @@ ol li::before {
 #prompt_popup h4 {
   margin-bottom: 0.5rem;
 }
-#confirmation_popup sm-button,
-#prompt_popup sm-button {
-  margin: 0;
-}
 #confirmation_popup .flex,
 #prompt_popup .flex {
-  padding: 0;
   margin-top: 1rem;
-}
-#confirmation_popup .flex sm-button:first-of-type,
-#prompt_popup .flex sm-button:first-of-type {
-  margin-right: 0.6rem;
-  margin-left: auto;
 }
 
 #prompt_message {
@@ -865,6 +859,7 @@ ol li::before {
   display: grid;
   text-align: center;
   align-items: center;
+  justify-items: center;
 }
 .multi-state-button > * {
   grid-area: 1/1/2/2;

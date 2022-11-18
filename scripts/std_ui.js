@@ -78,15 +78,15 @@ let zIndex = 50
 function openPopup(popupId, pinned) {
     zIndex++
     getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
-    getRef(popupId).show({ pinned })
-    return getRef(popupId);
+    return getRef(popupId).show({ pinned })
 }
 
 // hides the popup or modal
-function closePopup() {
+function closePopup(options = {}) {
     if (popupStack.peek() === undefined)
         return;
-    popupStack.peek().popup.hide()
+    popupStack.peek().popup.hide(options)
+    zIndex--
 }
 
 document.addEventListener('popupopened', async e => {
@@ -145,53 +145,62 @@ document.addEventListener('popupclosed', e => {
         getRef('main_card').removeAttribute('inert')
     }
 })
-
 // displays a popup for asking permission. Use this instead of JS confirm
 const getConfirmation = (title, options = {}) => {
     return new Promise(resolve => {
-        const { message = '', cancelText = 'Cancel', confirmText = 'OK' } = options
-        openPopup('confirmation_popup', true)
+        const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
         getRef('confirm_title').innerText = title;
         getRef('confirm_message').innerText = message;
-        let cancelButton = getRef('confirmation_popup').children[2].children[0],
-            submitButton = getRef('confirmation_popup').children[2].children[1]
-        submitButton.textContent = confirmText
+        const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+        const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+        confirmButton.textContent = confirmText
         cancelButton.textContent = cancelText
-        submitButton.onclick = () => {
-            closePopup()
-            resolve(true);
+        if (danger)
+            confirmButton.classList.add('button--danger')
+        else
+            confirmButton.classList.remove('button--danger')
+        const { opened, closed } = openPopup('confirmation_popup')
+        confirmButton.onclick = () => {
+            closePopup({ payload: true })
         }
         cancelButton.onclick = () => {
             closePopup()
-            resolve(false);
         }
+        closed.then((payload) => {
+            confirmButton.onclick = null
+            cancelButton.onclick = null
+            if (payload)
+                resolve(true)
+            else
+                resolve(false)
+        })
     })
 }
 // displays a popup for asking user input. Use this instead of JS prompt
 function getPromptInput(title, message = '', options = {}) {
     let { placeholder = '', isPassword = false, cancelText = 'Cancel', confirmText = 'OK' } = options
-    openPopup('prompt_popup', true)
     getRef('prompt_title').innerText = title;
     getRef('prompt_message').innerText = message;
-    let buttons = getRef('prompt_popup').querySelectorAll("sm-button");
+    const cancelButton = getRef('prompt_popup').querySelector('.cancel-button');
+    const confirmButton = getRef('prompt_popup').querySelector('.confirm-button')
     if (isPassword) {
         placeholder = 'Password'
         getRef('prompt_input').setAttribute("type", "password")
     }
     getRef('prompt_input').setAttribute("placeholder", placeholder)
     getRef('prompt_input').focusIn()
-    buttons[0].textContent = cancelText;
-    buttons[1].textContent = confirmText;
+    cancelButton.textContent = cancelText;
+    confirmButton.textContent = confirmText;
+    openPopup('prompt_popup', true)
     return new Promise((resolve, reject) => {
-        buttons[0].onclick = () => {
+        cancelButton.addEventListener('click', () => {
             closePopup()
-            return (null);
-        }
-        buttons[1].onclick = () => {
-            const value = getRef('prompt_input').value;
+            return null
+        }, { once: true })
+        confirmButton.addEventListener('click', () => {
             closePopup()
-            resolve(value)
-        }
+            resolve(getRef('prompt_input').value)
+        }, { once: true })
     })
 }
 
