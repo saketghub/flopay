@@ -86,7 +86,6 @@ function closePopup(options = {}) {
     if (popupStack.peek() === undefined)
         return;
     popupStack.peek().popup.hide(options)
-    zIndex--
 }
 
 document.addEventListener('popupopened', async e => {
@@ -144,6 +143,7 @@ document.addEventListener('popupclosed', e => {
     if (popupStack.items.length === 0) {
         getRef('main_card').removeAttribute('inert')
     }
+    zIndex--;
 })
 // displays a popup for asking permission. Use this instead of JS confirm
 const getConfirmation = (title, options = {}) => {
