@@ -812,7 +812,7 @@
                         You can set a password to secure your private key and use the password instead of private key.
                         This is applied to this browser only.
                     </p>
-                    <button id="secure_pwd_button" class="button button--primary justify-self-start secure-priv-key"
+                    <button id="secure_pwd_button" class="button justify-self-start secure-priv-key"
                         onclick="openPopup('secure_pwd_popup')">Set
                         password</button>
                 </div>
@@ -936,7 +936,7 @@
             </div>
             <sm-form>
                 <sm-input id="get_new_title" placeholder="Name" autofocus animate required></sm-input>
-                <div class="flex align-center space-between">
+                <div class="flex align-center space-between gap-0-5">
                     <button class="button icon-only" title="Delete this FLO address?" onclick="deleteSavedId()">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
@@ -944,7 +944,8 @@
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                         </svg>
                     </button>
-                    <button class="button button--primary cta" type="submit" onclick="saveIdChanges()">Save</button>
+                    <button class="button button--primary cta" style="width: auto;" type="submit"
+                        onclick="saveIdChanges()">Save</button>
                 </div>
             </sm-form>
         </section>
@@ -1684,6 +1685,2483 @@
             }).catch(error => {
                 console.error(error)
             })
+        }
+    </script>
+    <script>
+        /*jshint esversion: 9 */
+        // Global variables
+        const { html, render: renderElem, svg } = uhtml;
+        const domRefs = {};
+        let rupeeHistoryLoader = null;
+        let btcHistoryLoader = null;
+        let walletHistoryLoader = null;
+        let contactHistoryLoader = null;
+        let paymentRequestsLoader = null;
+
+        //Checks for internet connection status
+        if (!navigator.onLine)
+            notify(
+                "There seems to be a problem connecting to the internet. Please check your internet connection.",
+                "error"
+            );
+        window.addEventListener("offline", () => {
+            notify(
+                "There seems to be a problem connecting to the internet. Please check your internet connection.",
+                "error",
+                { pinned: true }
+            );
+        });
+        window.addEventListener("online", () => {
+            getRef("notification_drawer").clearAll();
+            notify("We are back online.", "success");
+        });
+
+        // Use instead of document.getElementById
+        function getRef(elementId) {
+            if (!domRefs.hasOwnProperty(elementId)) {
+                domRefs[elementId] = {
+                    count: 1,
+                    ref: null,
+                };
+                return document.getElementById(elementId);
+            } else {
+                if (domRefs[elementId].count < 3) {
+                    domRefs[elementId].count = domRefs[elementId].count + 1;
+                    return document.getElementById(elementId);
+                } else {
+                    if (!domRefs[elementId].ref)
+                        domRefs[elementId].ref = document.getElementById(elementId);
+                    return domRefs[elementId].ref;
+                }
+            }
+        }
+
+        // returns dom with specified element
+        function createElement(tagName, options = {}) {
+            const { className, textContent, innerHTML, attributes = {} } = options
+            const elem = document.createElement(tagName)
+            for (let attribute in attributes) {
+                elem.setAttribute(attribute, attributes[attribute])
+            }
+            if (className)
+                elem.className = className
+            if (textContent)
+                elem.textContent = textContent
+            if (innerHTML)
+                elem.innerHTML = innerHTML
+            return elem
+        }
+
+        // Use when a function needs to be executed after user finishes changes
+        const debounce = (callback, wait) => {
+            let timeoutId = null;
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                    callback.apply(null, args);
+                }, wait);
+            };
+        }
+
+        let zIndex = 50
+        // function required for popups or modals to appear
+        function openPopup(popupId, pinned) {
+            zIndex++
+            getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+            return getRef(popupId).show({ pinned })
+        }
+
+        // hides the popup or modal
+        function closePopup(options = {}) {
+            if (popupStack.peek() === undefined)
+                return;
+            popupStack.peek().popup.hide(options)
+        }
+
+        document.addEventListener('popupopened', async e => {
+            getRef('main_card').setAttribute('inert', '')
+            const frag = document.createDocumentFragment()
+            switch (e.target.id) {
+                case 'saved_ids_popup':
+                    renderElem(getRef('saved_ids_picker_list'), html`${getArrayOfSavedIds().map(({ floID, details }) => render.savedIdPickerCard(floID, details))}`)
+                    setTimeout(() => {
+                        getRef('search_saved_ids_picker').focusIn()
+                    }, 0);
+                    break;
+                case 'topup_wallet_popup':
+                case 'withdraw_wallet_popup':
+                    let hasSavedIds = false
+                    for (const upiId in floGlobals.savedUserData.upiIds) {
+                        frag.append(render.savedUpiIdOption(upiId))
+                        hasSavedIds = true
+                    }
+                    if (hasSavedIds) {
+                        const clone = frag.cloneNode(true)
+                        getRef('select_withdraw_upi_id').append(clone)
+                        getRef('select_withdraw_upi_id').parentNode.classList.remove('hidden')
+                    }
+                    break;
+                case 'send_btc_popup':
+                    calculateBtcFees();
+                    break;
+            }
+        })
+        document.addEventListener('popupclosed', e => {
+            zIndex--
+            switch (e.target.id) {
+                case 'saved_ids_popup':
+                    getRef('saved_ids_picker_list').innerHTML = ''
+                    getRef('search_saved_ids_picker').value = ''
+                    break;
+                case 'topup_wallet_popup':
+                    showChildElement('topup_wallet_process', 0)
+                    break;
+                case 'withdraw_wallet_popup':
+                    getRef('select_withdraw_upi_id').parentNode.classList.add('hidden')
+                    getRef('select_withdraw_upi_id').innerHTML = ''
+                    showChildElement('withdraw_wallet_process', 0)
+                    break;
+                case 'external_transfer_popup':
+                    showChildElement('external_transfer_process', 0);
+                    buttonLoader('external_transfer__button', false);
+                    document.getElementById('external_transfer__amount').value = '';
+                    break;
+                case 'confirm_topup_popup':
+                    showChildElement('confirm_topup_wrapper', 0);
+                    break;
+            }
+            if (popupStack.items.length === 0) {
+                getRef('main_card').removeAttribute('inert')
+            }
+            zIndex--;
+        })
+        // displays a popup for asking permission. Use this instead of JS confirm
+        const getConfirmation = (title, options = {}) => {
+            return new Promise(resolve => {
+                const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+                getRef('confirm_title').innerText = title;
+                getRef('confirm_message').innerText = message;
+                const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+                const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+                confirmButton.textContent = confirmText
+                cancelButton.textContent = cancelText
+                if (danger)
+                    confirmButton.classList.add('button--danger')
+                else
+                    confirmButton.classList.remove('button--danger')
+                const { opened, closed } = openPopup('confirmation_popup')
+                confirmButton.onclick = () => {
+                    closePopup({ payload: true })
+                }
+                cancelButton.onclick = () => {
+                    closePopup()
+                }
+                closed.then((payload) => {
+                    confirmButton.onclick = null
+                    cancelButton.onclick = null
+                    if (payload)
+                        resolve(true)
+                    else
+                        resolve(false)
+                })
+            })
+        }
+        // displays a popup for asking user input. Use this instead of JS prompt
+        function getPromptInput(title, message = '', options = {}) {
+            let { placeholder = '', isPassword = false, cancelText = 'Cancel', confirmText = 'OK' } = options
+            getRef('prompt_title').innerText = title;
+            getRef('prompt_message').innerText = message;
+            const cancelButton = getRef('prompt_popup').querySelector('.cancel-button');
+            const confirmButton = getRef('prompt_popup').querySelector('.confirm-button')
+            if (isPassword) {
+                placeholder = 'Password'
+                getRef('prompt_input').setAttribute("type", "password")
+            }
+            getRef('prompt_input').setAttribute("placeholder", placeholder)
+            getRef('prompt_input').focusIn()
+            cancelButton.textContent = cancelText;
+            confirmButton.textContent = confirmText;
+            openPopup('prompt_popup', true)
+            return new Promise((resolve, reject) => {
+                cancelButton.addEventListener('click', () => {
+                    closePopup()
+                    return null
+                }, { once: true })
+                confirmButton.addEventListener('click', () => {
+                    closePopup()
+                    resolve(getRef('prompt_input').value)
+                }, { once: true })
+            })
+        }
+
+        //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+        function notify(message, mode, options = {}) {
+            let icon
+            switch (mode) {
+                case 'success':
+                    icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+                    break;
+                case 'error':
+                    icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+                    options.pinned = true
+                    break;
+            }
+            getRef("notification_drawer").push(message, { icon, ...options });
+            if (mode === 'error') {
+                console.error(message)
+            }
+        }
+
+        function getFormattedTime(timestamp, format) {
+            try {
+                if (String(timestamp).length < 13)
+                    timestamp *= 1000
+                let [day, month, date, year] = new Date(timestamp).toString().split(' '),
+                    minutes = new Date(timestamp).getMinutes(),
+                    hours = new Date(timestamp).getHours(),
+                    currentTime = new Date().toString().split(' ')
+
+                minutes = minutes < 10 ? `0${minutes}` : minutes
+                let finalHours = ``;
+                if (hours > 12)
+                    finalHours = `${hours - 12}:${minutes}`
+                else if (hours === 0)
+                    finalHours = `12:${minutes}`
+                else
+                    finalHours = `${hours}:${minutes}`
+
+                finalHours = hours >= 12 ? `${finalHours} PM` : `${finalHours} AM`
+                switch (format) {
+                    case 'date-only':
+                        return `${month} ${date}, ${year}`;
+                    case 'time-only':
+                        return finalHours;
+                    case 'relative':
+                        // check if timestamp is older than a day
+                        if (Date.now() - new Date(timestamp) < 60 * 60 * 24 * 1000)
+                            return `${finalHours}`;
+                        else
+                            return relativeTime.from(timestamp)
+                    default:
+                        return `${month} ${date}, ${year} at ${finalHours}`;
+                }
+            } catch (e) {
+                console.error(e);
+                return timestamp;
+            }
+        }
+        // implement event delegation
+        function delegate(el, event, selector, fn) {
+            el.addEventListener(event, function (e) {
+                const potentialTarget = e.target.closest(selector)
+                if (potentialTarget) {
+                    e.delegateTarget = potentialTarget
+                    fn.call(this, e)
+                }
+            })
+        }
+
+        // detect browser version
+        function detectBrowser() {
+            let ua = navigator.userAgent,
+                tem,
+                M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if (/trident/i.test(M[1])) {
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return 'IE ' + (tem[1] || '');
+            }
+            if (M[1] === 'Chrome') {
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+            }
+            M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+            if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+            return M.join(' ');
+        }
+        window.addEventListener('hashchange', e => showPage(window.location.hash))
+        window.addEventListener("load", () => {
+            const [browserName, browserVersion] = detectBrowser().split(' ');
+            const supportedVersions = {
+                Chrome: 85,
+                Firefox: 75,
+                Safari: 13,
+            }
+            if (browserName in supportedVersions) {
+                if (parseInt(browserVersion) < supportedVersions[browserName]) {
+                    notify(`${browserName} ${browserVersion} is not fully supported, some features may not work properly. Please update to ${supportedVersions[browserName]} or higher.`, 'error')
+                }
+            } else {
+                notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
+            }
+            document.body.classList.remove('hidden')
+            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'Escape') {
+                    closePopup()
+                }
+            })
+            document.addEventListener('copy', () => {
+                notify('copied', 'success')
+            })
+            document.addEventListener("pointerdown", (e) => {
+                if (e.target.closest("button:not([disabled]), sm-button:not([disabled]), .interact")) {
+                    createRipple(e, e.target.closest("button, sm-button, .interact"));
+                }
+            });
+            document.querySelectorAll('.popup__header__close, .close-popup-on-click').forEach(elem => {
+                elem.addEventListener('click', () => {
+                    closePopup()
+                })
+            })
+        });
+        function createRipple(event, target) {
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            const targetDimensions = target.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+            circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+            circle.classList.add("ripple");
+            const rippleAnimation = circle.animate(
+                [
+                    {
+                        opacity: 1,
+                        transform: `scale(0)`
+                    },
+                    {
+                        transform: "scale(4)",
+                        opacity: 0,
+                    },
+                ],
+                {
+                    duration: 600,
+                    fill: "forwards",
+                    easing: "ease-out",
+                }
+            );
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove();
+            };
+        }
+
+        const pagesData = {
+            params: {},
+            openedPages: new Set(),
+        }
+
+        async function showPage(targetPage, options = {}) {
+            const { firstLoad, hashChange } = options
+            let pageId
+            let params = {}
+            let searchParams
+            if (targetPage === '') {
+                try {
+                    if (floDapps.user.id)
+                        pageId = 'home'
+                } catch (e) {
+                    pageId = 'sign_in'
+                }
+            } else {
+                if (targetPage.includes('/')) {
+                    if (targetPage.includes('?')) {
+                        const splitAddress = targetPage.split('?')
+                        searchParams = splitAddress.pop()
+                        const pages = splitAddress.pop().split('/')
+                        pageId = pages[1]
+                        subPageId = pages[2]
+                    } else {
+                        const pages = targetPage.split('/')
+                        pageId = pages[1]
+                        subPageId = pages[2]
+                    }
+                } else {
+                    pageId = targetPage
+                }
+            }
+            try {
+                if (floDapps.user.id && (['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) {
+                    history.replaceState(null, null, '#/home');
+                    pageId = 'home'
+                }
+            } catch (e) {
+                if (!(['sign_up', 'sign_in', 'loading', 'landing'].includes(pageId))) return
+            }
+            if (searchParams) {
+                const urlSearchParams = new URLSearchParams('?' + searchParams);
+                params = Object.fromEntries(urlSearchParams.entries());
+            }
+            switch (pageId) {
+                case 'sign_in':
+                    setTimeout(() => {
+                        getRef('private_key_field').focusIn()
+                    }, 0);
+                    break;
+                case 'sign_up':
+                    const { floID, privKey } = floCrypto.generateNewID()
+                    getRef('generated_flo_id').value = floID
+                    getRef('generated_private_key').value = privKey
+                    break;
+                case 'home':
+                    getExchangeRate().then(rate => {
+                        getRef('conversion_rate').textContent = `1BTC = ${formatAmount(rate.inr)}`;
+                    })
+                    break;
+                case 'contact':
+                    getRef('contact__title').textContent = getFloIdTitle(params.floId)
+                    getRef('contact__transactions').innerHTML = '<sm-spinner></sm-spinner>'
+                    Promise.all([
+                        floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${floDapps.user.id}&destFloAddress=${params.floId}`),
+                        floTokenAPI.fetch(`api/v1.0/getTokenTransactions?token=rupee&senderFloAddress=${params.floId}&destFloAddress=${floDapps.user.id}`)])
+                        .then(([sentTransactions, receivedTransactions]) => {
+                            const allTransactions = Object.values({ ...sentTransactions.transactions, ...receivedTransactions.transactions }).sort((a, b) => b.transactionDetails.time - a.transactionDetails.time)
+                            if (contactHistoryLoader) {
+                                contactHistoryLoader.update(allTransactions)
+                            } else {
+                                contactHistoryLoader = new LazyLoader('#contact__transactions', allTransactions, render.transactionMessage, { bottomFirst: true });
+                            }
+                            contactHistoryLoader.init()
+                        }).catch(err => {
+                            console.error(err)
+                        })
+                    break;
+                case 'history':
+                    if (params.asset) {
+                        if (params.asset === 'rupee') {
+                            render.rupeeHistory()
+                        } else if (params.asset === 'btc') {
+                            render.btcHistory()
+                        }
+                    }
+                    break;
+                case 'wallet':
+                    const walletTransactions = []
+                    if (walletHistoryLoader)
+                        walletHistoryLoader.clear()
+                    const pendingWalletTransactions = document.createDocumentFragment()
+
+                    let areTransactionsPending = false
+                    for (const transactionId in User.cashierRequests) {
+                        if (!User.cashierRequests[transactionId].note) {
+                            areTransactionsPending = true
+                            pendingWalletTransactions.prepend(render.walletRequestCard(User.cashierRequests[transactionId]))
+                        } else {
+                            walletTransactions.unshift(User.cashierRequests[transactionId])
+                        }
+                    }
+                    if (walletHistoryLoader) {
+                        walletHistoryLoader.update(walletTransactions)
+                    } else {
+                        walletHistoryLoader = new LazyLoader('#wallet_history', walletTransactions, render.walletRequestCard);
+                        pendingTransactionsObserver.observe(getRef('pending_wallet_transactions'), { childList: true });
+                    }
+                    if (areTransactionsPending) {
+                        getRef('pending_wallet_transactions').innerHTML = ''
+                        getRef('pending_wallet_transactions').append(pendingWalletTransactions)
+                    }
+                    walletHistoryLoader.init()
+                    removeNotificationBadge('wallet_history_button')
+                    break;
+                case 'requests':
+                    const paymentRequests = [];
+                    if (paymentRequestsLoader)
+                        paymentRequestsLoader.clear();
+
+                    const pendingPaymentRequests = document.createDocumentFragment();
+                    let arePaymentsPending = false
+                    for (const transactionId in User.moneyRequests) {
+                        if (!User.moneyRequests[transactionId].note) {
+                            arePaymentsPending = true
+                            pendingPaymentRequests.prepend(render.paymentRequestCard(User.moneyRequests[transactionId]))
+                        } else {
+                            paymentRequests.unshift(User.moneyRequests[transactionId])
+                        }
+                    }
+                    if (paymentRequestsLoader) {
+                        paymentRequestsLoader.update(paymentRequests)
+                    } else {
+                        paymentRequestsLoader = new LazyLoader('#payment_request_history', paymentRequests, render.paymentRequestCard);
+                        pendingTransactionsObserver.observe(getRef('pending_payment_requests'), { childList: true });
+                    }
+                    if (arePaymentsPending) {
+                        getRef('pending_payment_requests').innerHTML = ''
+                        getRef('pending_payment_requests').append(pendingPaymentRequests)
+                    }
+                    paymentRequestsLoader.init()
+                    break;
+                case 'transaction':
+                    let transactionDetails
+                    let status
+                    let shouldRender = {}
+                    if (params.type === 'request') {
+                        transactionDetails = User.moneyRequests[params.transactionId]
+                        const { message: { remark }, note, tag } = transactionDetails
+                        status = note ? note.split(':')[0] : 'PENDING';
+                        getRef('transaction__type').textContent = 'Payment request'
+                        if (status === 'PAID')
+                            shouldRender['txLink'] = `https://flosight.duckdns.org/tx/${note.split(':')[1].trim()}`;
+                        if (remark !== '')
+                            shouldRender.txRemark = remark
+                    } else if (params.type === 'wallet') {
+                        transactionDetails = User.cashierRequests[params.transactionId]
+                        console.log(transactionDetails)
+                        const { message: { amount, mode, upi_id, upi_txid, token_txid, txCode }, note, tag } = transactionDetails
+                        status = tag ? tag : (note ? 'REJECTED' : "PENDING");
+                        getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
+                        if (status === 'COMPLETED') {
+                            shouldRender['txLink'] = `https://flosight.duckdns.org/tx/${mode === 'cash-to-token' ? note : token_txid}`
+                        } else if (status === 'REJECTED') {
+                            shouldRender.txNote = html`<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${note.split(':')[1]}`
+                        }
+                        if (mode === 'cash-to-token') {
+                            if (status === 'COMPLETED') {
+                                if (txCode) {
+                                    shouldRender.txNote = `Transaction code: ${txCode}`
+                                } else if (upi_txid) {
+                                    shouldRender.txNote = `UPI Transaction ID: ${upi_txid}`
+                                }
+                            } else if (status === 'REJECTED') {
+                                const reason = cashierRejectionErrors.hasOwnProperty(note.split(':')[1]) ? cashierRejectionErrors[note.split(':')[1]] : note.split(':')[1]
+                                shouldRender.txNote = html` <svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${reason} `
+                            }
+                        } else {
+                            if (status === 'PENDING') {
+                                shouldRender.txNote = `Pending transfer of ${formatAmount(amount)} to bank account linked to ${upi_id}`
+                            } else if (status === 'COMPLETED') {
+                                shouldRender.txNote = `Transfer of ${formatAmount(amount)} to bank account linked to ${upi_id} completed`
+                            }
+                        }
+                    }
+                    const { message: { amount }, time, note } = transactionDetails
+                    let txAmount = formatAmount(amount)
+                    if (status === 'COMPLETED' && note.includes('#')) {
+                        const [txid, finalAmount] = note.split('#');
+                        txAmount = formatAmount(parseFloat(finalAmount));
+                        shouldRender.txNote = `Also received 1 FLO worth of ${formatAmount(amount - parseFloat(finalAmount))} due to low FLO balance`;
+                    }
+                    renderElem(getRef('transaction_details'), html`
+                <div class="grid gap-1">
+                    <div id="transaction__amount">${txAmount}</div>
+                    ${shouldRender.remark ? html`<div id="transaction__remark">${shouldRender.remark}</div>` : ''}
+                    <div class="flex align-center" style="font-size: 0.8rem;">
+                        <time id="transaction__time">${getFormattedTime(time)}</time>
+                        <div class="bullet-point"></div>
+                        <span id="transaction__status">${status}</span>
+                    </div>
+                </div>
+                ${shouldRender.txLink ? html`<a id="transaction__link" href="${shouldRender.txLink}" target="_blank">See transaction
+                   
+                    on blockchain</a>` : ''}
+                ${shouldRender.txNote ? html`<div id="transaction__note" class="flex flex-direction-column gap-0-5">${shouldRender.txNote}</div>` : ''}
+            `)
+                    break;
+                case 'settings':
+                    renderSavedUpiIds()
+                    break;
+            }
+            if (pageId !== 'history') {
+                if (rupeeHistoryLoader)
+                    rupeeHistoryLoader.clear()
+                if (btcHistoryLoader)
+                    btcHistoryLoader.clear()
+            }
+            if (pageId !== 'wallet') {
+                if (walletHistoryLoader)
+                    walletHistoryLoader.clear()
+
+            }
+            if (pageId !== 'contact') {
+                if (contactHistoryLoader)
+                    contactHistoryLoader.clear()
+            }
+            if (pageId !== 'settings') {
+                getRef('saved_upi_ids_list').innerHTML = '';
+            }
+
+            if (pagesData.lastPage !== pageId) {
+                const animOptions = {
+                    duration: 100,
+                    fill: 'forwards',
+                    easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                }
+                let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
+                const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
+                if (currentActiveElement) {
+                    getRef('main_card').classList.remove('nav-hidden')
+                    if (getRef('main_navbar').classList.contains('hidden')) {
+                        getRef('main_navbar').classList.remove('hide-away')
+                        getRef('main_navbar').classList.remove('hidden')
+                        getRef('main_navbar').animate([
+                            {
+                                transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                                opacity: 0,
+                            },
+                            {
+                                transform: `none`,
+                                opacity: 1,
+                            },
+                        ], { ...animOptions, easing: 'ease-in' })
+                    }
+                    const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement)
+                    const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement)
+                    const isOnTop = previousActiveElementIndex < currentActiveElementIndex
+                    const currentIndicator = createElement('div', { className: 'nav-item__indicator' });
+                    let previousIndicator = getRef('main_navbar').querySelector('.nav-item__indicator')
+                    if (!previousIndicator) {
+                        previousIndicator = currentIndicator.cloneNode(true)
+                        previousActiveElement = currentActiveElement
+                        previousActiveElement.append(previousIndicator)
+                    } else if (currentActiveElementIndex !== previousActiveElementIndex) {
+                        const indicatorDimensions = previousIndicator.getBoundingClientRect()
+                        const currentActiveElementDimensions = currentActiveElement.getBoundingClientRect()
+                        let moveBy
+                        if (isMobileView) {
+                            moveBy = ((currentActiveElementDimensions.width - indicatorDimensions.width) / 2) + indicatorDimensions.width
+                        } else {
+                            moveBy = ((currentActiveElementDimensions.height - indicatorDimensions.height) / 2) + indicatorDimensions.height
+                        }
+                        indicatorObserver.observe(previousIndicator)
+                        previousIndicator.animate([
+                            {
+                                transform: 'none',
+                                opacity: 1,
+                            },
+                            {
+                                transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `${moveBy}px` : `-${moveBy}px`})`,
+                                opacity: 0,
+                            },
+                        ], { ...animOptions, easing: 'ease-in' }).onfinish = () => {
+                            previousIndicator.remove()
+                        }
+                        tempData = {
+                            currentActiveElement,
+                            currentIndicator,
+                            isOnTop,
+                            animOptions,
+                            moveBy
+                        }
+                    }
+                    previousActiveElement.classList.remove('nav-item--active');
+                    currentActiveElement.classList.add('nav-item--active')
+                } else {
+                    getRef('main_card').classList.add('nav-hidden')
+                    if (!getRef('main_navbar').classList.contains('hidden')) {
+                        getRef('main_navbar').classList.add('hide-away')
+                        getRef('main_navbar').animate([
+                            {
+                                transform: `none`,
+                                opacity: 1,
+                            },
+                            {
+                                transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                                opacity: 0,
+                            },
+                        ], {
+                            duration: 200,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        }).onfinish = () => {
+                            getRef('main_navbar').classList.add('hidden')
+                        }
+                    }
+                }
+                document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'))
+                getRef(pageId).closest('.page').classList.remove('hidden')
+                document.querySelectorAll('.inner-page').forEach(page => page.classList.add('hidden'))
+                getRef(pageId).classList.remove('hidden')
+                getRef('main_card').style.overflowY = "hidden";
+                getRef(pageId).animate([
+                    {
+                        opacity: 0,
+                        transform: 'translateY(1rem)'
+                    },
+                    {
+                        opacity: 1,
+                        transform: 'translateY(0)'
+                    },
+                ],
+                    {
+                        duration: 300,
+                        easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                    }).onfinish = () => {
+                        getRef('main_card').style.overflowY = "";
+                    }
+                pagesData.lastPage = pageId
+            }
+            if (params)
+                pagesData.params = params
+            pagesData.openedPages.add(pageId)
+
+        }
+        const indicatorObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    const { currentActiveElement, currentIndicator, isOnTop, animOptions, moveBy } = tempData
+                    currentActiveElement.append(currentIndicator)
+                    currentIndicator.animate([
+                        {
+                            transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `-${moveBy}px` : `${moveBy}px`})`,
+                            opacity: 0,
+                        },
+                        {
+                            transform: 'none',
+                            opacity: 1
+                        },
+                    ], { ...animOptions, easing: 'ease-out' })
+                }
+            })
+        }, {
+            threshold: 1
+        })
+
+        // class based lazy loading
+        class LazyLoader {
+            constructor(container, elementsToRender, renderFn, options = {}) {
+                const { batchSize = 10, freshRender, bottomFirst = false, domUpdated } = options
+
+                this.elementsToRender = elementsToRender
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+                this.renderFn = renderFn
+                this.intersectionObserver
+
+                this.batchSize = batchSize
+                this.freshRender = freshRender
+                this.domUpdated = domUpdated
+                this.bottomFirst = bottomFirst
+
+                this.shouldLazyLoad = false
+                this.lastScrollTop = 0
+                this.lastScrollHeight = 0
+
+                this.lazyContainer = document.querySelector(container)
+
+                this.update = this.update.bind(this)
+                this.render = this.render.bind(this)
+                this.init = this.init.bind(this)
+                this.clear = this.clear.bind(this)
+            }
+            get elements() {
+                return this.arrayOfElements
+            }
+            init() {
+                this.intersectionObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            observer.disconnect()
+                            this.render({ lazyLoad: true })
+                        }
+                    })
+                })
+                this.mutationObserver = new MutationObserver(mutationList => {
+                    mutationList.forEach(mutation => {
+                        if (mutation.type === 'childList') {
+                            if (mutation.addedNodes.length) {
+                                if (this.bottomFirst) {
+                                    if (this.lazyContainer.firstElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
+                                } else {
+                                    if (this.lazyContainer.lastElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+                                }
+                            }
+                        }
+                    })
+                })
+                this.mutationObserver.observe(this.lazyContainer, {
+                    childList: true,
+                })
+                this.render()
+            }
+            update(elementsToRender) {
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+            }
+            render(options = {}) {
+                let { lazyLoad = false } = options
+                this.shouldLazyLoad = lazyLoad
+                const frag = document.createDocumentFragment();
+                if (lazyLoad) {
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.updateStartIndex
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize
+                    } else {
+                        this.updateStartIndex = this.updateEndIndex
+                        this.updateEndIndex = this.updateEndIndex + this.batchSize
+                    }
+                } else {
+                    this.intersectionObserver.disconnect()
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.arrayOfElements.length
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize - 1
+                    } else {
+                        this.updateStartIndex = 0
+                        this.updateEndIndex = this.batchSize
+                    }
+                    this.lazyContainer.innerHTML = ``;
+                }
+                this.lastScrollHeight = this.lazyContainer.scrollHeight
+                this.lastScrollTop = this.lazyContainer.scrollTop
+                this.arrayOfElements.slice(this.updateStartIndex, this.updateEndIndex).forEach((element, index) => {
+                    frag.append(this.renderFn(element))
+                })
+                if (this.bottomFirst) {
+                    this.lazyContainer.prepend(frag)
+                    // scroll anchoring for reverse scrolling
+                    this.lastScrollTop += this.lazyContainer.scrollHeight - this.lastScrollHeight
+                    this.lazyContainer.scrollTo({ top: this.lastScrollTop })
+                    this.lastScrollHeight = this.lazyContainer.scrollHeight
+                } else {
+                    this.lazyContainer.append(frag)
+                }
+                if (!lazyLoad && this.bottomFirst) {
+                    this.lazyContainer.scrollTop = this.lazyContainer.scrollHeight
+                }
+                // Callback to be called if elements are updated or rendered for first time
+                if (!lazyLoad && this.freshRender)
+                    this.freshRender()
+            }
+            clear() {
+                this.intersectionObserver.disconnect()
+                this.mutationObserver.disconnect()
+                this.lazyContainer.innerHTML = ``;
+            }
+            reset() {
+                this.arrayOfElements = (typeof this.elementsToRender === 'function') ? this.elementsToRender() : this.elementsToRender || []
+                this.render()
+            }
+        }
+        function animateTo(element, keyframes, options) {
+            const anime = element.animate(keyframes, { ...options, fill: 'both' })
+            anime.finished.then(() => {
+                anime.commitStyles()
+                anime.cancel()
+            })
+            return anime
+        }
+        let isMobileView = false
+        const mobileQuery = window.matchMedia('(max-width: 40rem)')
+        function handleMobileChange(e) {
+            isMobileView = e.matches
+        }
+        mobileQuery.addEventListener('change', handleMobileChange)
+        handleMobileChange(mobileQuery)
+
+        function showChildElement(id, index, options = {}) {
+            return new Promise((resolve) => {
+                const { mobileView = false, entry, exit } = options
+                const animOptions = {
+                    duration: 150,
+                    easing: 'ease',
+                    fill: 'forwards'
+                }
+                const parent = typeof id === 'string' ? document.getElementById(id) : id;
+                const visibleElement = [...parent.children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
+                if (visibleElement === parent.children[index]) return;
+                visibleElement.getAnimations().forEach(anim => anim.cancel())
+                parent.children[index].getAnimations().forEach(anim => anim.cancel())
+                if (visibleElement) {
+                    if (exit) {
+                        visibleElement.animate(exit, animOptions).onfinish = () => {
+                            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                            parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                            if (entry)
+                                parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+                        }
+                    } else {
+                        visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                        parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                        resolve()
+                    }
+                } else {
+                    parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                    parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+                }
+            })
+        }
+
+        // generate random string with numbers and capital and small letters
+        function randomString(length) {
+            let result = '';
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+        }
+
+        document.addEventListener("visibilitychange", handleVisibilityChange, false);
+        function handleVisibilityChange() {
+            if (document.visibilityState === "hidden") {
+                // code if page is hidden 
+            } else {
+                if (floGlobals.loaded && floGlobals.isSubAdmin)
+                    startStatusInterval()
+            }
+        }
+
+
+        function conditionalClassToggle(el, className, condition) {
+            if (condition)
+                el.classList.add(className);
+            else
+                el.classList.remove(className);
+        }
+        function togglePrivateKeyVisibility(input) {
+            const target = input.closest('sm-input')
+            target.type = target.type === 'password' ? 'text' : 'password';
+            target.focusIn()
+        }
+    </script>
+    <script>
+        /*jshint esversion: 8 */
+        /**
+          * @yaireo/relative-time - javascript function to transform timestamp or date to local relative-time
+          *
+          * @version v1.0.0
+          * @homepage https://github.com/yairEO/relative-time
+          */
+
+        !function (e, t) { var o = o || {}; "function" == typeof o && o.amd ? o([], t) : "object" == typeof exports && "object" == typeof module ? module.exports = t() : "object" == typeof exports ? exports.RelativeTime = t() : e.RelativeTime = t() }(this, (function () { const e = { year: 31536e6, month: 2628e6, day: 864e5, hour: 36e5, minute: 6e4, second: 1e3 }, t = "en", o = { numeric: "auto" }; function n(e) { e = { locale: (e = e || {}).locale || t, options: { ...o, ...e.options } }, this.rtf = new Intl.RelativeTimeFormat(e.locale, e.options) } return n.prototype = { from(t, o) { const n = t - (o || new Date); for (let t in e) if (Math.abs(n) > e[t] || "second" == t) return this.rtf.format(Math.round(n / e[t]), t) } }, n }));
+
+        const relativeTime = new RelativeTime({ style: 'narrow' });
+
+        // use floDapps.storeContact() to store contacts that can be used by other apps on same device 
+        async function syncUserData(obsName, data) {
+            floDapps.user.private.then(privateKey => {
+                if (!privateKey) return;
+                const encryptedData = Crypto.AES.encrypt(JSON.stringify(data), privateKey);
+                return floCloudAPI.sendApplicationData(encryptedData, obsName, { receiverID: floDapps.user.id });
+            }).catch(error => {
+                console.log(error);
+                notify('Invalid password', 'error');
+                return false;
+            })
+        }
+        // store user data in separate IDB 
+        async function organizeSyncedData(obsName) {
+            const fetchedData = await floCloudAPI.requestApplicationData(obsName, { mostRecent: true, senderIDs: [floDapps.user.id], receiverID: floDapps.user.id });
+            if (fetchedData.length && await compactIDB.readData(obsName, 'lastSyncTime') !== fetchedData[0].time) {
+                await compactIDB.clearData(obsName);
+                const dataToDecrypt = floCloudAPI.util.decodeMessage(fetchedData[0].message);
+                floDapps.user.private.then(privateKey => {
+                    if (!privateKey) return;
+                    const decryptedData = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, privateKey));
+                    for (let key in decryptedData) {
+                        floGlobals[obsName][key] = decryptedData[key];
+                        compactIDB.addData(obsName, decryptedData[key], key);
+                    }
+                    compactIDB.addData(obsName, fetchedData[0].time, 'lastSyncTime');
+                    return true;
+                }).catch(error => {
+                    console.log(error);
+                    notify('Invalid password', 'error');
+                    return false;
+                })
+            } else {
+                const idbData = await compactIDB.readAllData(obsName);
+                for (const key in idbData) {
+                    if (key !== 'lastSyncTime')
+                        floGlobals[obsName][key] = idbData[key];
+                }
+                return true;
+            }
+        }
+
+
+        const userUI = {};
+        function continueWalletTopup() {
+            let cashier = User.findCashier();
+            if (!cashier)
+                return notify("No cashier online. Please try again in a while.", 'error');
+            // const upiId = getRef('select_topup_upi_id').value;
+            floGlobals.txCode = randomString(6);
+            // if (!upiId)
+            //     return notify("Please add the UPI ID which you'll use to send the money", 'error');
+            let amount = parseFloat(getRef('request_cashier_amount').value.trim());
+            getRef('topup_wallet__upi_id').value = cashierUPI[cashier];
+            getRef('topup_wallet__qr_code').innerHTML = ''
+            getRef('topup_wallet__qr_code').append(new QRCode({
+                msg: `upi://pay?pn=FLOPay&pa=${cashierUPI[cashier]}&am=${amount}&tn=${floGlobals.txCode}`,
+                ecl: 'H'
+            }))
+            render.conditionalSteps()
+            showChildElement('topup_wallet_process', 1)
+            // getRef('topup_wallet__txid').focusIn();
+        }
+        function depositMoneyToWallet() {
+            let cashier = User.findCashier();
+            if (!cashier)
+                return notify("No cashier online. Please try again in a while.", 'error');
+            let amount = parseFloat(getRef('request_cashier_amount').value.trim());
+            // let upiTxID = getRef('topup_wallet__txid').value.trim();
+            // const txCode = getRef('topup_wallet__code').value;
+            // const upiId = getRef('select_topup_upi_id').value;
+            // if (upiTxID === '')
+            //     return notify("Please enter UPI transaction ID", 'error');
+            buttonLoader('topup_wallet_button', true);
+            User.cashToToken(cashier, amount, floGlobals.txCode/* , upiId */).then(result => {
+                console.log(result);
+                showChildElement('topup_wallet_process', 2);
+                refreshBalance()
+            }).catch(error => {
+                console.error(error)
+                getRef('topup_failed_reason').textContent = error;
+                showChildElement('topup_wallet_process', 3);
+            }).finally(() => {
+                buttonLoader('topup_wallet_button', false);
+            });
+        }
+
+        getRef('topup_wallet__qr_wrapper').addEventListener('toggle', e => render.conditionalSteps())
+
+        function withdrawMoneyFromWallet() {
+            let cashier = User.findCashier();
+            if (!cashier)
+                return notify("No cashier online. Please try again in a while.", 'error');
+            let amount = parseFloat(getRef('send_cashier_amount').value.trim());
+            const upiId = getRef('select_withdraw_upi_id').value;
+            if (!upiId)
+                return notify("Please add an UPI ID to continue", 'error');
+            buttonLoader('withdraw_rupee_button', true);
+            getRef('withdrawal_blockchain_link').classList.add('hidden');
+            User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
+                console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
+                User.tokenToCash(cashier, amount, txid, upiId).then(result => {
+                    showChildElement('withdraw_wallet_process', 1);
+                    refreshBalance();
+                    getRef('withdrawal_blockchain_link').classList.remove('hidden');
+                    getRef('withdrawal_blockchain_link').href = `https://flosight.duckdns.org/tx/${txid}`
+                    console.log(result);
+                }).catch(error => {
+                    getRef('withdrawal_failed_reason').textContent = error;
+                    showChildElement('withdraw_wallet_process', 2);
+                    console.error(error)
+                }).finally(() => {
+                    buttonLoader('withdraw_rupee_button', false);
+                });
+            }).catch(error => {
+                getRef('withdrawal_failed_reason').textContent = error;
+                showChildElement('withdraw_wallet_process', 2);
+                buttonLoader('withdraw_rupee_button', false);
+                console.error(error)
+            })
+        }
+        function openExternalTransferPopup(type) {
+            let title = ``;
+            let description = ``;
+            let successTitle = '';
+            let successDescription = null;
+            switch (type) {
+                case 'exchange': {
+                    title = 'Transfer to Exchange';
+                    description = 'Deposit rupee tokens in RanchiMall Exchange';
+                    successTitle = 'Rupees transfer initiated';
+                    successDescription = html`<p>Amount may take upto 30 mins to show up in exchange</p>`;
+                } break;
+                case 'btc-bonds': {
+                    title = 'Transfer to Blockchain Bonds';
+                    description = 'Buy Blockchain Bonds with rupee tokens';
+                    successTitle = 'Rupees transferred for Blockchain Bonds';
+                } break;
+                case 'bobs-fund': {
+                    title = `Transfer to Bob's fund`;
+                    description = `Buy Bob's fund with rupee tokens`;
+                    successTitle = `Rupees transferred for Bob's fund`;
+                } break;
+            }
+            renderElem(getRef('external_transfer_process'), html`
+        <sm-form>
+            <div class="grid gap-0-5">
+                <h4>${title}</h4>
+                <p>${description}</p>
+            </div>
+            <sm-input id="external_transfer__amount" type="number" placeholder="Amount" min="1" step="0.01" error-text="minimum amount is ₹1" animate required autofocus> </sm-input>
+            <div class="multi-state-button">
+                <button id="external_transfer__button" class="button button--primary cta" onclick={externalTransfer()} data-type="${type}" type="submit">Transfer</button>
+            </div>
+        </sm-form>
+        <div class="grid gap-0-5 hidden justify-center text-center">
+            <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+            <b id="external_transfer__success_message">${successTitle}</b>
+            ${successDescription}
+            ${(type === 'btc-bonds' || type === 'bobs-fund') ? html`<a id="external_transfer__link" target="_blank" class="margin-top-1">View transaction on blockchain</a>` : ''}
+        </div>
+        <div class="grid gap-0-5 hidden justify-center text-center">
+            <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /> </svg>
+            <b>Failed to transfer</b>
+            <p id="external_transfer__failed_reason"></p>
+        </div>
+    `)
+            openPopup('external_transfer_popup');
+        }
+
+        function externalTransfer() {
+            const type = document.getElementById('external_transfer__button').dataset.type;
+            let confirmationMessage = '';
+            let amount = parseFloat(document.getElementById('external_transfer__amount').value.trim());
+            let receiverFloID = '';
+            let remarks = '';
+            let name = '';
+            switch (type) {
+                case 'exchange': {
+                    confirmationMessage = `You are depositing ${amount} rupee tokens to exchange`;
+                    receiverFloID = 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm';
+                    name = 'RanchiMall Exchange';
+                } break;
+                case 'btc-bonds': {
+                    receiverFloID = 'FBBstZ2GretgQqDP55yt8iVd4KNZkdvEzH';
+                    confirmationMessage = `You are transferring ${amount} rupee tokens to blockchain bond at FLO address ${receiverFloID}`;
+                    remarks = '|blockchain-bond';
+                    name = 'Blockchain Bonds';
+                } break;
+                case 'bobs-fund': {
+                    receiverFloID = 'FFXy5pJnfzu2fCDLhpUremyXQjGtFpgCDN';
+                    confirmationMessage = `You are transferring ${amount} rupee tokens to Bob's fund at FLO address ${receiverFloID}`;
+                    remarks = '|bobs-fund';
+                    name = `Bob's Fund`;
+                } break;
+            }
+            getConfirmation('Continue?', { message: confirmationMessage, confirmText: 'Transfer' }).then(confirmation => {
+                if (confirmation) {
+                    floDapps.user.private.then(async privateKey => {
+                        if (!privateKey) return;
+                        try {
+                            buttonLoader('external_transfer__button', true);
+                            let result
+                            if (type === 'btc-bonds' || type === 'bobs-fund') {
+                                result = await User.sendToken(receiverFloID, amount, remarks)
+                                document.getElementById('external_transfer__link').href = `https://flosight.duckdns.org/tx/${result}`;
+                            } else if (type === 'exchange') {
+                                result = await floExchangeAPI.depositToken('rupee', amount, floDapps.user.id, receiverFloID, privateKey)
+                            }
+                            console.log(result);
+                            showChildElement('external_transfer_process', 1);
+                            document.getElementById('external_transfer__success_message').textContent = `Transferred ${formatAmount(amount)} to ${name}`;
+                        } catch (error) {
+                            let errorText = error;
+                            console.log(error);
+                            if (error.code) {
+                                errorText = error.message;
+                            }
+                            if (error === 'Insufficient rupee# balance')
+                                errorText = 'Insufficient rupee token balance in your wallet, please top-up your wallet.';
+                            document.getElementById('external_transfer__failed_reason').textContent = errorText;
+                            showChildElement('external_transfer_process', 2);
+                        } finally {
+                            buttonLoader('external_transfer__button', false);
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                        notify('Invalid password', 'error');
+                        closePopup();
+                        return false;
+                    })
+                }
+            })
+        }
+
+        async function renderSavedUpiIds() {
+            let savedUpiIds = []
+            for (const upiId in floGlobals.savedUserData.upiIds) {
+                savedUpiIds.push(render.savedUpiId(upiId))
+            }
+            renderElem(getRef('saved_upi_ids_list'), html`${savedUpiIds}`)
+        }
+        function saveUpiId() {
+            const frag = document.createDocumentFragment();
+            const upiId = getRef('get_upi_id').value.trim();
+            if (upiId === '')
+                return notify("Please add an UPI ID to continue", 'error');
+            if (floGlobals.savedUserData.upiIds.hasOwnProperty(upiId))
+                return notify('This UPI ID is already saved', 'error');
+            floGlobals.savedUserData.upiIds[upiId] = {}
+            syncUserData('savedUserData', floGlobals.savedUserData).then(() => {
+                notify(`Saved ${upiId}`, 'success');
+                if (pagesData.lastPage === 'settings') {
+                    getRef('saved_upi_ids_list').append(html.node`${render.savedUpiId(upiId)}`);
+                } else if (pagesData.lastPage === 'home') {
+                    getRef('select_withdraw_upi_id').append(render.savedUpiIdOption(upiId));
+                    getRef('select_withdraw_upi_id').parentNode.classList.remove('hidden')
+                }
+                closePopup();
+            }).catch(error => {
+                notify(error, 'error');
+            })
+        }
+        delegate(getRef('saved_upi_ids_list'), 'click', '.saved-upi', e => {
+            if (e.target.closest('.delete-upi')) {
+                const upiId = e.delegateTarget.dataset.upiId;
+                getConfirmation('Do you want delete this UPI ID?', {
+                    confirmText: 'Delete',
+                }).then(res => {
+                    if (res) {
+                        const toDelete = getRef('saved_upi_ids_list').querySelector(`.saved-upi[data-upi-id="${upiId}"]`);
+                        if (toDelete)
+                            toDelete.remove();
+                        delete floGlobals.savedUserData.upiIds[upiId];
+                        closePopup();
+                        syncUserData('savedUserData', floGlobals.savedUserData).then(() => {
+                            notify(`Deleted UPI ID`, 'success');
+                        }).catch(error => {
+                            notify(error, 'error');
+                        });
+                    }
+                });
+            }
+        });
+
+        userUI.renderCashierRequests = function (requests, error = null) {
+            if (error)
+                return console.error(error);
+            else if (typeof requests !== "object" || requests === null)
+                return;
+            let processedRequests = 0;
+            for (let transactionID in requests) {
+                const { message: { amount, mode }, note, tag } = requests[transactionID];
+                let status = tag ? 'completed' : (note ? 'rejected' : "pending");
+                // console.log(requests[transactionID])
+                if (status !== 'pending') {
+                    processedRequests++;
+                }
+                if (pagesData.lastPage === 'wallet') {
+                    getRef('wallet_history_wrapper').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
+                    getRef(status !== 'pending' ? 'wallet_history' : 'pending_wallet_transactions').prepend(render.walletRequestCard(requests[transactionID]))
+                }
+                if (floGlobals.loaded && status !== 'pending') {
+                    const { message: { amount, mode }, note, tag } = requests[transactionID];
+                    notify(`Your ${mode === 'cash-to-token' ? 'top-up' : 'withdraw'} request of ${formatAmount(amount)} has been ${status}`, status === 'completed' ? 'success' : 'error', {
+                        action: {
+                            label: 'View',
+                            callback: () => {
+                                window.location.hash = `#/wallet`
+                            }
+                        }
+                    });
+                }
+            }
+            if (pagesData.lastPage !== 'wallet') {
+                if (processedRequests === 0)
+                    removeNotificationBadge('wallet_history_button');
+                else {
+                    addNotificationBadge('wallet_history_button', processedRequests)
+                }
+            }
+        };
+
+        const pendingTransactionsObserver = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'childList') {
+                    if (mutation.target.children.length)
+                        mutation.target.parentNode.classList.remove('hidden')
+                    else
+                        mutation.target.parentNode.classList.add('hidden')
+
+                }
+            })
+        });
+
+        userUI.renderMoneyRequests = function (requests, error = null) {
+            if (error)
+                return console.error(error);
+            else if (typeof requests !== "object" || requests === null)
+                return;
+            if (pagesData.lastPage === 'requests') {
+                for (let r in requests) {
+                    getRef('requests_history_wrapper').querySelectorAll(`[data-vc="${r}"]`).forEach(card => card.remove());
+                    if (requests[r].note) {
+                        getRef('payment_request_history').prepend(render.paymentRequestCard(requests[r]));
+                    } else {
+                        getRef('pending_payment_requests').prepend(render.paymentRequestCard(requests[r]));
+                    }
+                }
+            }
+            if (floGlobals.loaded) {
+                for (let r in requests) {
+                    if (!requests[r].note) {
+                        notify(`You have received payment request from ${getFloIdTitle(requests[r].senderID)}`, '', {
+                            action: {
+                                label: 'View',
+                                callback: () => {
+                                    window.location.hash = `#/requests`
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            let totalRequests = 0;
+            for (const request in User.moneyRequests) {
+                if (!User.moneyRequests[request].note) totalRequests++;
+            }
+            if (totalRequests) {
+                addNotificationBadge('requests_page_button', totalRequests)
+            } else {
+                removeNotificationBadge('requests_page_button')
+            }
+        };
+
+        function addNotificationBadge(elem, text) {
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            }
+            if (!getRef(elem).querySelector('.badge')) {
+                const badge = createElement('span', {
+                    className: 'badge',
+                    textContent: text
+                })
+                getRef(elem).append(badge)
+                badge.animate([
+                    {
+                        transform: 'scale(0) translateY(0.5rem)'
+                    },
+                    {
+                        transform: 'scale(1) translateY(0)'
+                    },
+                ], animOptions)
+            } else {
+                const badge = getRef(elem).querySelector('.badge');
+                badge.textContent = text;
+                badge.animate([
+                    { transform: 'scale(1)' },
+                    { transform: `scale(1.5)` },
+                    { transform: 'scale(1)' }
+                ], animOptions)
+            }
+        }
+
+        function removeNotificationBadge(elem) {
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            }
+            if (getRef(elem).querySelector('.badge')) {
+                const badge = getRef(elem).querySelector('.badge')
+                badge.animate([
+                    {
+                        transform: 'scale(1) translateY(0)'
+                    },
+                    {
+                        transform: 'scale(0) translateY(0.5rem)'
+                    },
+                ], animOptions).onfinish = () => {
+                    badge.remove()
+                }
+            }
+        }
+
+        userUI.payRequest = function (reqID) {
+            let { message: { amount, remark }, senderID } = User.moneyRequests[reqID];
+            getConfirmation('Pay?', { message: `Do you want to pay ${amount} to ${senderID}?`, confirmText: 'Pay' }).then(confirmation => {
+                if (confirmation) {
+                    User.sendToken(senderID, amount, "|" + remark).then(txid => {
+                        console.warn(`Sent ${amount} to ${senderID}`, txid);
+                        notify(`Sent ${formatAmount(amount)} to ${getFloIdTitle(senderID)}. It may take a few mins to reflect in their wallet`, 'success');
+                        User.decideRequest(User.moneyRequests[reqID], 'PAID: ' + txid)
+                            .then(result => console.log(result))
+                            .catch(error => console.error(error))
+                    }).catch(error => console.error(error));
+                }
+            })
+        }
+
+        userUI.declineRequest = function (reqID) {
+            let request = User.moneyRequests[reqID];
+            getConfirmation('Decline payment?', { confirmText: 'Decline' }).then(confirmation => {
+                if (confirmation) {
+                    User.decideRequest(request, "DECLINED").then(result => {
+                        console.log(result);
+                        notify("Request declined", 'success');
+                    }).catch(error => console.error(error))
+                }
+            })
+        }
+
+        delegate(getRef('pending_payment_requests'), 'click', '.pay-requested', e => {
+            const vectorClock = e.target.closest('.payment-request').dataset.vc;
+            userUI.payRequest(vectorClock);
+        })
+        delegate(getRef('pending_payment_requests'), 'click', '.decline-payment', e => {
+            const vectorClock = e.target.closest('.payment-request').dataset.vc;
+            userUI.declineRequest(vectorClock);
+        })
+
+        //Cashier
+        const cashierUI = {};
+
+        cashierUI.renderRequests = function (requests, error = null) {
+            if (error)
+                return console.error(error);
+            else if (typeof requests !== "object" || requests === null)
+                return;
+            for (let transactionID in requests) {
+                const { note, tag } = requests[transactionID];
+                let status = tag ? 'done' : (note ? 'failed' : "pending");
+                getRef('cashier_requests_wrapper').querySelectorAll(`[data-vc="${transactionID}"]`).forEach(card => card.remove());
+                getRef(status === 'pending' ? 'cashier_pending_request_list' : 'cashier_processed_request_list').prepend(render.cashierRequestCard(requests[transactionID]))
+            }
+        }
+
+        cashierUI.completeRequest = function (reqID) {
+            floGlobals.cashierProcessingRequest = Cashier.Requests[reqID];
+            const { message: { mode } } = floGlobals.cashierProcessingRequest;
+            if (mode === "cash-to-token")
+                completeCashToTokenRequest(floGlobals.cashierProcessingRequest);
+            else if (mode === "token-to-cash")
+                completeTokenToCashRequest(floGlobals.cashierProcessingRequest);
+        }
+
+        function completeCashToTokenRequest(request) {
+            const { message: { upi_txid, amount, upiID, txCode }, vectorClock } = request;
+            getRef('top_up_amount').textContent = formatAmount(amount);
+            getRef('top_up__code').value = txCode;
+            openPopup('confirm_topup_popup');
+            // Cashier.checkIfUpiTxIsValid(upi_txid).then(_ => {
+            //     getRef('top_up_amount').textContent = formatAmount(amount);
+            //     // getRef('top_up_txid').value = upi_txid;
+            //     // getRef('top_up_upi_id').value = upiID;
+            //     getRef('top_up__code').value = txCode;
+            //     openPopup('confirm_topup_popup');
+            // }).catch(error => {
+            //     notify(Array.isArray(error) ? error[1]: error, 'error');
+            //     if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
+            //         Cashier.rejectRequest(request, error[1]).then(result => {
+            //             console.log(result);
+            //             console.info('Rejected cash-to-token request:', vectorClock);
+            //         }).catch(error => console.error(error))
+            // })
+        }
+
+        function confirmTopUp(button) {
+            const { message: { amount }, vectorClock, senderID } = floGlobals.cashierProcessingRequest;
+            var tokenAmt = amount;
+            buttonLoader(button, true);
+            floBlockchainAPI.getBalance(senderID).then(async user_balance => {
+                let floAmt = floGlobals.sendAmt;
+                if (user_balance < floGlobals.settings.user_flo_threshold) {
+                    let cur_rate = (await floExchangeAPI.getRates("FLO")).rate;
+                    floAmt = floGlobals.settings.send_user_flo;
+                    tokenAmt -= cur_rate * floAmt;
+                }
+                User.sendToken(senderID, tokenAmt, 'for cash-to-token', { sendAmt: floAmt }).then(txid => {
+                    console.warn(`${amount} (${tokenAmt}|${floAmt}) cash-to-token for ${senderID}`, txid);
+                    let note = txid + (tokenAmt === amount ? '' : `#${tokenAmt}`);
+                    Cashier.finishRequest(floGlobals.cashierProcessingRequest, note).then(result => {
+                        console.log(result);
+                        console.info('Completed cash-to-token request:', vectorClock);
+                        notify("Completed request", 'success');
+                        closePopup()
+                    }).catch(error => console.error(error))
+                        .finally(() => buttonLoader(button, false));
+                }).catch(error => {
+                    console.error(error)
+                    buttonLoader(button, false);
+                })
+            }).catch(error => {
+                buttonLoader(button, false);
+                console.error(error)
+            })
+        }
+
+        getRef('top_up__reason_selector').addEventListener('change', e => {
+            console.log(e.target.value);
+            if (e.target.value === 'other') {
+                getRef('top_up__specified_reason').parentNode.classList.remove('hidden');
+            } else {
+                getRef('top_up__specified_reason').parentNode.classList.add('hidden');
+            }
+        })
+        function declineTopUp() {
+            const { vectorClock } = floGlobals.cashierProcessingRequest;
+            let reason = getRef('top_up__reason_selector').value;
+            if (reason === 'other') {
+                reason = getRef('top_up__specified_reason').value
+            }
+            if (reason.trim() === '')
+                return notify('Please specify a reason', 'error');
+            buttonLoader('decline_button', true);
+            Cashier.rejectRequest(floGlobals.cashierProcessingRequest, reason).then(result => {
+                console.log(result);
+                console.info('Rejected cash-to-token request:', vectorClock);
+                notify('Rejected top-up request', 'success');
+                closePopup()
+            }).catch(error => console.error(error)).finally(() => buttonLoader('decline_button', false));
+        }
+
+
+        async function completeTokenToCashRequest(request) {
+            const { vectorClock, senderID, message: { token_txid, amount, upi_id } } = request;
+            let upiID;
+            if (upi_id instanceof Object && "secret" in upi_id) {
+                try {
+                    upiID = floDapps.user.decrypt(upi_id);
+                } catch (error) {
+                    console.error("UPI ID is not encrypted with a proper key", error);
+                    return notify("UPI ID is not encrypted with a proper key", 'error');
+                }
+            } else
+                upiID = upi_id;
+            Cashier.checkIfTokenTxIsValid(token_txid, senderID, amount).then(result => {
+                getPromptInput('Process', `Token transfer is verified!\n Send ${formatAmount(amount)}\n to ${upiID}\n Enter UPI transaction ID`, {
+                    placeholder: 'UPI transaction ID',
+                }).then(upiTxID => {
+                    if (!upiTxID || upiTxID.length < 10)
+                        return notify("Invalid UPI txid", 'error');
+                    Cashier.finishRequest(request, upiTxID).then(result => {
+                        console.log(result);
+                        console.info('Completed token-to-cash request:', vectorClock);
+                        notify("Completed request", 'success');
+                    }).catch(error => console.error(error))
+                })
+            }).catch(error => {
+                notify(error, 'error');
+                if (Array.isArray(error) && error[0] === true && typeof error[1] === 'string')
+                    Cashier.rejectRequest(request, error[1]).then(result => {
+                        console.log(result);
+                        console.info('Rejected token-to-cash request:', vectorClock);
+                    }).catch(error => console.error(error))
+            })
+        }
+
+        function getFloIdTitle(floID) {
+            return floGlobals.contacts[floID] || floID;
+        }
+
+        function formatAmount(amount = 0, currency = 'inr') {
+            if (!amount)
+                return '₹0.00';
+            return amount.toLocaleString(currency === 'inr' ? `en-IN` : 'en-US', { style: 'currency', currency })
+        }
+
+        const cashierRejectionErrors = {
+            1001: `Your request was reject because of wrong transaction ID. If you have sent money, it'll be returned within 24 hrs.`,
+            1002: `Amount requested and amount sent via UPI doesn't match. your transferred money will be returned within 24hrs.`,
+            1003: `Your request was rejected because of wrong or missing remark/message code. If you have sent money, it'll be returned within 24 hrs.`,
+            1004: `Your request was rejected because specified amount wasn't received by the cashier.`,
+        }
+
+        const render = {
+            savedId(floID, title, ref) {
+                return html.for(ref, floID)`
+            <li class="saved-id grid interact" tabindex="0" data-flo-id="${floID}">
+                <button class="interact edit-saved icon-only" title="Edit name">
+                    <div class="saved-id__initials">${title.charAt(0)}</div>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /> </svg>
+                </button>
+                <div class="saved-id__title">${title}</div>
+                <div class="grid align-center" style="grid-template-columns: 1fr auto;">
+                    <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
+                    <button class="copy-saved-id icon-only margin-left-0-5" title="Copy FLO ID">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" /> </svg>
+                    </button>
+                </div>
+            </li>
+        `;
+
+            },
+            rupeeTxCard(transactionDetails) {
+                const { txid, time, sender, receiver, tokenAmount } = transactionDetails;
+                let transactionReceiver
+                let className
+                let icon
+                if (sender === floDapps.user.id) {
+                    className = 'transaction grid sent'
+                    transactionReceiver = `Sent to ${getFloIdTitle(receiver) || 'Myself'}`;
+                    icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+                } else if (receiver === floDapps.user.id) {
+                    className = 'transaction grid received'
+                    transactionReceiver = `Received from ${getFloIdTitle(sender)}`;
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+                } else { //This should not happen unless API returns transaction that does not involve floDapps.user.id
+                    return html`sender: ${sender} | receiver: ${receiver}`;
+                }
+                return html.node`
+            <li class="${className}" data-txid="${txid}">
+                <div class="transaction__icon">${icon}</div>
+                <div class="transaction__receiver wrap-around">${transactionReceiver}</div>
+                <time class="transaction__time">${getFormattedTime(time * 1000)}</time>
+                <div class="transaction__amount">${formatAmount(tokenAmount)}</div>
+            </li>
+        `;
+            },
+            cashierRequestCard(details) {
+                const { time, senderID, message: { mode, amount = 0 }, note, tag, vectorClock } = details;
+                const clone = getRef('cashier_request_template').content.cloneNode(true).firstElementChild;
+                clone.dataset.vc = vectorClock;
+                const status = tag || note; //status tag for completed, note for rejected
+                clone.querySelector('.cashier-request__details').textContent = `${mode === 'cash-to-token' ? 'Top-up wallet with' : 'Withdraw'} ${formatAmount(amount)}`;
+                clone.querySelector('.cashier-request__requestor').textContent = senderID;
+                clone.querySelector('.cashier-request__time').textContent = getFormattedTime(time);
+                clone.querySelector('.cashier-request__mode').innerHTML = mode === 'token-to-cash' ? `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <g> <rect height="7" width="3" x="4" y="10"></rect> <rect height="7" width="3" x="10.5" y="10"></rect> <rect height="3" width="20" x="2" y="19"></rect> <rect height="7" width="3" x="17" y="10"></rect> <polygon points="12,1 2,6 2,8 22,8 22,6"></polygon> </g> </g> </svg>`
+                    :
+                    `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>`;
+                if (status)
+                    clone.querySelector('.cashier-request__status').textContent = status.includes(':') ? status.split(':')[0] : status;
+                else
+                    clone.querySelector('.cashier-request__status').innerHTML = `<button class="button process-cashier-request">Process</button>`;
+                return clone;
+            },
+            walletRequestCard(details) {
+                const { time, message: { mode, amount }, note, tag, vectorClock } = details;
+                const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild.firstElementChild;
+                const type = mode === 'cash-to-token' ? 'Top-up' : 'Withdraw';
+                let status = tag ? tag : (note ? 'REJECTED' : "PENDING");
+                clone.classList.add(status.toLowerCase());
+                clone.classList.add(mode === 'cash-to-token' ? 'added' : 'withdrawn');
+                clone.dataset.vc = vectorClock;
+                clone.href = `#/transaction?transactionId=${vectorClock}&type=wallet`;
+                clone.querySelector('.wallet-request__icon').innerHTML = mode === 'cash-to-token' ?
+                    `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none" /><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>`
+                    :
+                    `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24" /></g><g><g><rect height="7" width="3" x="4" y="10" /><rect height="7" width="3" x="10.5" y="10" /><rect height="3" width="20" x="2" y="19" /><rect height="7" width="3" x="17" y="10" /><polygon points="12,1 2,6 2,8 22,8 22,6" /></g></g></svg>`;
+                clone.querySelector('.wallet-request__details').textContent = type;
+                clone.querySelector('.wallet-request__amount').textContent = formatAmount(amount);
+                clone.querySelector('.wallet-request__time').textContent = getFormattedTime(time);
+                let icon = '';
+                if (status === 'REJECTED') {
+                    icon = `<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`
+                    clone.querySelector('.wallet-request__status').innerHTML = `Failed ${icon}`;
+                    clone.querySelector('.wallet-request__status').classList.add('capitalize')
+                }
+                if (status === 'COMPLETED' && note.includes('#')) {
+                    const [txid, finalAmount] = note.split('#');
+                    clone.querySelector('.wallet-request__amount').textContent = formatAmount(parseFloat(finalAmount));
+                    clone.querySelector('.wallet-request__status').innerHTML = `<b style="color:var(--green)">+ 1 FLO</b>&nbsp; worth ${formatAmount(amount - parseFloat(finalAmount))}`;
+                }
+                return clone;
+            },
+            paymentRequestCard(details) {
+                const { time, senderID, message: { amount, remark }, note, vectorClock } = details;
+                const clone = getRef(`${note ? 'processed' : 'pending'}_payment_request_template`).content.cloneNode(true).firstElementChild;
+                clone.dataset.vc = vectorClock;
+                clone.querySelector('.payment-request__requestor').textContent = getFloIdTitle(senderID);
+                clone.querySelector('.payment-request__remark').textContent = remark;
+                clone.querySelector('.payment-request__time').textContent = getFormattedTime(time);
+                clone.querySelector('.payment-request__amount').textContent = amount.toLocaleString(`en-IN`, { style: 'currency', currency: 'INR' });
+                const status = note ? note.split(':')[0] : 'PENDING';
+                if (note) {
+                    clone.firstElementChild.href = `#/transaction?transactionId=${vectorClock}&type=request`;
+                    let icon
+                    if (status === 'PAID')
+                        icon = `<svg class="icon paid" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M23,12l-2.44-2.79l0.34-3.69l-3.61-0.82L15.4,1.5L12,2.96L8.6,1.5L6.71,4.69L3.1,5.5L3.44,9.2L1,12l2.44,2.79l-0.34,3.7 l3.61,0.82L8.6,22.5l3.4-1.47l3.4,1.46l1.89-3.19l3.61-0.82l-0.34-3.69L23,12z M10.09,16.72l-3.8-3.81l1.48-1.48l2.32,2.33 l5.85-5.87l1.48,1.48L10.09,16.72z"/></g></svg>`
+                    else
+                        icon = `<svg class="icon declined" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>`
+                    clone.querySelector('.payment-request__status').innerHTML = `${status.toLowerCase()} ${icon}`;
+                }
+                return clone;
+            },
+            transactionMessage(details) {
+                const { tokenAmount, time, sender, receiver, flodata } = floTokenAPI.util.parseTxData(details)
+                let messageType = sender === receiver ? 'self' : sender === floDapps.user.id ? 'sent' : 'received';
+                const clone = getRef('transaction_message_template').content.cloneNode(true).firstElementChild;
+                clone.classList.add(messageType);
+                clone.querySelector('.transaction-message__amount').textContent = formatAmount(tokenAmount);
+                if (flodata.split('|')[1]) {
+                    clone.querySelector('.transaction-message__remark').textContent = flodata.split('|')[1];
+                }
+                clone.querySelector('.transaction-message__time').textContent = getFormattedTime(time * 1000);
+                return clone;
+            },
+            savedUpiId(upiId) {
+                return html`
+            <li class="saved-upi" data-upi-id="${upiId}">
+                <div class="saved-upi__id">${upiId}</div>
+                <button class="delete-upi" title="Delete this UPI ID">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" /> </svg>
+                </button>
+            </li>
+        `;
+            },
+            savedIdPickerCard(floID, { title }) {
+                return html`
+            <li class="saved-id grid interact" tabindex="0" data-flo-id="${floID}">
+                <div class="saved-id__initials">${title[0]}</div>
+                <div class="grid gap-0-5">
+                    <h4 class="saved-id__title">${title}</h4>
+                    <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
+                </div>
+            </li>`
+            },
+            savedUpiIdOption(upiId) {
+                return createElement('sm-option', {
+                    textContent: upiId,
+                    attributes: {
+                        value: upiId,
+                    }
+                })
+            },
+            rupeeHistory() {
+                let paymentTransactions = []
+                if (rupeeHistoryLoader)
+                    rupeeHistoryLoader.clear()
+                getRef('payments_history').innerHTML = '<sm-spinner></sm-spinner>';
+                floTokenAPI.getAllTxs(floDapps.user.id).then(({ transactions }) => {
+                    for (const transactionId in transactions) {
+                        paymentTransactions.push({
+                            ...floTokenAPI.util.parseTxData(transactions[transactionId]),
+                            txid: transactionId
+                        })
+                    }
+                    const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+                    if (filter !== 'all') {
+                        let propToCheck = filter === 'sent' ? 'sender' : 'receiver';
+                        paymentTransactions = paymentTransactions.filter(v => v[propToCheck] === floDapps.user.id)
+                    }
+                    // solve sorting issue at backend
+                    paymentTransactions.sort((a, b) => b.time - a.time);
+                    if (rupeeHistoryLoader) {
+                        rupeeHistoryLoader.update(paymentTransactions);
+                    } else {
+                        rupeeHistoryLoader = new LazyLoader('#payments_history', paymentTransactions, render.rupeeTxCard);
+                    }
+                    rupeeHistoryLoader.init();
+                }).catch(e => {
+                    console.error(e)
+                })
+            },
+            btcTxCard(transactionDetails) {
+                let { amount, time, txid, sender, receiver, type, block } = transactionDetails;
+                let transactionReceiver
+                let icon
+                // block = null
+                if (block) {
+                    if (type === 'out') {
+                        transactionReceiver = `Sent to ${receiver}`;
+                        icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+                    } else if (type === 'in') {
+                        transactionReceiver = `Received from ${sender}`;
+                        icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+                    } else if (type === 'self') {
+                        transactionReceiver = `Sent to self`;
+                        icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+                    }
+                } else {
+                    transactionReceiver = (type === 'out' ? `Sent to ${receiver}` : `Received from ${sender}`);
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M6,2l0.01,6L10,12l-3.99,4.01L6,22h12v-6l-4-4l4-3.99V2H6z M16,16.5V20H8v-3.5l4-4L16,16.5z"/></g></svg>`;
+                }
+                const className = `btc-tx grid ${type} ${block === null ? 'unconfirmed-tx' : ''}`
+                return html.node`
+            <li class="${className}" data-txid="${txid}">
+                <div class="btc-tx__icon">${icon}</div>
+                <time class="btc-tx__time">${getFormattedTime(time)}</time>
+                <div class="btc-tx__amount amount-shown" data-btc-amount="${amount}">${formatAmount(amount, 'btc')}</div>
+                <div class="btc-tx__receiver wrap-around">${transactionReceiver}</div>
+                <div class="btc-tx__id wrap-around">TXID: ${txid}</div>
+                ${!block ? html`<p class="pending-badge">Confirmation pending: amount will be deducted after transaction is confirmed</p>` : ''}
+                </li>
+                `;
+            },
+            btcHistory() {
+                try {
+                    // render transactions
+                    getRef('payments_history').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
+                    getAddressDetails(btc_api.convert.legacy2bech(floDapps.user.id)).then(result => {
+                        if (result.txs.length) {
+                            let allTransactions = result.txs;
+                            const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+                            if (filter !== 'all') {
+                                allTransactions = allTransactions.filter(t => filter === 'sent' ? t.type === 'out' : t.type === 'in')
+                            }
+                            console.log(allTransactions)
+                            if (btcHistoryLoader) {
+                                btcHistoryLoader.update(allTransactions)
+                            } else {
+                                btcHistoryLoader = new LazyLoader('#payments_history', allTransactions, render.btcTxCard)
+                            }
+                            btcHistoryLoader.init()
+                        } else {
+                            getRef('payments_history').textContent = 'No transactions found';
+                        }
+                    }).catch(error => console.error(error))
+                } catch (err) {
+                    notify(err, 'error');
+                }
+            },
+            async savedIds() {
+                renderElem(getRef('saved_ids_list'), html`${getArrayOfSavedIds().map(({ floID, title }) => render.savedId(floID, title, getRef('saved_ids_list')))}`)
+            },
+            conditionalSteps() {
+                if (getRef('topup_wallet__qr_wrapper').open) {
+                    getRef('topup_steps').querySelectorAll('.conditional').forEach(e => e.remove());
+                } else {
+                    const amount = parseFloat(getRef('request_cashier_amount').value.trim());
+                    if (getRef('topup_steps').children.length < 4) {
+                        const conditionalSteps = getRef('conditional_steps_template').content.cloneNode(true);
+                        conditionalSteps.querySelector('.amount').textContent = formatAmount(amount);
+                        conditionalSteps.querySelector('.tx-code').setAttribute('value', floGlobals.txCode);
+                        getRef('topup_steps').children[1].after(conditionalSteps)
+                    } else {
+                        getRef('topup_steps').querySelector('.amount').textContent = formatAmount(amount);
+                        getRef('topup_steps').querySelector('.tx-code').setAttribute('value', floGlobals.txCode);
+                    }
+                }
+            }
+        };
+
+        function buttonLoader(id, show) {
+            const button = typeof id === 'string' ? document.getElementById(id) : id;
+            button.disabled = show;
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            if (show) {
+                button.animate([
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                ], animOptions).onfinish = e => {
+                    e.target.commitStyles()
+                    e.target.cancel()
+                }
+                button.parentNode.append(createElement('sm-spinner'))
+            } else {
+                button.style = ''
+                const potentialTarget = button.parentNode.querySelector('sm-spinner')
+                if (potentialTarget) potentialTarget.remove();
+            }
+        }
+        async function refreshBalance(button) {
+            if (button)
+                buttonLoader(button, true)
+            floTokenAPI.getBalance(floDapps.user.id).then((balance = 0) => {
+                const [beforeDecimal, afterDecimal] = formatAmount(balance).split('₹')[1].split('.')
+                renderElem(getRef('rupee_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
+                if (button)
+                    buttonLoader(button, false)
+            })
+            btc_api.getBalance(btc_api.convert.legacy2bech(floDapps.user.id)).then(btcBalance => {
+                if (btcBalance) {
+                    const [beforeDecimal, afterDecimal = '00'] = String(btcBalance).split('.')
+                    renderElem(getRef('btc_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
+                } else {
+                    renderElem(getRef('btc_balance'), html`<span><b>0</b></span>`)
+                }
+            })
+            try {
+                const [floBal, floRates] = await Promise.all([floBlockchainAPI.getBalance(floDapps.user.id), floExchangeAPI.getRates('FLO')])
+                const [beforeDecimal, afterDecimal = '00'] = String(floBal).split('.')
+                renderElem(getRef('flo_balance'), html`<span><b>${beforeDecimal}</b></span>.<span>${afterDecimal}</span>`)
+                if (floBal < floGlobals.settings.user_flo_threshold) {
+                    getRef('low_user_flo_warning').textContent = `Your FLO balance is low. You will receive ${floGlobals.settings.send_user_flo} FLO of worth ₹${parseFloat(floRates.rate.toFixed(2))} deducted from top-up amount.`;
+                    getRef('low_user_flo_warning').classList.remove('hidden');
+                } else {
+                    getRef('low_user_flo_warning').classList.add('hidden');
+                }
+                if (button)
+                    buttonLoader(button, false)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+
+        const assetIcons = {
+            btc: ` <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg> `,
+            usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
+            rupee: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
+        }
+        function setCorrectInputParams({ fromAsset, toAsset }) {
+            getRef('from_amount').setAttribute('min', fromAsset === 'rupee' ? '50' : '0.00000001');
+            getRef('from_amount').setAttribute('step', fromAsset === 'rupee' ? '0.01' : '0.00000001');
+            getRef('from_amount').setAttribute('error-text', `Minimum amount is ${fromAsset === 'rupee' ? '₹50' : '0.000001BTC'}`);
+
+            getRef('to_amount').setAttribute('min', toAsset === 'rupee' ? '50' : '0.00000001');
+            getRef('to_amount').setAttribute('step', toAsset === 'rupee' ? '0.01' : '0.00000001');
+            getRef('to_amount').setAttribute('error-text', `Minimum amount is ${toAsset === 'rupee' ? '₹50' : '0.000001BTC'}`);
+
+            getRef('from_asset_icon').innerHTML = assetIcons[fromAsset]
+            getRef('to_asset_icon').innerHTML = assetIcons[toAsset]
+        }
+        getRef('from_asset_selector').addEventListener('change', e => {
+            const fromAsset = e.target.value;
+            const toAsset = fromAsset === 'rupee' ? 'btc' : 'rupee';
+            setCorrectInputParams({ fromAsset, toAsset });
+            getRef('to_asset_selector').value = toAsset
+        })
+        getRef('to_asset_selector').addEventListener('change', e => {
+            const toAsset = e.target.value
+            const fromAsset = toAsset === 'rupee' ? 'btc' : 'rupee';
+            setCorrectInputParams({ fromAsset, toAsset });
+            getRef('from_asset_selector').value = fromAsset
+        })
+        getRef('from_amount').addEventListener('input', e => {
+            const fromAsset = getRef('from_asset_selector').value;
+            let fromAmount = parseFloat(e.target.value.trim());
+            if (fromAmount && !Number.isNaN(fromAmount))
+                getRef('to_amount').value = fromAsset === 'rupee' ? parseFloat((fromAmount / globalExchangeRate.inr).toFixed(8)) : parseFloat((fromAmount * globalExchangeRate.inr).toFixed(2))
+            else
+                getRef('to_amount').value = ''
+        })
+        getRef('to_amount').addEventListener('input', e => {
+            const toAsset = getRef('to_asset_selector').value;
+            let toAmount = parseFloat(e.target.value.trim());
+            if (toAmount && !Number.isNaN(toAmount))
+                getRef('from_amount').value = toAsset === 'rupee' ? parseFloat((toAmount / globalExchangeRate.inr).toFixed(8)) : parseFloat((toAmount * globalExchangeRate.inr).toFixed(2))
+            else
+                getRef('from_amount').value = ''
+        })
+
+        function getArrayOfSavedIds() {
+            const arr = [];
+            for (const key in floGlobals.contacts) {
+                arr.push({
+                    floID: key,
+                    title: floGlobals.contacts[key]
+                });
+            }
+            return arr.sort((a, b) => a.title.localeCompare(b.title));
+        }
+        async function saveFloId() {
+            const floID = getRef('flo_id_to_save').value.trim();
+            if (floGlobals.contacts.hasOwnProperty(floID))
+                return notify('This FLO ID is already saved', 'error');
+            const title = getRef('flo_id_title_to_save').value.trim();
+            buttonLoader('save_flo_id_button', true);
+            floDapps.storeContact(floID, title).then(() => {
+                render.savedIds()
+                notify(`Saved ${floID}`, 'success');
+                closePopup();
+            }).catch(error => {
+                notify(error, 'error');
+            }).finally(() => {
+                buttonLoader('save_flo_id_button', false);
+            })
+        }
+        delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
+            if (e.target.closest('.edit-saved')) {
+                const target = e.target.closest('.saved-id');
+                getRef('edit_saved_id').setAttribute('value', target.dataset.floId);
+                getRef('get_new_title').value = getFloIdTitle(target.dataset.floId);
+                openPopup('edit_saved_popup');
+            } else if (e.target.closest('.copy-saved-id')) {
+                const target = e.target.closest('.saved-id');
+                navigator.clipboard.writeText(target.dataset.floId)
+                target.dispatchEvent(
+                    new CustomEvent('copy', {
+                        bubbles: true,
+                        cancelable: true,
+                    })
+                );
+            } else {
+                const target = e.target.closest('.saved-id');
+                window.location.hash = `#/contact?floId=${target.dataset.floId}`;
+            }
+        });
+        function saveIdChanges() {
+            const floID = getRef('edit_saved_id').value;
+            let title = getRef('get_new_title').value.trim();
+            if (title == '')
+                title = 'Unknown';
+            floDapps.storeContact(floID, title).then(() => {
+                render.savedIds()
+                closePopup();
+            }).catch(error => {
+                notify(error, 'error');
+            })
+        }
+        function deleteSavedId() {
+            getConfirmation('Do you want delete this FLO ID?', {
+                confirmText: 'Delete',
+            }).then(res => {
+                if (res) {
+                    const floID = getRef('edit_saved_id').value;
+                    const toDelete = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${floID}`);
+                    if (toDelete)
+                        toDelete.remove();
+                    closePopup();
+                    compactIDB.removeData('contacts', floID, floDapps.user.db_name).then(() => {
+                        notify(`Deleted flo address`, 'success');
+                    }).catch(error => {
+                        notify(error, 'error');
+                    });
+                }
+            });
+        }
+        const savedIdsObserver = new MutationObserver((mutationList) => {
+            mutationList.forEach(mutation => {
+                conditionalClassToggle(getRef('saved_ids_tip'), 'hidden', !mutation.target.children.length);
+            })
+        })
+
+        savedIdsObserver.observe(getRef('saved_ids_list'), {
+            childList: true,
+        })
+        function insertElementAlphabetically(name, elementToInsert) {
+            const elementInserted = [...getRef('saved_ids_list').children].some(child => {
+                const floID = child.dataset.floId;
+                if (floGlobals.contacts[floID].localeCompare(name) > 0) {
+                    child.before(elementToInsert)
+                    return true
+                }
+            })
+            if (!elementInserted) {
+                getRef('saved_ids_list').append(elementToInsert)
+            }
+        }
+
+        getRef('search_saved_ids_picker').addEventListener('input', debounce(async e => {
+            const frag = document.createDocumentFragment()
+            const searchKey = e.target.value.trim();
+            let allSavedIds = getArrayOfSavedIds();
+            if (searchKey !== '') {
+                const fuse = new Fuse(allSavedIds, { keys: ['floID', 'title'] })
+                allSavedIds = fuse.search(searchKey).map(v => v.item)
+            }
+            renderElem(getRef('saved_ids_picker_list'), html`${allSavedIds.map(({ floID, details }) => render.savedIdPickerCard(floID, details))}`)
+            if (searchKey !== '') {
+                const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+                if (potentialTarget) {
+                    potentialTarget.classList.add('highlight')
+                }
+            }
+        }, 100))
+        getRef('search_saved_ids_picker').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+                if (potentialTarget) {
+                    potentialTarget.click()
+                }
+            }
+        })
+        delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
+            getRef('token_transfer__receiver').value = e.delegateTarget.dataset.floId
+            getRef('token_transfer__receiver').focusIn()
+            closePopup()
+        })
+
+        let currentUserAction;
+        function showTokenTransfer(type) {
+            getRef('token_transfer__button').textContent = type;
+            currentUserAction = type;
+            if (type === 'send') {
+                getRef('token_transfer__title').textContent = 'Send money to FLO ID';
+            } else {
+                getRef('token_transfer__title').textContent = 'Request money from FLO ID';
+            }
+            if (pagesData.lastPage === 'contact') {
+                getRef('token_transfer__receiver').value = pagesData.params.floId;
+                getRef('token_transfer__receiver').readOnly = true;
+                getRef('token_transfer__receiver').querySelector('button').classList.add('hidden');
+            } else {
+                getRef('token_transfer__receiver').readOnly = false;
+                getRef('token_transfer__receiver').querySelector('button').classList.remove('hidden');
+            }
+            openPopup('token_transfer_popup');
+            if (pagesData.lastPage === 'contact') {
+                getRef('token_transfer__amount').focusIn();
+            }
+        }
+
+
+        userUI.sendMoneyToUser = function (floID, amount, remark) {
+            getConfirmation('Confirm', { message: `Do you want to send ${amount} to ${getFloIdTitle(floID)}?`, confirmText: 'send' }).then(confirmation => {
+                if (confirmation) {
+                    buttonLoader('token_transfer__button', true);
+                    User.sendToken(floID, amount, "|" + remark).then(txid => {
+                        console.warn(`Sent ${amount} to ${floID}`, txid);
+                        notify(`Sent ${amount} to ${getFloIdTitle(floID)}. It may take a few mins to reflect in their wallet`, 'success');
+                        closePopup()
+                    }).catch(error => notify(error, 'error'))
+                        .finally(() => {
+                            buttonLoader('token_transfer__button', false);
+                        })
+                }
+            })
+        }
+
+        userUI.requestMoneyFromUser = function (floID, amount, remark) {
+            getConfirmation('Confirm', { message: `Do you want to request ${amount} from ${getFloIdTitle(floID)}?`, confirmText: 'request' }).then(confirmation => {
+                if (confirmation) {
+                    buttonLoader('token_transfer__button', true);
+                    User.requestToken(floID, amount, remark).then(result => {
+                        console.log(`Requested ${amount} from ${floID}`, result);
+                        notify(`Requested ${amount} from ${getFloIdTitle(floID)}`, 'success');
+                        closePopup()
+                    }).catch(error => notify(error, 'error'))
+                        .finally(() => {
+                            buttonLoader('token_transfer__button', false);
+                        })
+                }
+            })
+        }
+        function executeUserAction() {
+            const floID = getRef('token_transfer__receiver').value.trim(),
+                amount = parseFloat(getRef('token_transfer__amount').value),
+                remark = getRef('token_transfer__remark').value.trim();
+            if (currentUserAction === 'send') {
+                userUI.sendMoneyToUser(floID, amount, remark);
+            } else {
+                userUI.requestMoneyFromUser(floID, amount, remark);
+            }
+        }
+
+        function toggleFilters() {
+            const animOptions = {
+                duration: 200,
+                easing: 'ease',
+                fill: 'forwards',
+            }
+            if (getRef('history_applied_filters_wrapper').classList.contains('hidden') && getRef('history_applied_filters').children.length > 0) {
+                getRef('history_applied_filters_wrapper').classList.remove('hidden')
+                const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
+                getRef('history_applied_filters_wrapper').animate([
+                    {
+                        transform: `translateY(-1.5rem)`,
+                        opacity: 0
+                    },
+                    {
+                        transform: `translateY(0)`,
+                        opacity: 1
+                    },
+                ], animOptions)
+                getRef('payments_history').animate([
+                    { transform: `translateY(-${filtersContainerDimensions.height}px)` },
+                    { transform: `translateY(0)` },
+                ], animOptions)
+            } else if (!getRef('history_applied_filters_wrapper').classList.contains('hidden') && getRef('history_applied_filters').children.length === 0) {
+                getRef('history_applied_filters_wrapper').animate([
+                    {
+                        transform: `translateY(0)`,
+                        opacity: 1
+                    },
+                    {
+                        transform: `translateY(-1.5rem)`,
+                        opacity: 0
+                    },
+                ], animOptions)
+                    .onfinish = () => {
+                        getRef('history_applied_filters_wrapper').classList.add('hidden')
+                    }
+                const filtersContainerDimensions = getRef('history_applied_filters_wrapper').getBoundingClientRect();
+                const historyDimensions = getRef('payments_history').getBoundingClientRect();
+                getRef('payments_history').animate([
+                    { transform: `translateY(0)` },
+                    { transform: `translateY(-${historyDimensions.top - filtersContainerDimensions.top}px)` },
+                ], animOptions).onfinish = (e) => {
+                    e.target.commitStyles()
+                    e.target.cancel()
+                    getRef('payments_history').style.transform = '';
+                }
+                getRef('payments_type_filter').querySelector('input[value="all"]').checked = true;
+            }
+        }
+
+        function applyPaymentsFilters() {
+            const filter = getRef('payments_type_filter').querySelector('input:checked').value;
+            if (filter !== 'all') {
+                renderElem(getRef('history_applied_filters'),
+                    html`
+            <button class="applied-filter" data-filter="type" data-value=${filter} title="Remove filter">
+                <span class="applied-filter__title">${filter}</span>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none"  />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"  />
+                    </svg>
+            </button>`);
+            }
+            toggleFilters()
+            if (pagesData.params.asset == 'rupee') {
+                render.rupeeHistory()
+            } else {
+                render.btcHistory()
+            }
+            closePopup()
+        }
+        function resetPaymentsFilters() {
+            getRef('payments_type_filter').querySelector('input[value="all"]').checked = true;
+            if (pagesData.params.asset == 'rupee') {
+                render.rupeeHistory()
+            } else {
+                render.btcHistory()
+            }
+            closePopup()
+            toggleFilters()
+        }
+
+        delegate(getRef('history_applied_filters'), 'click', '.applied-filter', e => {
+            // const filter = e.delegateTarget.dataset.filter
+            // const filterValue = e.delegateTarget.dataset.value
+            e.delegateTarget.remove()
+            if (pagesData.params.asset == 'rupee') {
+                render.rupeeHistory()
+            } else {
+                render.btcHistory()
+            }
+            toggleFilters()
+        })
+
+        function changeUpi() {
+            const upiId = getRef('upi_id').value.trim();
+            Cashier.updateUPI(upiId).then(() => {
+                getRef('my_upi_id').classList.remove('hidden')
+                getRef('my_upi_id').value = upiId;
+                getRef('change_upi_button').textContent = 'Change UPI ID';
+                notify('UPI ID updated successfully', 'success');
+                closePopup()
+            }).catch(err => {
+                notify(err, 'error');
+            });
+        }
+        function getSignedIn(passwordType) {
+            return new Promise((resolve, reject) => {
+                try {
+                    console.log(floDapps.user.id)
+                    getPromptInput('Enter password', '', {
+                        isPassword: true,
+                    }).then(password => {
+                        if (password) {
+                            resolve(password)
+                        }
+                    })
+                } catch (err) {
+                    if (passwordType === 'PIN/Password') {
+                        floGlobals.isPrivKeySecured = true;
+                        getRef('private_key_field').removeAttribute('data-private-key');
+                        getRef('private_key_field').setAttribute('placeholder', 'Password');
+                        getRef('private_key_field').customValidation = null
+                        getRef('secure_pwd_button').closest('.card').classList.add('hidden');
+                    } else {
+                        floGlobals.isPrivKeySecured = false;
+                        getRef('private_key_field').dataset.privateKey = ''
+                        getRef('private_key_field').setAttribute('placeholder', 'FLO private key');
+                        getRef('private_key_field').customValidation = floCrypto.getPubKeyHex;
+                        getRef('secure_pwd_button').closest('.card').classList.remove('hidden');
+                    }
+                    if (window.location.hash.includes('sign_in') || window.location.hash.includes('sign_up')) {
+                        showPage(window.location.hash);
+                    } else {
+                        location.hash = `#/sign_in`;
+                    }
+                    getRef('sign_in_button').onclick = () => {
+                        resolve(getRef('private_key_field').value.trim());
+                        getRef('private_key_field').value = '';
+                        showPage('loading');
+                    };
+                    getRef('sign_up_button').onclick = () => {
+                        resolve(getRef('generated_private_key').value.trim());
+                        getRef('generated_private_key').value = '';
+                        showPage('loading');
+                    };
+                }
+            });
+        }
+        function setSecurePassword() {
+            if (!floGlobals.isPrivKeySecured) {
+                const password = getRef('secure_pwd_input').value.trim();
+                floDapps.securePrivKey(password).then(() => {
+                    floGlobals.isPrivKeySecured = true;
+                    notify('Password set successfully', 'success');
+                    getRef('secure_pwd_button').closest('.card').classList.add('hidden');
+                    closePopup();
+                }).catch(err => {
+                    notify(err, 'error');
+                })
+            }
+        }
+        function signOut() {
+            getConfirmation('Sign out?', 'You are about to sign out of the app, continue?', 'Stay', 'Leave')
+                .then(async (res) => {
+                    if (res) {
+                        await floDapps.clearCredentials();
+                        location.reload();
+                    }
+                });
+        }
+        function getAddressDetails(address) {
+            return new Promise((resolve, reject) => {
+                btc_api.getAddressData(address).then(data => {
+                    console.debug(data);
+                    let details = {};
+                    details.balance = data.balance;
+                    details.address = data.address;
+                    details.txs = data.txs.map(tx => {
+                        let d = {
+                            txid: tx.txid,
+                            time: tx.time,
+                            block: tx.block_no
+                        }
+                        if (tx.outgoing) {
+                            d.type = "out";
+                            d.amount = 0;
+                            d.receiver = new Set();
+                            let change = 0;
+                            tx.outgoing.outputs.forEach(o => {
+                                if (o.address !== address) {
+                                    d.receiver.add(o.address)
+                                    d.amount += parseFloat(o.value)
+                                } else
+                                    change += parseFloat(o.value)
+                            });
+                            d.receiver = Array.from(d.receiver);
+                            d.amount = parseFloat(d.amount.toFixed(8))
+                            d.fee = parseFloat((tx.outgoing.value - (d.amount + change)).toFixed(8))
+                            if (!d.amount && change > 0) {
+                                d.type = "self";
+                                d.amount = change
+                                delete d.receiver;
+                                d.address = address;
+                            }
+                        } else if (tx.incoming) {
+                            d.type = "in";
+                            d.amount = parseFloat(tx.incoming.value);
+                            d.sender = Array.from(new Set(tx.incoming.inputs.map(i => i.address)));
+                        }
+                        return d;
+                    })
+                    resolve(details);
+                }).catch(error => reject(error))
+            })
+        }
+        function calculateBtcFees() {
+            fetch('https://bitcoiner.live/api/fees/estimates/latest').then(res => res.json()).then(data => {
+                const satPerByte = data.estimates['60'].sat_per_vbyte;
+                const legacyBytes = 200;
+                const segwitBytes = 77;
+                const fees = (legacyBytes * satPerByte + (0.25 * satPerByte) * segwitBytes) / Math.pow(10, 8);
+                getRef('send_fee').value = fees.toFixed(8);
+            }).catch(e => {
+                console.error(e)
+            })
+        }
+        const txParticipantsObserver = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'childList') {
+                    if (mutation.addedNodes.length > 0 && mutation.target.children.length > 1) {
+                        const removeButton = mutation.target.firstElementChild.querySelector('.remove-card')
+                        if (!removeButton) {
+                            const newRemoveButton = html.node`
+                        <button class="remove-card button--small">
+                            <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0V0z" fill="none"></path>
+                                <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                            </svg>
+                            Remove
+                        </button>
+                    `
+                            mutation.target.firstElementChild.querySelector('.remove-card-wrapper').appendChild(newRemoveButton)
+                        }
+                    } else if (mutation.removedNodes.length > 0 && mutation.target.children.length === 1) {
+                        const removeButton = mutation.target.firstElementChild.querySelector('.remove-card')
+                        if (removeButton) {
+                            removeButton.remove()
+                        }
+                    }
+                }
+            })
+        })
+        txParticipantsObserver.observe(getRef('receiver_container'), {
+            childList: true
+        })
+        let globalExchangeRate = {}
+        async function getExchangeRate() {
+            return new Promise((resolve, reject) => {
+                Promise.all(['usd', 'inr'].map(cur => fetch(`https://bitpay.com/api/rates/btc/${cur}`))).then(responses => {
+                    Promise.all(responses.map(res => res.json())).then(rates => {
+                        rates.forEach(rate => {
+                            globalExchangeRate[rate.code.toLowerCase()] = rate.rate
+                        })
+                        globalExchangeRate.btc = 1
+                        resolve(globalExchangeRate)
+                    }).catch(err => console.log(err))
+                }).catch(err => console.log(err))
+            })
+        }
+        getRef('add_receiver').onclick = evt => {
+            let receiverCard = getRef('receiver_template').content.cloneNode(true)
+            if (!getRef('receiver_container').children.length) {
+                receiverCard.querySelector('.remove-card').remove()
+            }
+            receiverCard.querySelector('.currency-symbol').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg>`
+            getRef('receiver_container').appendChild(receiverCard);
+            getRef('receiver_container').querySelectorAll('sm-input[data-btc-address]').forEach(input => input.customValidation = btc_api.validateAddress)
+        }
+        delegate(getRef('receiver_container'), 'click', '.remove-card', e => {
+            e.target.closest('.receiver-card').remove()
+        })
+
+        getRef('fees_selector').addEventListener('change', e => {
+            if (e.target.value !== 'custom') {
+                getRef('send_fee').readOnly = true;
+            }
+            switch (e.target.value) {
+                case 'custom':
+                    getRef('send_fee').readOnly = false;
+                    getRef('send_fee').focusIn();
+                    getRef('selected_fee_tip').textContent = 'Set custom fee';
+                    break;
+                case 'suggested':
+                    getRef('selected_fee_tip').textContent = 'Estimated time of confirmation is 1hr'
+                    calculateBtcFees();
+                    break;
+            }
+        })
+
+
+        getRef('send_transaction').onclick = evt => {
+            buttonLoader('send_transaction', true)
+            floDapps.user.private.then(privateKey => {
+                const privKeys = btc_api.convert.wif(privateKey);
+                const senders = btc_api.convert.legacy2bech(floDapps.user.id);
+                const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
+                const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
+                    return parseFloat(input.value.trim())
+                });
+                const fee = parseFloat(getRef('send_fee').value.trim());
+                console.debug(senders, receivers, amounts, fee);
+                btc_api.sendTx(senders, privKeys, receivers, amounts, fee).then(result => {
+                    console.log(result);
+                    closePopup();
+                    getRef('txid').value = result.txid;
+                    openPopup('txid_popup');
+                    getRef('send_tx').reset()
+                    getExchangeRate().then(() => {
+                        calculateBtcFees()
+                    }).catch(e => {
+                        console.error(e)
+                    })
+                }).catch(error => {
+                    notify(`Error sending transaction \n ${error}`, 'error');
+                }).finally(_ => {
+                    buttonLoader('send_transaction', false)
+                })
+            }).catch(error => {
+                console.log(error);
+                notify('Invalid password', 'error');
+                closePopup();
+                return false;
+            })
+        }
+
+        function convertAsset() {
+            buttonLoader('convert_asset_button', true)
+            const fromAsset = getRef('from_asset_selector').value;
+            const fromAmount = parseFloat(getRef('from_amount').value.trim());
+            if (fromAsset === 'BTC') {
+                btc_api.getBalance(btc_api.convert.legacy2bech(floDapps.user.id)).then(btcBalance => {
+                    if (btcBalance < fromAmount) {
+                        notify('You do not have enough BTC to convert', 'error');
+                        buttonLoader('convert_asset_button', false)
+                        return;
+                    }
+                })
+            } else {
+                floTokenAPI.getBalance(floDapps.user.id).then((balance = 0) => {
+                    if (balance < fromAmount) {
+                        notify('You do not have enough rupee tokens to convert', 'error');
+                        buttonLoader('convert_asset_button', false)
+                        return;
+                    }
+                })
+            }
+            // use api to convert asset
         }
     </script>
 </body>
