@@ -1,11 +1,11 @@
-(function(EXPORTS) { //floTokenAPI v1.0.3b
+(function (EXPORTS) { //floTokenAPI v1.0.3c
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
 
     const DEFAULT = {
         apiURL: floGlobals.tokenURL || "https://ranchimallflo.duckdns.org/",
-        currency: "rupee"
+        currency: floGlobals.currency || "rupee"
     }
 
     Object.defineProperties(tokenAPI, {
@@ -27,9 +27,9 @@
         }
     });
 
-    const fetch_api = tokenAPI.fetch = function(apicall) {
+    const fetch_api = tokenAPI.fetch = function (apicall) {
         return new Promise((resolve, reject) => {
-            console.log(DEFAULT.apiURL + apicall);
+            console.debug(DEFAULT.apiURL + apicall);
             fetch(DEFAULT.apiURL + apicall).then(response => {
                 if (response.ok)
                     response.json().then(data => resolve(data));
@@ -39,7 +39,7 @@
         })
     }
 
-    const getBalance = tokenAPI.getBalance = function(floID, token = DEFAULT.currency) {
+    const getBalance = tokenAPI.getBalance = function (floID, token = DEFAULT.currency) {
         return new Promise((resolve, reject) => {
             fetch_api(`api/v1.0/getFloAddressBalance?token=${token}&floAddress=${floID}`)
                 .then(result => resolve(result.balance || 0))
@@ -47,7 +47,7 @@
         })
     }
 
-    tokenAPI.getTx = function(txID) {
+    tokenAPI.getTx = function (txID) {
         return new Promise((resolve, reject) => {
             fetch_api(`api/v1.0/getTransactionDetails/${txID}`).then(res => {
                 if (res.result === "error")
@@ -62,7 +62,7 @@
         })
     }
 
-    tokenAPI.sendToken = function(privKey, amount, receiverID, message = "", token = DEFAULT.currency, options = {}) {
+    tokenAPI.sendToken = function (privKey, amount, receiverID, message = "", token = DEFAULT.currency, options = {}) {
         return new Promise((resolve, reject) => {
             let senderID = floCrypto.getFloID(privKey);
             if (typeof amount !== "number" || isNaN(amount) || amount <= 0)
@@ -77,7 +77,7 @@
         });
     }
 
-    tokenAPI.getAllTxs = function(floID, token = DEFAULT.currency) {
+    tokenAPI.getAllTxs = function (floID, token = DEFAULT.currency) {
         return new Promise((resolve, reject) => {
             fetch_api(`api/v1.0/getFloAddressTransactions?token=${token}&floAddress=${floID}`)
                 .then(result => resolve(result))
@@ -87,7 +87,7 @@
 
     const util = tokenAPI.util = {};
 
-    util.parseTxData = function(txData) {
+    util.parseTxData = function (txData) {
         let parsedData = {};
         for (let p in txData.parsedFloData)
             parsedData[p] = txData.parsedFloData[p];

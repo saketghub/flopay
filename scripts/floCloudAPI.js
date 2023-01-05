@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCloudAPI v2.4.2d
+(function (EXPORTS) { //floCloudAPI v2.4.3
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -79,6 +79,9 @@
             get: () => generalData,
             set: data => generalData = data
         },
+        generalDataset: {
+            value: (type, options = {}) => generalData[filterKey(type, options)]
+        },
         lastVC: {
             get: () => lastVC,
             set: vc => lastVC = vc
@@ -91,7 +94,7 @@
     });
 
     var kBucket;
-    const K_Bucket = floCloudAPI.K_Bucket = function(masterID, nodeList) {
+    const K_Bucket = floCloudAPI.K_Bucket = function (masterID, nodeList) {
 
         const decodeID = floID => {
             let k = bitjs.Base58.decode(floID);
@@ -125,7 +128,7 @@
         });
 
         self.isNode = floID => _CO.includes(floID);
-        self.innerNodes = function(id1, id2) {
+        self.innerNodes = function (id1, id2) {
             if (!_CO.includes(id1) || !_CO.includes(id2))
                 throw Error('Given nodes are not supernode');
             let iNodes = []
@@ -136,7 +139,7 @@
             }
             return iNodes
         }
-        self.outterNodes = function(id1, id2) {
+        self.outterNodes = function (id1, id2) {
             if (!_CO.includes(id1) || !_CO.includes(id2))
                 throw Error('Given nodes are not supernode');
             let oNodes = []
@@ -147,7 +150,7 @@
             }
             return oNodes
         }
-        self.prevNode = function(id, N = 1) {
+        self.prevNode = function (id, N = 1) {
             let n = N || _CO.length;
             if (!_CO.includes(id))
                 throw Error('Given node is not supernode');
@@ -161,7 +164,7 @@
             }
             return (N == 1 ? pNodes[0] : pNodes)
         }
-        self.nextNode = function(id, N = 1) {
+        self.nextNode = function (id, N = 1) {
             let n = N || _CO.length;
             if (!_CO.includes(id))
                 throw Error('Given node is not supernode');
@@ -176,7 +179,7 @@
             }
             return (N == 1 ? nNodes[0] : nNodes)
         }
-        self.closestNode = function(id, N = 1) {
+        self.closestNode = function (id, N = 1) {
             let decodedId = decodeID(id);
             let n = N || _CO.length;
             let cNodes = _KB.closest(decodedId, n)
@@ -290,8 +293,8 @@
             fetch_ActiveAPI(floID, data).then(response => {
                 if (response.ok)
                     response.json()
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
                 else response.text()
                     .then(result => reject(response.status + ": " + result)) //Error Message from Node
                     .catch(error => reject(error))
@@ -367,21 +370,21 @@
 
     const util = floCloudAPI.util = {};
 
-    const encodeMessage = util.encodeMessage = function(message) {
+    const encodeMessage = util.encodeMessage = function (message) {
         return btoa(unescape(encodeURIComponent(JSON.stringify(message))))
     }
 
-    const decodeMessage = util.decodeMessage = function(message) {
+    const decodeMessage = util.decodeMessage = function (message) {
         return JSON.parse(decodeURIComponent(escape(atob(message))))
     }
 
-    const filterKey = util.filterKey = function(type, options) {
+    const filterKey = util.filterKey = function (type, options = {}) {
         return type + (options.comment ? ':' + options.comment : '') +
             '|' + (options.group || options.receiverID || DEFAULT.adminID) +
             '|' + (options.application || DEFAULT.application);
     }
 
-    const proxyID = util.proxyID = function(address) {
+    const proxyID = util.proxyID = function (address) {
         if (!address)
             return;
         var bytes;
@@ -486,7 +489,7 @@
     }
 
     //set status as online for user_id
-    floCloudAPI.setStatus = function(options = {}) {
+    floCloudAPI.setStatus = function (options = {}) {
         return new Promise((resolve, reject) => {
             let callback = options.callback instanceof Function ? options.callback : DEFAULT.callback;
             var request = {
@@ -505,7 +508,7 @@
     }
 
     //request status of floID(s) in trackList
-    floCloudAPI.requestStatus = function(trackList, options = {}) {
+    floCloudAPI.requestStatus = function (trackList, options = {}) {
         return new Promise((resolve, reject) => {
             if (!Array.isArray(trackList))
                 trackList = [trackList];
@@ -522,7 +525,7 @@
     }
 
     //send any message to supernode cloud storage
-    const sendApplicationData = floCloudAPI.sendApplicationData = function(message, type, options = {}) {
+    const sendApplicationData = floCloudAPI.sendApplicationData = function (message, type, options = {}) {
         return new Promise((resolve, reject) => {
             var data = {
                 senderID: user.id,
@@ -544,7 +547,7 @@
     }
 
     //request any data from supernode cloud
-    const requestApplicationData = floCloudAPI.requestApplicationData = function(type, options = {}) {
+    const requestApplicationData = floCloudAPI.requestApplicationData = function (type, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
                 receiverID: options.receiverID || DEFAULT.adminID,
@@ -647,7 +650,7 @@
     */
 
     //tag data in supernode cloud (subAdmin access only)
-    floCloudAPI.tagApplicationData = function(vectorClock, tag, options = {}) {
+    floCloudAPI.tagApplicationData = function (vectorClock, tag, options = {}) {
         return new Promise((resolve, reject) => {
             if (!floGlobals.subAdmins.includes(user.id))
                 return reject("Only subAdmins can tag data")
@@ -668,7 +671,7 @@
     }
 
     //note data in supernode cloud (receiver only or subAdmin allowed if receiver is adminID)
-    floCloudAPI.noteApplicationData = function(vectorClock, note, options = {}) {
+    floCloudAPI.noteApplicationData = function (vectorClock, note, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
                 receiverID: options.receiverID || DEFAULT.adminID,
@@ -687,7 +690,7 @@
     }
 
     //send general data
-    floCloudAPI.sendGeneralData = function(message, type, options = {}) {
+    floCloudAPI.sendGeneralData = function (message, type, options = {}) {
         return new Promise((resolve, reject) => {
             if (options.encrypt) {
                 let encryptionKey = options.encrypt === true ?
@@ -701,7 +704,7 @@
     }
 
     //request general data
-    floCloudAPI.requestGeneralData = function(type, options = {}) {
+    floCloudAPI.requestGeneralData = function (type, options = {}) {
         return new Promise((resolve, reject) => {
             var fk = filterKey(type, options)
             lastVC[fk] = parseInt(lastVC[fk]) || 0;
@@ -725,7 +728,7 @@
     }
 
     //request an object data from supernode cloud
-    floCloudAPI.requestObjectData = function(objectName, options = {}) {
+    floCloudAPI.requestObjectData = function (objectName, options = {}) {
         return new Promise((resolve, reject) => {
             options.lowerVectorClock = options.lowerVectorClock || lastVC[objectName] + 1;
             options.senderID = [false, null].includes(options.senderID) ? null :
@@ -762,7 +765,7 @@
         })
     }
 
-    floCloudAPI.closeRequest = function(requestID) {
+    floCloudAPI.closeRequest = function (requestID) {
         return new Promise((resolve, reject) => {
             let conn = _liveRequest[requestID]
             if (!conn)
@@ -776,7 +779,7 @@
     }
 
     //reset or initialize an object and send it to cloud
-    floCloudAPI.resetObjectData = function(objectName, options = {}) {
+    floCloudAPI.resetObjectData = function (objectName, options = {}) {
         return new Promise((resolve, reject) => {
             let message = {
                 reset: appObjects[objectName]
@@ -790,7 +793,7 @@
     }
 
     //update the diff and send it to cloud
-    floCloudAPI.updateObjectData = function(objectName, options = {}) {
+    floCloudAPI.updateObjectData = function (objectName, options = {}) {
         return new Promise((resolve, reject) => {
             let message = {
                 diff: diff.find(lastCommit.get(objectName), appObjects[
@@ -809,7 +812,7 @@
     findDiff(original, updatedObj) returns an object with the added, deleted and updated differences  
     mergeDiff(original, allDiff) returns a new object from original object merged with all differences (allDiff is returned object of findDiff)
     */
-    var diff = (function() {
+    var diff = (function () {
         const isDate = d => d instanceof Date;
         const isEmpty = o => Object.keys(o).length === 0;
         const isObject = o => o != null && typeof o === 'object';
@@ -983,23 +986,23 @@
             }, {});
         };
 
-        const mergeRecursive = (obj1, obj2) => {
+        const mergeRecursive = (obj1, obj2, deleteMode = false) => {
             for (var p in obj2) {
                 try {
                     if (obj2[p].constructor == Object)
-                        obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                        obj1[p] = mergeRecursive(obj1[p], obj2[p], deleteMode);
                     // Property in destination object set; update its value.
-                    else if (Ext.isArray(obj2[p])) {
+                    else if (Array.isArray(obj2[p])) {
                         // obj1[p] = [];
                         if (obj2[p].length < 1)
                             obj1[p] = obj2[p];
                         else
-                            obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                            obj1[p] = mergeRecursive(obj1[p], obj2[p], deleteMode);
                     } else
-                        obj1[p] = obj2[p];
+                        obj1[p] = deleteMode && obj2[p] === null ? undefined : obj2[p];
                 } catch (e) {
                     // Property in destination object not set; create it and set its value.
-                    obj1[p] = obj2[p];
+                    obj1[p] = deleteMode && obj2[p] === null ? undefined : obj2[p];
                 }
             }
             return obj1;
@@ -1008,20 +1011,13 @@
         const cleanse = (obj) => {
             Object.keys(obj).forEach(key => {
                 var value = obj[key];
-                if (typeof value === "object" && value !== null) {
-                    // Recurse...
-                    cleanse(value);
-                    // ...and remove if now "empty" (NOTE: insert your definition of "empty" here)
-                    //if (!Object.keys(value).length) 
-                    //  delete obj[key];
-                } else if (value === null)
-                    delete obj[key]; // null, remove it
+                if (typeof value === "object" && value !== null)
+                    obj[key] = cleanse(value);
+                else if (typeof value === 'undefined')
+                    delete obj[key]; // undefined, remove it
             });
-            if (obj.constructor.toString().indexOf("Array") != -1) {
-                obj = obj.filter(function(el) {
-                    return el != null;
-                });
-            }
+            if (Array.isArray(obj))
+                obj = obj.filter(v => typeof v !== 'undefined');
             return obj;
         }
 
@@ -1037,7 +1033,7 @@
             if (Object.keys(diff.updated).length !== 0)
                 obj = mergeRecursive(obj, diff.updated)
             if (Object.keys(diff.deleted).length !== 0) {
-                obj = mergeRecursive(obj, diff.deleted)
+                obj = mergeRecursive(obj, diff.deleted, true)
                 obj = cleanse(obj)
             }
             if (Object.keys(diff.added).length !== 0)
