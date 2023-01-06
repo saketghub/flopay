@@ -1405,6 +1405,9 @@ fieldset {
 }
 #payment_request_history {
   padding-bottom: 3rem;
+  .payment-request {
+    margin: 0 -1rem;
+  }
 }
 .payment-request {
   display: grid;

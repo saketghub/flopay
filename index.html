@@ -361,7 +361,7 @@
                         </a>
                         <details class="grid gap-1"
                             style="border-top: solid thin rgba(var(--text-color), 0.5); padding-top: 1rem" open>
-                            <summary>
+                            <summary style="margin-bottom: 1.5rem;">
                                 <h4 style="font-weight: 500;">Send Rupee tokens to other
                                     RanchiMall products</h4>
                                 <svg class="icon down-arrow" xmlns="http://www.w3.org/2000/svg" height="24px"
@@ -2108,6 +2108,33 @@
                             ${shouldRender.txNote ? html`<div id="transaction__note" class="flex flex-direction-column gap-0-5">${shouldRender.txNote}</div>` : ''}
                         `)
                     break;
+                case 'wallet':
+                    const walletTransactions = []
+                    if (walletHistoryLoader)
+                        walletHistoryLoader.clear()
+                    const pendingWalletTransactions = document.createDocumentFragment()
+                    let areTransactionsPending = false
+                    for (const transactionId in User.cashierRequests) {
+                        if (!User.cashierRequests[transactionId].note) {
+                            areTransactionsPending = true
+                            pendingWalletTransactions.prepend(render.walletRequestCard(User.cashierRequests[transactionId]))
+                        } else {
+                            walletTransactions.unshift(User.cashierRequests[transactionId])
+                        }
+                    }
+                    if (walletHistoryLoader) {
+                        walletHistoryLoader.update(walletTransactions)
+                    } else {
+                        walletHistoryLoader = new LazyLoader('#wallet_history', walletTransactions, render.walletRequestCard);
+                        pendingTransactionsObserver.observe(getRef('pending_wallet_transactions'), { childList: true });
+                    }
+                    if (areTransactionsPending) {
+                        getRef('pending_wallet_transactions').innerHTML = ''
+                        getRef('pending_wallet_transactions').append(pendingWalletTransactions)
+                    }
+                    walletHistoryLoader.init()
+                    removeNotificationBadge('wallet_history_button')
+                    break;
             }
             if (pageId !== 'history') {
                 if (transactionsHistoryLoader)
@@ -2751,6 +2778,13 @@
                     });
                 }
             }
+            if (appState.lastPage !== 'wallet') {
+                if (processedRequests === 0)
+                    removeNotificationBadge('wallet_history_button');
+                else {
+                    addNotificationBadge('wallet_history_button', processedRequests)
+                }
+            }
         };
 
         userUI.renderMoneyRequests = function (requests, error = null) {
@@ -2793,6 +2827,16 @@
                 removeNotificationBadge('requests_notification_button')
             }
         };
+        const pendingTransactionsObserver = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'childList') {
+                    if (mutation.target.children.length)
+                        mutation.target.parentNode.classList.remove('hidden')
+                    else
+                        mutation.target.parentNode.classList.add('hidden')
+                }
+            })
+        });
 
         function toggleNotificationPanel() {
             const animOptions = {
@@ -3158,7 +3202,6 @@
                 return clone;
             },
             walletRequestCard(details) {
-                console.log(details);
                 const { time, message: { mode, amount }, note, tag, vectorClock } = details;
                 const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild.firstElementChild;
                 const type = mode === 'cash-to-token' ? 'Top-up' : 'Withdraw';
