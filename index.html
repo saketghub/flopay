@@ -2491,6 +2491,7 @@
         const mobileQuery = window.matchMedia('(max-width: 40rem)')
         function handleMobileChange(e) {
             floGlobals.isMobileView = e.matches
+            routeTo(window.location.hash)
         }
         mobileQuery.addEventListener('change', handleMobileChange)
         handleMobileChange(mobileQuery)
