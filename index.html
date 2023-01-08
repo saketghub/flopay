@@ -414,7 +414,7 @@
 
                 </div>
             </div>
-            <div class="grid">
+            <div class="grid hide-on-mobile">
                 <div class="flex align-center space-between">
                     <h4>Recent transactions</h4>
                     <a class="button button--small" href="#/history">See all</a>
@@ -425,7 +425,7 @@
                     <p class="empty-state__subtitle">Send or receive some assets to see them here</p>
                 </div>
             </div>
-            <div class="grid gap-1">
+            <div class="grid gap-1 hide-on-mobile">
                 <div class="flex align-center space-between">
                     <h4>Contacts</h4>
                     <a class="button button--small" href="#/contacts">See all</a>
@@ -550,7 +550,7 @@
         </section>
         <section id="history" class="inner-page hidden">
             <div class="page__header">
-                <button class="button icon-only margin-right-0-5" onclick="history.back()">
+                <button class="button icon-only margin-right-0-5 hide-on-mobile" onclick="history.back()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0z" fill="none"></path>
@@ -602,7 +602,7 @@
         </section>
         <section id="contacts" class="inner-page hidden flex flex-direction-column">
             <div class="page__header">
-                <button class="button icon-only margin-right-0-5" onclick="history.back()">
+                <button class="button icon-only margin-right-0-5 hide-on-mobile" onclick="history.back()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0z" fill="none"></path>
@@ -728,6 +728,46 @@
                 <div class="grid gap-1"></div>
             </div>
         </div>
+        <nav id="bottom_nav" class="hide-on-desktop">
+            <ul>
+                <li>
+                    <a href="#/home" class="nav-item nav-item--active">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                        </svg>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/history" class="nav-item">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0,0h24v24H0V0z" fill="none" />
+                            <g>
+                                <path
+                                    d="M19.5,3.5L18,2l-1.5,1.5L15,2l-1.5,1.5L12,2l-1.5,1.5L9,2L7.5,3.5L6,2v14H3v3c0,1.66,1.34,3,3,3h12c1.66,0,3-1.34,3-3V2 L19.5,3.5z M19,19c0,0.55-0.45,1-1,1s-1-0.45-1-1v-3H8V5h11V19z" />
+                                <rect height="2" width="6" x="9" y="7" />
+                                <rect height="2" width="2" x="16" y="7" />
+                                <rect height="2" width="6" x="9" y="10" />
+                                <rect height="2" width="2" x="16" y="10" />
+                            </g>
+                        </svg>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li><a href="#/contacts" class="nav-item ">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M20 0H4v2h16V0zM4 24h16v-2H4v2zM20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 2.75c1.24 0 2.25 1.01 2.25 2.25s-1.01 2.25-2.25 2.25S9.75 10.24 9.75 9 10.76 6.75 12 6.75zM17 17H7v-1.5c0-1.67 3.33-2.5 5-2.5s5 .83 5 2.5V17z" />
+                        </svg>
+                        <span>Contacts</span>
+                    </a></li>
+            </ul>
+        </nav>
     </div>
     <!-- Popups -->
     <sm-popup id="add_address_popup">
@@ -1981,13 +2021,15 @@
                     getRef('generated_private_key').value = privKey
                     break;
                 case 'home':
-                    renderElem(getRef('recent_transactions'), html`<sm-spinner></sm-spinner>`)
-                    getTransactionsHistory({ limit: 5 }).then(transactions => {
-                        renderElem(getRef('recent_transactions'), html`${transactions.map(transaction => render.transactionCard(transaction))}`)
-                    }).catch(e => {
-                        console.log(e)
-                    })
-                    render.savedIds()
+                    if (!floGlobals.isMobileView) {
+                        renderElem(getRef('recent_transactions'), html`<sm-spinner></sm-spinner>`)
+                        getTransactionsHistory({ limit: 5 }).then(transactions => {
+                            renderElem(getRef('recent_transactions'), html`${transactions.map(transaction => render.transactionCard(transaction))}`)
+                        }).catch(e => {
+                            console.log(e)
+                        })
+                        render.savedIds()
+                    }
                     getExchangeRate().then(rate => {
                         getRef('conversion_rate').textContent = `1BTC = ${formatAmount(rate.inr)}`;
                     })
@@ -2156,6 +2198,15 @@
                     duration: 100,
                     fill: 'forwards',
                     easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                }
+                if (document.querySelector('.nav-item--active'))
+                    document.querySelector('.nav-item--active').classList.remove('nav-item--active');
+                const targetListItem = [...document.querySelectorAll(`a.nav-item`)].find(item => item.href.includes(pageId))
+                if (targetListItem) {
+                    targetListItem.classList.add('nav-item--active')
+                    getRef('bottom_nav').classList.remove('hidden')
+                } else {
+                    getRef('bottom_nav').classList.add('hidden')
                 }
                 document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'))
                 getRef(pageId).closest('.page').classList.remove('hidden')
@@ -2862,6 +2913,8 @@
                         document.addEventListener('click', detectOutsideClick)
                     }
                 }
+                document.body.style.overflow = 'hidden';
+                document.body.style.top = `-${window.scrollY}px`;
             } else {
                 closeNotificationPanel()
             }
@@ -2888,6 +2941,10 @@
                     getRef('notifications_panel').classList.add('hidden')
                 }
             }
+            const scrollY = document.body.style.top;
+            window.scrollTo(0, parseInt(scrollY || '0') * -1);
+            document.body.style.overflow = '';
+            document.body.style.top = 'initial';
             document.removeEventListener('click', closeNotificationPanel)
         }
 
@@ -3144,7 +3201,10 @@
                     <li class="saved-id grid interact" tabindex="0" data-flo-id="${floID}">
                         <div class="saved-id__initials">${title.charAt(0)}</div>
                         <div class="flex gap-1 space-between">
-                            <div class="saved-id__title">${title}</div>
+                            <div class="flex align-center flex-wrap gap-0-3">
+                                <div class="saved-id__title">${title}</div>
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                            </div>
                             <button class="edit-saved icon-only" title="More options">
                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                             </button>
