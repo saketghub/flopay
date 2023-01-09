@@ -289,7 +289,7 @@
                             <button class="button button--small" onclick="refreshBalance(this)">Refresh</button>
                         </div>
                     </div>
-                    <div class="grid gap-0-5">
+                    <div id="balance_wrapper" class="grid gap-0-5">
                         <div class="flex align-center space-between balance-card">
                             <span>Rupee</span>
                             <span id="rupee_balance"></span>
@@ -414,7 +414,7 @@
 
                 </div>
             </div>
-            <div class="grid hide-on-mobile">
+            <div class="grid hide-on-mobile user-element">
                 <div class="flex align-center space-between">
                     <h4>Recent transactions</h4>
                     <a class="button button--small" href="#/history">See all</a>
@@ -425,7 +425,7 @@
                     <p class="empty-state__subtitle">Send or receive some assets to see them here</p>
                 </div>
             </div>
-            <div class="grid gap-1 hide-on-mobile">
+            <div class="grid gap-1 hide-on-mobile user-element">
                 <div class="flex align-center space-between">
                     <h4>Contacts</h4>
                     <a class="button button--small" href="#/contacts">See all</a>
@@ -1594,6 +1594,7 @@
                         console.log(result);
                         document.querySelectorAll('.admin-element').forEach(elem => elem.classList.remove('hidden'))
                         document.querySelectorAll('.user-element').forEach(elem => elem.classList.add('hidden'))
+                        getRef('home').classList.add('is-sub-admin')
                         routeTo(window.location.hash, { firstLoad: true })
                     }).catch(error => console.error(error))
                 } else {
@@ -1618,6 +1619,7 @@
         // Global variables
         const { html, render: renderElem, svg } = uhtml;
         const domRefs = {};
+        floGlobals.connectionErrorNotifications = []
         let transactionsHistoryLoader = null;
         let walletHistoryLoader = null;
         let contactHistoryLoader = null;
@@ -1625,12 +1627,13 @@
 
         //Checks for internet connection status
         if (!navigator.onLine)
-            floGlobals.connectionErrorNotification = notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error')
+            floGlobals.connectionErrorNotifications.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
         window.addEventListener('offline', () => {
-            floGlobals.connectionErrorNotification = notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error')
+            floGlobals.connectionErrorNotifications.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
         })
         window.addEventListener('online', () => {
-            getRef('notification_drawer').remove(floGlobals.connectionErrorNotification)
+            floGlobals.connectionErrorNotifications.forEach(notificationId => getRef('notification_drawer').remove(notificationId))
+            floGlobals.connectionErrorNotifications = []
             notify('We are back online.', 'success')
         })
 
@@ -2021,7 +2024,7 @@
                     getRef('generated_private_key').value = privKey
                     break;
                 case 'home':
-                    if (!floGlobals.isMobileView) {
+                    if (!floGlobals.isMobileView && floGlobals.isSubAdmin) {
                         renderElem(getRef('recent_transactions'), html`<sm-spinner></sm-spinner>`)
                         getTransactionsHistory({ limit: 5 }).then(transactions => {
                             renderElem(getRef('recent_transactions'), html`${transactions.map(transaction => render.transactionCard(transaction))}`)

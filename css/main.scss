@@ -1663,7 +1663,7 @@ fieldset {
   }
 }
 @media screen and (min-width: 68rem) {
-  #home {
+  #home:not(.is-sub-admin) {
     grid-template-columns: 26rem 1fr 1fr;
   }
 }
