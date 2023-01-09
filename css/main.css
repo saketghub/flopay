@@ -869,6 +869,10 @@ ol li::before {
   align-content: flex-start;
 }
 
+#cashier {
+  padding: 1rem 0;
+}
+
 .swap-input {
   display: grid;
   grid-template-columns: 6rem 1fr;
@@ -1503,6 +1507,7 @@ fieldset legend {
 .cashier-request {
   display: grid;
   gap: 0.5rem 1rem;
+  padding: 1rem 0;
   grid-template-columns: auto 1fr auto;
   grid-template-areas: "mode details status" "mode . status";
 }
