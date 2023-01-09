@@ -284,7 +284,7 @@
             <div id="wallet_section">
                 <div class="grid gap-1">
                     <div class="flex align-center space-between">
-                        <h3>My balance</h3>
+                        <h4>My balance</h4>
                         <div class="multi-state-button">
                             <button class="button button--small" onclick="refreshBalance(this)">Refresh</button>
                         </div>
@@ -2024,7 +2024,7 @@
                     getRef('generated_private_key').value = privKey
                     break;
                 case 'home':
-                    if (!floGlobals.isMobileView && floGlobals.isSubAdmin) {
+                    if (!floGlobals.isMobileView && !floGlobals.isSubAdmin) {
                         renderElem(getRef('recent_transactions'), html`<sm-spinner></sm-spinner>`)
                         getTransactionsHistory({ limit: 5 }).then(transactions => {
                             renderElem(getRef('recent_transactions'), html`${transactions.map(transaction => render.transactionCard(transaction))}`)
