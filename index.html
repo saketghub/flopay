@@ -1210,8 +1210,8 @@
                 <h4 class="margin-bottom-0-5">Receivers</h4>
                 <div id="receiver_container">
                     <fieldset class="receiver-card">
-                        <sm-input class="receiver-input" placeholder="Receiver address" data-btc-address
-                            error-text="Invalid BTC address" animate required></sm-input>
+                        <sm-input class="receiver-input" placeholder="Receiver address" data-bc-address
+                            error-text="Invalid address" animate required></sm-input>
                         <div class="flex align-start gap-0-5 remove-card-wrapper">
                             <sm-input type="number" class="amount-input w-100" placeholder="Amount" min="0.0000001"
                                 step="0.00000001" error-text="Invalid amount" animate required>
@@ -1241,7 +1241,7 @@
                     </svg>
                     Add receiver</button>
             </div>
-            <div class="grid gap-0-5">
+            <div id="fees_section" class="grid gap-0-5">
                 <div class="flex align-center space-between">
                     <h4>Fees</h4>
                     <sm-chips id="fees_selector">
@@ -1267,7 +1267,8 @@
                     </div>
                 </sm-input>
             </div>
-            <div class="multi-state-button margin-bottom-1-5">
+            <div id="error_section" class="hidden"></div>
+            <div class="multi-state-button">
                 <button id="send_transaction" type="submit" class="button button--primary cta w-100"
                     disabled>Send</button>
             </div>
@@ -1505,8 +1506,8 @@
     </template>
     <template id="receiver_template">
         <fieldset class="receiver-card">
-            <sm-input class="receiver-input" placeholder="Receiver address" data-btc-address
-                error-text="Invalid BTC address" animate required></sm-input>
+            <sm-input class="receiver-input" placeholder="Receiver address" data-bc-address error-text="Invalid address"
+                animate required></sm-input>
             <div class="flex align-start gap-0-5 remove-card-wrapper">
                 <sm-input type="number" class="amount-input w-100" placeholder="Amount" min="0.0000001"
                     step="0.00000001" error-text="Invalid amount" animate required>
@@ -1714,9 +1715,6 @@
                         getRef('select_withdraw_upi_id').parentNode.classList.remove('hidden')
                     }
                     break;
-                case 'send_btc_popup':
-                    calculateBtcFees();
-                    break;
                 case 'profile_popup':
                     renderElem(getRef('profile_popup__content'), render.profile())
                     renderSavedUpiIds('saved_upi_ids_list')
@@ -1913,6 +1911,7 @@
             }
             document.body.classList.remove('hidden')
             document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
+            getRef('receiver_container').querySelectorAll('sm-input[data-bc-address]').forEach(input => input.customValidation = btcOperator.validateAddress)
             document.addEventListener('keyup', (e) => {
                 if (e.key === 'Escape') {
                     closePopup()
@@ -2919,6 +2918,8 @@
                 }
                 document.body.style.overflow = 'hidden';
                 document.body.style.top = `-${window.scrollY}px`;
+                getRef('home').style.filter = `blur(0.5rem)`
+                getRef('home').inert = true;
             } else {
                 closeNotificationPanel()
             }
@@ -2950,6 +2951,8 @@
             document.body.style.overflow = '';
             document.body.style.top = 'initial';
             document.removeEventListener('click', closeNotificationPanel)
+            getRef('home').style.filter = ``
+            getRef('home').inert = false;
         }
 
         function addNotificationBadge(elem, text) {
@@ -3187,8 +3190,11 @@
             const formattingOptions = {
                 currency
             }
-            if (currency === 'inr')
+            if (currency === 'inr') {
                 formattingOptions.style = 'currency';
+            } else if (currency === 'btc') {
+                formattingOptions.maximumFractionDigits = 8;
+            }
             return amount.toLocaleString(currency === 'inr' ? `en-IN` : 'en-US', formattingOptions)
         }
 
@@ -4043,14 +4049,30 @@
                 }).catch(error => reject(error))
             })
         }
-        function calculateBtcFees() {
-            fetch('https://bitcoiner.live/api/fees/estimates/latest').then(res => res.json()).then(data => {
-                const satPerByte = data.estimates['60'].sat_per_vbyte;
-                const legacyBytes = 200;
-                const segwitBytes = 77;
-                const fees = (legacyBytes * satPerByte + (0.25 * satPerByte) * segwitBytes) / Math.pow(10, 8);
-                getRef('send_fee').value = fees.toFixed(8);
+        async function calculateBtcFees() {
+            getRef('send_transaction').disabled = true;
+            getRef('fees_section').classList.add('hidden')
+            getRef('error_section').classList.remove('hidden')
+            renderElem(getRef('error_section'), html`<div class="flex align-center gap-0-5" style="font-size:0.9rem"><sm-spinner></sm-spinner> Calculating fees...</div>`)
+            const [senders, privKeys, receivers, amounts] = await getTransactionInputs().catch(e => {
+                console.error(e)
+                return [[], [], [], []]
+            });
+            btcOperator.createSignedTx(senders, privKeys, receivers, amounts).then(({ fee }) => {
+                getRef('send_fee').value = fee.toFixed(8);
+                getRef('fees_section').classList.remove('hidden')
+                getRef('error_section').classList.add('hidden')
+                getRef('send_transaction').disabled = false;
             }).catch(e => {
+                getRef('fees_section').classList.add('hidden')
+                getRef('error_section').classList.remove('hidden')
+                renderElem(getRef('error_section'), html`
+                    <p id="selected_fee_tip" class="error flex align-center gap-0-5">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+                        ${e}
+                        </p>
+                        `)
+                getRef('send_transaction').disabled = true;
                 console.error(e)
             })
         }
@@ -4104,10 +4126,12 @@
             }
             receiverCard.querySelector('.currency-symbol').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg>`
             getRef('receiver_container').appendChild(receiverCard);
-            getRef('receiver_container').querySelectorAll('sm-input[data-btc-address]').forEach(input => input.customValidation = btcOperator.validateAddress)
+            getRef('receiver_container').querySelectorAll('sm-input[data-bc-address]').forEach(input => input.customValidation = btcOperator.validateAddress)
+            getRef('send_tx')._checkValidity()
         }
         delegate(getRef('receiver_container'), 'click', '.remove-card', e => {
             e.target.closest('.receiver-card').remove()
+            getRef('send_tx')._checkValidity()
         })
 
         getRef('fees_selector').addEventListener('change', e => {
@@ -4126,17 +4150,30 @@
                     break;
             }
         })
+        async function getTransactionInputs() {
+            const privateKey = await floDapps.user.private.catch(err => console.log(err));
+            const privKeys = btcOperator.convert.wif(privateKey);
+            const senders = floGlobals.myBtcID;
+            const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
+            const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
+                return parseFloat(input.value.trim())
+            });
+            return [senders, privKeys, receivers, amounts]
+        }
 
+        getRef('receiver_container').addEventListener('input', debounce(e => {
+            const allValid = [...getRef('receiver_container').querySelectorAll('sm-input')].every(input => input.isValid)
+            if (allValid) {
+                calculateBtcFees()
+            } else {
+                getRef('send_transaction').disabled = true;
+            }
+        }, 300))
 
         getRef('send_transaction').onclick = evt => {
             buttonLoader('send_transaction', true)
-            floDapps.user.private.then(privateKey => {
-                const privKeys = btcOperator.convert.wif(privateKey);
-                const senders = floGlobals.myBtcID;
-                const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
-                const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
-                    return parseFloat(input.value.trim())
-                });
+            floDapps.user.private.then(async privateKey => {
+                const [senders, privKeys, receivers, amounts] = await getTransactionInputs().catch(err => console.log(err));
                 const fee = parseFloat(getRef('send_fee').value.trim());
                 console.debug(senders, receivers, amounts, fee);
                 btcOperator.sendTx(senders, privKeys, receivers, amounts, fee).then(result => {

@@ -140,6 +140,7 @@ button {
 
 button:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
 }
 
 details summary {
@@ -161,7 +162,7 @@ details[open] {
 
 sm-input,
 sm-textarea {
-  --border-radius: 0.3rem;
+  --border-radius: 0.5rem;
   --background-color: rgba(var(--foreground-color), 1);
   button {
     .icon {
@@ -709,13 +710,12 @@ ol {
   top: 0;
   right: 0;
   font-size: 0.8rem;
-  padding: 0.3rem;
+  padding: 0.1rem 0.3rem;
   background: var(--danger-color);
   color: rgba(var(--background-color), 1);
   aspect-ratio: 1/1;
   font-weight: 700;
   border-radius: 0.3rem;
-  margin: 0.3rem;
 }
 .inner-page {
   display: flex;
@@ -760,6 +760,7 @@ ol {
   gap: 3rem;
   overflow-y: visible;
   align-content: initial;
+  transition: filter 0.3s;
   & > * {
     align-content: flex-start;
   }
@@ -933,8 +934,18 @@ ol {
     fill: rgba(0, 0, 0, 0.8);
   }
 }
+
 .remove-card-wrapper {
   min-height: 2rem;
+}
+#selected_fee_tip {
+  font-weight: 500;
+  &.error {
+    color: var(--danger-color);
+    .icon {
+      fill: var(--danger-color);
+    }
+  }
 }
 .receiver-card {
   display: grid;
