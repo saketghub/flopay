@@ -172,6 +172,11 @@ details[open] > summary .down-arrow {
   transform: rotate(180deg);
 }
 
+sm-popup::part(backdrop) {
+  -webkit-backdrop-filter: blur(0.5rem);
+          backdrop-filter: blur(0.5rem);
+}
+
 sm-input,
 sm-textarea {
   --border-radius: 0.5rem;
@@ -963,7 +968,7 @@ ol li::before {
 }
 
 .wallet-action {
-  gap: 0.5rem;
+  gap: 1rem;
   flex-direction: column;
   align-items: center;
   font-size: 0.8rem;

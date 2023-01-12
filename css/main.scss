@@ -159,6 +159,11 @@ details[open] {
     transform: rotate(180deg);
   }
 }
+sm-popup {
+  &::part(backdrop) {
+    backdrop-filter: blur(0.5rem);
+  }
+}
 
 sm-input,
 sm-textarea {
@@ -884,7 +889,7 @@ ol {
   }
 }
 .wallet-action {
-  gap: 0.5rem;
+  gap: 1rem;
   flex-direction: column;
   align-items: center;
   font-size: 0.8rem;
