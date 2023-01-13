@@ -741,7 +741,7 @@
                 <div class="grid gap-1"></div>
             </div>
         </div>
-        <nav id="bottom_nav" class="hide-on-desktop">
+        <nav id="bottom_nav" class="hide-on-desktop user-element">
             <ul>
                 <li>
                     <a href="#/home" class="nav-item nav-item--active">
@@ -1910,6 +1910,7 @@
                 notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
             }
             document.body.classList.remove('hidden')
+            handleMobileChange(mobileQuery)
             document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
             getRef('receiver_container').querySelectorAll('sm-input[data-bc-address]').forEach(input => input.customValidation = btcOperator.validateAddress)
             document.addEventListener('keyup', (e) => {
@@ -1969,6 +1970,7 @@
         }
         const generalPages = ['sign_up', 'sign_in', 'loading', 'landing']
         async function routeTo(targetPage, options = {}) {
+            console.log('route to', targetPage)
             const { firstLoad, hashChange } = options
             let pageId
             let params = {}
@@ -2206,7 +2208,8 @@
                 const targetListItem = [...document.querySelectorAll(`a.nav-item`)].find(item => item.href.includes(pageId))
                 if (targetListItem) {
                     targetListItem.classList.add('nav-item--active')
-                    getRef('bottom_nav').classList.remove('hidden')
+                    if (!floGlobals.isSubAdmin)
+                        getRef('bottom_nav').classList.remove('hidden')
                 } else {
                     getRef('bottom_nav').classList.add('hidden')
                 }
@@ -2493,10 +2496,10 @@
         const mobileQuery = window.matchMedia('(max-width: 40rem)')
         function handleMobileChange(e) {
             floGlobals.isMobileView = e.matches
-            routeTo(window.location.hash)
+            if (floGlobals.loaded)
+                routeTo(window.location.hash)
         }
         mobileQuery.addEventListener('change', handleMobileChange)
-        handleMobileChange(mobileQuery)
         const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         reduceMotionQuery.addEventListener('change', () => {
             floGlobals.prefersReducedMotion = reduceMotionQuery.matches

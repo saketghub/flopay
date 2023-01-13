@@ -1680,7 +1680,10 @@ fieldset legend {
 }
 
 @media screen and (max-width: 40rem) {
-  #home {
+  #home.is-sub-admin {
+    align-content: flex-start;
+  }
+  #home:not(.is-sub-admin) {
     padding-bottom: 3rem;
   }
   #home > * {

@@ -1565,7 +1565,12 @@ fieldset {
 }
 @media screen and (max-width: 40rem) {
   #home {
-    padding-bottom: 3rem;
+    &.is-sub-admin {
+      align-content: flex-start;
+    }
+    &:not(.is-sub-admin) {
+      padding-bottom: 3rem;
+    }
     > * {
       padding: 0 1rem;
     }
