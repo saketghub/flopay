@@ -1984,17 +1984,9 @@
                 }
             } else {
                 if (targetPage.includes('/')) {
-                    if (targetPage.includes('?')) {
-                        const splitAddress = targetPage.split('?')
-                        searchParams = splitAddress.pop()
-                        const pages = splitAddress.pop().split('/')
-                        pageId = pages[1]
-                        subPageId = pages[2]
-                    } else {
-                        const pages = targetPage.split('/')
-                        pageId = pages[1]
-                        subPageId = pages[2]
-                    }
+                    let path;
+                    [path, searchParams] = targetPage.split('?');
+                    [, pageId] = path.split('/')
                 } else {
                     pageId = targetPage
                 }
