@@ -1839,3 +1839,28 @@ button:not([disabled], .button--primary, .button--danger):hover,
 .hidden {
   display: none !important;
 }
+
+#adblocker_warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(var(--foreground-color), 1);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+#adblocker_warning:empty {
+  display: none;
+}
+#adblocker_warning .icon {
+  height: 4rem;
+  width: 4rem;
+  fill: #ffc107;
+}
