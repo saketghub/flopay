@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.3.3d
+(function (EXPORTS) { //floBlockchainAPI v2.3.3e
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -6,7 +6,7 @@
     const DEFAULT = {
         blockchain: floGlobals.blockchain,
         apiURL: {
-            FLO: ['https://flosight.duckdns.org/'],
+            FLO: ['https://flosight.duckdns.org/', 'https://flosight.ranchimall.net/'],
             FLO_TEST: ['https://testnet-flosight.duckdns.org', 'https://testnet.flocha.in/']
         },
         sendAmt: 0.001,
