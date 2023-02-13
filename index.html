@@ -202,31 +202,7 @@
             </section>
         </article>
         <article id="sign_up" class="inner-page hidden">
-            <section class="grid">
-                <div id="flo_id_warning" class="grid justify-center gap-0-5">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
-                        fill="#000000">
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-                    </svg>
-                    <h3>Keep your keys safe!</h3>
-                    <strong>Don't share with anyone. Once lost private key can't be
-                        recovered.</strong>
-                </div>
-                <div class="grid gap-1-5 card">
-                    <div class="grid gap-0-5">
-                        <h5>FLO address</h5>
-                        <sm-copy id="generated_flo_id"></sm-copy>
-                    </div>
-                    <div class="grid gap-0-5">
-                        <h5>Private key</h5>
-                        <sm-copy id="generated_private_key"></sm-copy>
-                    </div>
-                </div>
-                <button id="sign_up_button" class="button button--primary">Sign in with these credentials</button>
-                <p style="margin-top: 2rem;">You can use these FLO credentials with FLOpay other RanchiMall apps
-                    too. </p>
-            </section>
+            <keys-generator id="keys_generator"></keys-generator>
         </article>
         <div id="loading" class="inner-page flex align-center justify-center">
             <div class="grid gap-1 text-center justify-items-center">
@@ -2035,9 +2011,7 @@
                     }, 0);
                     break;
                 case 'sign_up':
-                    const { floID, privKey } = floCrypto.generateNewID()
-                    getRef('generated_flo_id').value = floID
-                    getRef('generated_private_key').value = privKey
+                    getRef('keys_generator').generateKeys()
                     break;
                 case 'home':
                     if (!floGlobals.isMobileView && !floGlobals.isSubAdmin) {
@@ -2519,7 +2493,79 @@
         reduceMotionQuery.addEventListener('change', () => {
             floGlobals.prefersReducedMotion = reduceMotionQuery.matches
         });
-        floGlobals.prefersReducedMotion = reduceMotionQuery.matches  
+        floGlobals.prefersReducedMotion = reduceMotionQuery.matches
+
+        const generateKeys = document.createElement('template')
+        generateKeys.innerHTML = `
+            <style>
+                :host{
+                    display: flex;
+                    justify-content: center;
+                }
+                .generated-keys-wrapper {
+                    padding: 1rem;
+                    background-color: rgba(var(--foreground-color), 1);
+                    border-radius: 0.5rem;
+                }
+                #flo_id_warning{
+                    padding-bottom: 1.5rem;
+                }
+                #flo_id_warning .icon {
+                    height: 3rem;
+                    width: 3rem;
+                    padding: 0.8rem;
+                    overflow: visible;
+                    background-color: #ffc107;
+                    border-radius: 3rem;
+                    fill: rgba(0, 0, 0, 0.8);
+                }
+            </style>     
+            <section class="grid gap-1-5">
+                <div id="flo_id_warning" class="flex gap-1">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /> </svg>
+                    <div class="grid gap-0-5">
+                        <strong>
+                            <h3> Keep your keys safe! </h3>
+                        </strong>
+                        <p>Don't share with anyone. Once lost private key can't be recovered.</p>
+                    </div>
+                </div>
+                <div class="grid gap-1-5 generated-keys-wrapper">
+                    <div class="grid gap-0-5">
+                        <h5>FLO address</h5>
+                        <sm-copy id="generated_flo_address"></sm-copy>
+                    </div>
+                    <div class="grid gap-0-5">
+                        <h5>Private key</h5>
+                        <sm-copy id="generated_private_key"></sm-copy>
+                    </div>
+                </div>
+                <button id="sign_up_button" class="button button--primary w-100">Sign in with these credentials</button>
+                <p class="margin-top-1">You can use these FLO credentials with other RanchiMall apps too. </p>
+            </section>
+        `
+        window.customElements.define('keys-generator', class extends HTMLElement {
+            constructor() {
+                super();
+                this.appendChild(generateKeys.content.cloneNode(true));
+            }
+            get keys() {
+                return {
+                    floID: this.querySelector('#generated_flo_address').value,
+                    privKey: this.querySelector('#generated_private_key').value
+                }
+            }
+
+            generateKeys() {
+                const { floID, privKey } = floCrypto.generateNewID()
+                this.querySelector('#generated_flo_address').value = floID
+                this.querySelector('#generated_private_key').value = privKey
+            }
+            clearKeys() {
+                this.querySelector('#generated_flo_address').value = ''
+                this.querySelector('#generated_private_key').value = ''
+            }
+        });
     </script>
     <script>
         /*jshint esversion: 8 */
@@ -3994,8 +4040,8 @@
                         routeTo('loading');
                     };
                     getRef('sign_up_button').onclick = () => {
-                        resolve(getRef('generated_private_key').value.trim());
-                        getRef('generated_private_key').value = '';
+                        resolve(getRef('keys_generator').keys.privKey);
+                        getRef('keys_generator').clearKeys();
                         routeTo('loading');
                     };
                 }
