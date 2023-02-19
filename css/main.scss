@@ -50,9 +50,6 @@ body[data-theme="dark"] {
   --danger-color: rgb(255, 106, 106);
   --green: #00e676;
   --yellow: rgb(255, 213, 5);
-  sm-popup::part(popup) {
-    background-color: rgba(var(--foreground-color), 1);
-  }
 }
 
 p,
@@ -160,6 +157,9 @@ details[open] {
   }
 }
 sm-popup {
+  &::part(popup) {
+    background-color: rgba(var(--foreground-color), 1);
+  }
   &::part(backdrop) {
     backdrop-filter: blur(0.5rem);
   }
@@ -930,14 +930,26 @@ ol {
 .remove-card-wrapper {
   min-height: 2rem;
 }
-#selected_fee_tip {
+#selected_fee_tip,
+#error_section {
   font-weight: 500;
-  &.error {
-    color: var(--danger-color);
-    .icon {
-      fill: var(--danger-color);
-    }
+}
+.error {
+  color: var(--danger-color);
+  .icon {
+    fill: var(--danger-color);
   }
+}
+#send_fee_wrapper {
+  display: grid;
+  & > * {
+    grid-area: 1/1;
+  }
+}
+#send_fee_loader {
+  background-color: rgba(var(--foreground-color), 1);
+  z-index: 1;
+  width: 100%;
 }
 .receiver-card {
   display: grid;

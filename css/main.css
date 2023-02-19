@@ -52,9 +52,6 @@ body[data-theme=dark] {
   --green: #00e676;
   --yellow: rgb(255, 213, 5);
 }
-body[data-theme=dark] sm-popup::part(popup) {
-  background-color: rgba(var(--foreground-color), 1);
-}
 
 p,
 strong {
@@ -172,6 +169,9 @@ details[open] > summary .down-arrow {
   transform: rotate(180deg);
 }
 
+sm-popup::part(popup) {
+  background-color: rgba(var(--foreground-color), 1);
+}
 sm-popup::part(backdrop) {
   -webkit-backdrop-filter: blur(0.5rem);
           backdrop-filter: blur(0.5rem);
@@ -1015,14 +1015,29 @@ ol li::before {
   min-height: 2rem;
 }
 
-#selected_fee_tip {
+#selected_fee_tip,
+#error_section {
   font-weight: 500;
 }
-#selected_fee_tip.error {
+
+.error {
   color: var(--danger-color);
 }
-#selected_fee_tip.error .icon {
+.error .icon {
   fill: var(--danger-color);
+}
+
+#send_fee_wrapper {
+  display: grid;
+}
+#send_fee_wrapper > * {
+  grid-area: 1/1;
+}
+
+#send_fee_loader {
+  background-color: rgba(var(--foreground-color), 1);
+  z-index: 1;
+  width: 100%;
 }
 
 .receiver-card {
