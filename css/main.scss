@@ -263,7 +263,6 @@ ol {
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
-  hyphens: auto;
 }
 
 .full-bleed {
@@ -1170,9 +1169,11 @@ fieldset {
 .transaction {
   grid-template-columns: auto 1fr auto;
   gap: 0.5rem 1rem;
-  align-items: center;
-  &__amount {
-    white-space: nowrap;
+  align-items: flex-start;
+  .button {
+    min-width: auto;
+    white-space: normal;
+    text-align: start;
   }
   &.sent {
     .icon--tx-type {
@@ -1198,7 +1199,6 @@ fieldset {
   }
   &__icon {
     position: relative;
-    grid-area: icon;
     display: grid;
     align-items: center;
     justify-content: center;
@@ -1206,7 +1206,6 @@ fieldset {
     height: 2.5rem;
     background-color: rgba(var(--text-color), 0.03);
     border-radius: 2rem;
-    grid-area: 1/1/3/2;
     & > * {
       grid-area: 1/1;
     }
@@ -1223,6 +1222,7 @@ fieldset {
     }
   }
   &__receiver {
+    font-size: 0.9rem;
     font-weight: 500;
   }
   &__time {
@@ -1230,18 +1230,20 @@ fieldset {
     color: rgba(var(--text-color), 0.8);
   }
   &__amount {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    grid-area: 1/3/3/4;
+    white-space: nowrap;
   }
 }
 .btc-tx {
-  grid-template-columns: auto 1fr auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 0.5rem 1rem;
-  align-items: center;
-  grid-template-areas: "icon time amount" "icon receiver receiver" "icon txid txid";
-  &__amount {
-    white-space: nowrap;
+  align-items: flex-start;
+  .button {
+    min-width: auto;
+    white-space: normal;
+    text-align: start;
   }
   &.out {
     .icon--tx-type {
@@ -1266,14 +1268,12 @@ fieldset {
     }
   }
   &.unconfirmed-tx {
-    grid-template-areas: "icon time amount" "icon receiver receiver" "icon txid txid" "icon unconfirmed unconfirmed" "icon badge badge";
     .icon {
       fill: var(--yellow);
     }
   }
   &__icon {
     position: relative;
-    grid-area: icon;
     display: grid;
     align-items: center;
     justify-content: center;
@@ -1297,37 +1297,30 @@ fieldset {
     }
   }
   &__receiver {
-    grid-area: receiver;
+    font-size: 0.9rem;
     font-weight: 500;
   }
   &__time {
-    grid-area: time;
     font-size: 0.8rem;
     color: rgba(var(--text-color), 0.8);
   }
   &__amount {
-    grid-area: amount;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 500;
+    white-space: nowrap;
   }
   &__id {
-    grid-area: txid;
     font-size: 0.8rem;
     color: rgba(var(--text-color), 0.8);
   }
-  .unconfirmed-wrapper {
-    grid-area: unconfirmed;
-    padding: 0.5rem 0;
-  }
   .pending-badge {
-    grid-area: badge;
     font-size: 0.8rem;
     padding: 0.2rem 0.5rem;
     border-radius: 0.5rem;
     background-color: var(--yellow);
     color: rgba(var(--foreground-color), 1);
     font-weight: 500;
-    justify-self: flex-start;
+    align-self: flex-start;
   }
 }
 .fab {

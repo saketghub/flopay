@@ -284,8 +284,6 @@ ol li::before {
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
-  -webkit-hyphens: auto;
-          hyphens: auto;
 }
 
 .full-bleed {
@@ -1273,10 +1271,12 @@ fieldset legend {
 .transaction {
   grid-template-columns: auto 1fr auto;
   gap: 0.5rem 1rem;
-  align-items: center;
+  align-items: flex-start;
 }
-.transaction__amount {
-  white-space: nowrap;
+.transaction .button {
+  min-width: auto;
+  white-space: normal;
+  text-align: start;
 }
 .transaction.sent .icon--tx-type {
   fill: var(--danger-color);
@@ -1298,7 +1298,6 @@ fieldset legend {
 }
 .transaction__icon {
   position: relative;
-  grid-area: icon;
   display: grid;
   align-items: center;
   justify-content: center;
@@ -1306,7 +1305,6 @@ fieldset legend {
   height: 2.5rem;
   background-color: rgba(var(--text-color), 0.03);
   border-radius: 2rem;
-  grid-area: 1/1/3/2;
 }
 .transaction__icon > * {
   grid-area: 1/1;
@@ -1323,6 +1321,7 @@ fieldset legend {
   border: solid medium rgba(var(--foreground-color), 1);
 }
 .transaction__receiver {
+  font-size: 0.9rem;
   font-weight: 500;
 }
 .transaction__time {
@@ -1330,19 +1329,21 @@ fieldset legend {
   color: rgba(var(--text-color), 0.8);
 }
 .transaction__amount {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  grid-area: 1/3/3/4;
+  white-space: nowrap;
 }
 
 .btc-tx {
-  grid-template-columns: auto 1fr auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 0.5rem 1rem;
-  align-items: center;
-  grid-template-areas: "icon time amount" "icon receiver receiver" "icon txid txid";
+  align-items: flex-start;
 }
-.btc-tx__amount {
-  white-space: nowrap;
+.btc-tx .button {
+  min-width: auto;
+  white-space: normal;
+  text-align: start;
 }
 .btc-tx.out .icon--tx-type {
   fill: var(--danger-color);
@@ -1362,15 +1363,11 @@ fieldset legend {
 .btc-tx.in .btc-tx__amount::before {
   content: "+ ";
 }
-.btc-tx.unconfirmed-tx {
-  grid-template-areas: "icon time amount" "icon receiver receiver" "icon txid txid" "icon unconfirmed unconfirmed" "icon badge badge";
-}
 .btc-tx.unconfirmed-tx .icon {
   fill: var(--yellow);
 }
 .btc-tx__icon {
   position: relative;
-  grid-area: icon;
   display: grid;
   align-items: center;
   justify-content: center;
@@ -1394,37 +1391,30 @@ fieldset legend {
   border: solid medium rgba(var(--foreground-color), 1);
 }
 .btc-tx__receiver {
-  grid-area: receiver;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 .btc-tx__time {
-  grid-area: time;
   font-size: 0.8rem;
   color: rgba(var(--text-color), 0.8);
 }
 .btc-tx__amount {
-  grid-area: amount;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 .btc-tx__id {
-  grid-area: txid;
   font-size: 0.8rem;
   color: rgba(var(--text-color), 0.8);
 }
-.btc-tx .unconfirmed-wrapper {
-  grid-area: unconfirmed;
-  padding: 0.5rem 0;
-}
 .btc-tx .pending-badge {
-  grid-area: badge;
   font-size: 0.8rem;
   padding: 0.2rem 0.5rem;
   border-radius: 0.5rem;
   background-color: var(--yellow);
   color: rgba(var(--foreground-color), 1);
   font-weight: 500;
-  justify-self: flex-start;
+  align-self: flex-start;
 }
 
 .fab {
