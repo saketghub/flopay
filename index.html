@@ -3718,13 +3718,13 @@
                     resolve([])
                     return;
                 }
-                getAddressDetails(floGlobals.myBtcID).then(({ txs }) => {
+                btcOperator.getAddressData(floGlobals.myBtcID).then(({ txs }) => {
                     console.log(txs)
                     let allTransactions = []
                     let propToCheck = false
-                    if (type === 'sent')
+                    if (type === 'out')
                         propToCheck = 'out';
-                    else if (type === 'received')
+                    else if (type === 'in')
                         propToCheck = 'in';
                     else if (type === 'self')
                         propToCheck = 'self';
@@ -4156,51 +4156,6 @@
                         location.reload();
                     }
                 });
-        }
-        function getAddressDetails(address) {
-            return new Promise((resolve, reject) => {
-                btcOperator.getAddressData(address).then(data => {
-                    console.debug(data);
-                    let details = {};
-                    details.balance = data.balance;
-                    details.address = data.address;
-                    details.txs = data.txs.map(tx => {
-                        let d = {
-                            txid: tx.txid,
-                            time: tx.time,
-                            block: tx.block
-                        }
-                        if (tx.outgoing) {
-                            d.type = "out";
-                            d.amount = 0;
-                            d.receiver = new Set();
-                            let change = 0;
-                            tx.outgoing.outputs.forEach(o => {
-                                if (o.address !== address) {
-                                    d.receiver.add(o.address)
-                                    d.amount += parseFloat(o.value)
-                                } else
-                                    change += parseFloat(o.value)
-                            });
-                            d.receiver = Array.from(d.receiver);
-                            d.amount = parseFloat(d.amount.toFixed(8))
-                            d.fee = parseFloat((tx.outgoing.value - (d.amount + change)).toFixed(8))
-                            if (!d.amount && change > 0) {
-                                d.type = "self";
-                                d.amount = change
-                                delete d.receiver;
-                                d.address = address;
-                            }
-                        } else if (tx.incoming) {
-                            d.type = "in";
-                            d.amount = parseFloat(tx.incoming.value);
-                            d.sender = Array.from(new Set(tx.incoming.inputs.map(i => i.address)));
-                        }
-                        return d;
-                    })
-                    resolve(details);
-                }).catch(error => reject(error))
-            })
         }
         async function calculateBtcFees() {
             const [senders, privKeys, receivers, amounts] = await getTransactionInputs().catch(e => {
