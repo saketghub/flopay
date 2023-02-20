@@ -968,7 +968,7 @@
                     </label>
                 </div>
             </fieldset>
-            <div class="flex align-center space-between">
+            <div class="flex align-center space-between gap-0-5">
                 <button class="button" onclick="resetPaymentsFilters()">Reset</button>
                 <button class="button button--primary cta" onclick="applyPaymentsFilters()">Filter</button>
             </div>
@@ -2023,7 +2023,14 @@
                         getTransactionsHistory({ limit: 5 }).then(transactions => {
                             renderElem(getRef('recent_transactions'), html`${transactions.map(transaction => render.transactionCard(transaction))}`)
                         }).catch(e => {
-                            console.log(e)
+                            console.error(e)
+                            getRef('recent_transactions').parentNode.querySelector('a').classList.add('hidden')
+                            renderElem(getRef('recent_transactions'), html`
+                                <div class="grid gap-0-5">
+                                    <h4>Oops!</h4>
+                                    <p>Looks like we couldn't fetch your transactions at this time. Please try again later.</p>
+                                </div>
+                            `)
                         })
                         render.savedIds()
                     }
@@ -3519,7 +3526,7 @@
                         icon = svg`<svg class="icon icon--tx-type" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
                     } else if (type === 'self') {
                         transactionReceiver = `Sent to self`;
-                        icon = svg`<svg class="icon icon--tx-type" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+                        icon = svg`<svg class="icon icon--tx-type" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M18.65 8.35l-2.79 2.79c-.32.32-.1.86.35.86H18c0 3.31-2.69 6-6 6-.79 0-1.56-.15-2.25-.44-.36-.15-.77-.04-1.04.23-.51.51-.33 1.37.34 1.64.91.37 1.91.57 2.95.57 4.42 0 8-3.58 8-8h1.79c.45 0 .67-.54.35-.85l-2.79-2.79c-.19-.2-.51-.2-.7-.01zM6 12c0-3.31 2.69-6 6-6 .79 0 1.56.15 2.25.44.36.15.77.04 1.04-.23.51-.51.33-1.37-.34-1.64C14.04 4.2 13.04 4 12 4c-4.42 0-8 3.58-8 8H2.21c-.45 0-.67.54-.35.85l2.79 2.79c.2.2.51.2.71 0l2.79-2.79c.31-.31.09-.85-.36-.85H6z"/></svg>`;
                     }
                 } else {
                     transactionReceiver = (type === 'out' ? `Sent to ${receiver}` : `Received from ${sender}`);
@@ -3555,7 +3562,10 @@
                     } else {
                         getRef('payments_history').textContent = 'No transactions found';
                     }
-                }).catch(error => console.error(error))
+                }).catch(error => {
+                    getRef('payments_history').textContent = 'Unable to fetch transactions';
+                    console.error(error)
+                })
             },
             async savedIds() {
                 let target = 'saved_ids_list';
@@ -3719,23 +3729,17 @@
                     return;
                 }
                 btcOperator.getAddressData(floGlobals.myBtcID).then(({ txs }) => {
-                    console.log(txs)
-                    let allTransactions = []
                     let propToCheck = false
-                    if (type === 'out')
+                    if (type === 'sent')
                         propToCheck = 'out';
-                    else if (type === 'in')
+                    else if (type === 'received')
                         propToCheck = 'in';
-                    else if (type === 'self')
-                        propToCheck = 'self';
-                    for (let i = 0; i < txs.length; i++) {
-                        const tx = txs[i];
+                    let allTransactions = txs.filter(tx => {
                         tx.asset = 'btc';
                         if (propToCheck)
-                            if (tx.type !== propToCheck)
-                                continue;
-                        allTransactions.push(tx)
-                    }
+                            return (tx.type === propToCheck)
+                        return true;
+                    })
                     resolve(allTransactions)
                 }).catch(error => reject(error))
             })
