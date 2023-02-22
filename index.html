@@ -4374,6 +4374,7 @@
                     getRef('send_fee').readOnly = false;
                     getRef('send_fee').placeholder = 'Fee';
                     renderElem(getRef('selected_fee_tip'), html`Set custom fee`)
+                    feeMemo.memoized = false
                     break;
                 case 'suggested':
                     calculateFees();
@@ -4411,8 +4412,14 @@
         }
 
         getRef('receiver_container').addEventListener('input', debounce(calculateFees, 300))
-
+        let feeMemo = {
+            memoized: false,
+            memoizedFee: 0
+        };
         function calculateFees() {
+            if (getRef('fees_selector').value === 'custom') return;
+            const allValid = [...getRef('receiver_container').querySelectorAll('sm-input')].every(input => input.isValid)
+            if (!allValid && feeMemo.memoized) return;
             getRef('fees_selector').children[0].click();
             getRef('fees_selector').classList.remove('hidden')
             getRef('send_transaction').disabled = true;
@@ -4426,7 +4433,6 @@
             getRef('send_fee_loader').animate(fadeIn, animOptions)
             getRef('fees_section').classList.remove('hidden')
             getRef('error_section').classList.add('hidden')
-            const allValid = [...getRef('receiver_container').querySelectorAll('sm-input')].every(input => input.isValid)
             if (allValid) {
                 getRef('send_fee').placeholder = 'Fee'
                 calculateBtcFees().then(({ fee }) => {
@@ -4448,11 +4454,17 @@
                         getRef('send_fee_loader').classList.add('hidden')
 
                 })
+                feeMemo.memoized = false;
             } else {
                 getRef('send_fee').placeholder = 'Approximate fee'
                 renderElem(getRef('selected_fee_tip'), html` <p style="opacity: 0.8;">*Fill out all fields for exact fee!</p> `)
+                if (feeMemo.memoized) {
+                    getRef('send_fee').value = feeMemo.memoizedFee.toFixed(8);
+                    return;
+                }
                 calculateApproxFee().then(fee => {
                     getRef('send_fee').value = fee.toFixed(8);
+                    feeMemo.memoizedFee = fee;
                 }).catch(e => {
                     getRef('fees_selector').children[1].click();
                     getRef('fees_selector').classList.add('hidden')
@@ -4460,6 +4472,7 @@
                     getRef('send_fee_loader').animate(fadeOut, animOptions).onfinish = _ =>
                         getRef('send_fee_loader').classList.add('hidden')
                 })
+                feeMemo.memoized = true;
             }
         }
 
