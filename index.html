@@ -1554,21 +1554,8 @@
             console.log('Exchange API initialized!')
             floDapps.launchStartUp().then(result => {
                 console.log(`Welcome ${floDapps.user.id}`);
-                if (!floCrypto.validateFloID(floDapps.user.id)) {
-                    floGlobals.myBtcID = floDapps.user.id
-                    const type = coinjs.addressDecode(floGlobals.myBtcID).type
-                    if (type === 'standard') {
-                        floGlobals.myFloID = btcOperator.convert.legacy2legacy(floGlobals.myBtcID, 0x23);
-                    } else if (type === 'bech32') {
-                        floGlobals.myFloID = btcOperator.convert.bech2legacy(floGlobals.myBtcID, 0x23);
-                    } else {
-                        notify(`Multisig address can't be used to sign in`, 'error');
-                        return;
-                    }
-                } else {
-                    floGlobals.myFloID = floDapps.user.id
-                    floGlobals.myBtcID = btcOperator.convert.legacy2bech(floDapps.user.id)
-                }
+                floGlobals.myFloID = floCrypto.toFloID(floDapps.user.id);
+                floGlobals.myBtcID = btcOperator.convert.legacy2bech(floGlobals.myFloID)
                 getRef('user_profile_id').textContent = floGlobals.myFloID
                 let showingFloID = true
                 // alternating between floID and btcID every 10 seconds
