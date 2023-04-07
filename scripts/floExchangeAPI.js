@@ -1,7 +1,12 @@
 'use strict';
 
-(function(EXPORTS) { //floExchangeAPI v1.1.2
+(function (EXPORTS) { //floExchangeAPI v1.2.0
     const exchangeAPI = EXPORTS;
+
+    const DEFAULT = {
+        marketID: floGlobals.marketID || "FMxYC7gYZhouzqtHZukGnPiQ8nvG4CMzXM",
+        marketApp: "exchange"
+    }
 
     /*Kademlia DHT K-bucket implementation as a binary tree.*/
     /**
@@ -46,7 +51,7 @@
         this.arbiter = options.arbiter || this.arbiter
         this.metadata = Object.assign({}, options.metadata)
 
-        this.createNode = function() {
+        this.createNode = function () {
             return {
                 contacts: [],
                 dontSplit: false,
@@ -55,7 +60,7 @@
             }
         }
 
-        this.ensureInt8 = function(name, val) {
+        this.ensureInt8 = function (name, val) {
             if (!(val instanceof Uint8Array)) {
                 throw new TypeError(name + ' is not a Uint8Array')
             }
@@ -66,7 +71,7 @@
          * @param  {Uint8Array} array2
          * @return {Boolean}
          */
-        this.arrayEquals = function(array1, array2) {
+        this.arrayEquals = function (array1, array2) {
             if (array1 === array2) {
                 return true
             }
@@ -94,7 +99,7 @@
          * @param  {Object} candidate Contact being added to the k-bucket.
          * @return {Object}           Contact to updated the k-bucket with.
          */
-        this.arbiter = function(incumbent, candidate) {
+        this.arbiter = function (incumbent, candidate) {
             return incumbent.vectorClock > candidate.vectorClock ? incumbent : candidate
         }
 
@@ -107,7 +112,7 @@
          * @return {Number}              Integer The XOR distance between firstId
          *                               and secondId.
          */
-        this.distance = function(firstId, secondId) {
+        this.distance = function (firstId, secondId) {
             let distance = 0
             let i = 0
             const min = Math.min(firstId.length, secondId.length)
@@ -124,7 +129,7 @@
          *
          * @param {Object} contact the contact object to add
          */
-        this.add = function(contact) {
+        this.add = function (contact) {
             this.ensureInt8('contact.id', (contact || {}).id)
 
             let bitIndex = 0
@@ -172,7 +177,7 @@
          *                          closest contacts to return
          * @return {Array}          Array Maximum of n closest contacts to the node id
          */
-        this.closest = function(id, n = Infinity) {
+        this.closest = function (id, n = Infinity) {
             this.ensureInt8('id', id)
 
             if ((!Number.isInteger(n) && n !== Infinity) || n <= 0) {
@@ -204,7 +209,7 @@
          *
          * @return {Number} The number of contacts held in the tree
          */
-        this.count = function() {
+        this.count = function () {
             // return this.toArray().length
             let count = 0
             for (const nodes = [this.root]; nodes.length > 0;) {
@@ -225,7 +230,7 @@
          *                           to check in the id Uint8Array.
          * @return {Object}          left leaf if id at bitIndex is 0, right leaf otherwise.
          */
-        this._determineNode = function(node, id, bitIndex) {
+        this._determineNode = function (node, id, bitIndex) {
             // *NOTE* remember that id is a Uint8Array and has granularity of
             // bytes (8 bits), whereas the bitIndex is the bit index (not byte)
 
@@ -267,7 +272,7 @@
          * @param  {Uint8Array} id The ID of the contact to fetch.
          * @return {Object|Null}   The contact if available, otherwise null
          */
-        this.get = function(id) {
+        this.get = function (id) {
             this.ensureInt8('id', id)
 
             let bitIndex = 0
@@ -291,7 +296,7 @@
          * @return {Number}         Integer Index of contact with provided id if it
          *                          exists, -1 otherwise.
          */
-        this._indexOf = function(node, id) {
+        this._indexOf = function (node, id) {
             for (let i = 0; i < node.contacts.length; ++i) {
                 if (this.arrayEquals(node.contacts[i].id, id)) return i
             }
@@ -305,7 +310,7 @@
          * @param  {Uint8Array} id The ID of the contact to remove.
          * @return {Object}        The k-bucket itself.
          */
-        this.remove = function(id) {
+        this.remove = function (id) {
             this.ensureInt8('the id as parameter 1', id)
 
             let bitIndex = 0
@@ -332,7 +337,7 @@
          * @param  {Number} bitIndex the bitIndex to which byte to check in the
          *                           Uint8Array for navigating the binary tree
          */
-        this._split = function(node, bitIndex) {
+        this._split = function (node, bitIndex) {
             node.left = this.createNode()
             node.right = this.createNode()
 
@@ -360,7 +365,7 @@
          *
          * @return {Array} All of the contacts in the tree, as an array
          */
-        this.toArray = function() {
+        this.toArray = function () {
             let result = []
             for (const nodes = [this.root]; nodes.length > 0;) {
                 const node = nodes.pop()
@@ -386,7 +391,7 @@
          *                          calculation)
          * @param  {Object} contact The contact object to update.
          */
-        this._update = function(node, index, contact) {
+        this._update = function (node, index, contact) {
             // sanity check
             if (!this.arrayEquals(node.contacts[index].id, contact.id)) {
                 throw new Error('wrong index for _update')
@@ -405,7 +410,7 @@
     }
 
     const K_Bucket = exchangeAPI.K_Bucket = function K_Bucket(masterID, backupList) {
-        const decodeID = function(floID) {
+        const decodeID = function (floID) {
             let k = bitjs.Base58.decode(floID);
             k.shift();
             k.splice(-4, 4);
@@ -431,7 +436,7 @@
             get: () => Array.from(orderedList)
         });
 
-        self.closestNode = function(id, N = 1) {
+        self.closestNode = function (id, N = 1) {
             let decodedId = decodeID(id);
             let n = N || orderedList.length;
             let cNodes = _KB.closest(decodedId, n)
@@ -444,7 +449,7 @@
         self.isPrev = (source, target) => orderedList.indexOf(target) === orderedList.indexOf(source) - 1;
         self.isNext = (source, target) => orderedList.indexOf(target) === orderedList.indexOf(source) + 1;
 
-        self.prevNode = function(id, N = 1) {
+        self.prevNode = function (id, N = 1) {
             let n = N || orderedList.length;
             if (!orderedList.includes(id))
                 throw Error(`${id} is not in KB list`);
@@ -452,7 +457,7 @@
             return (N == 1 ? pNodes[0] : pNodes);
         };
 
-        self.nextNode = function(id, N = 1) {
+        self.nextNode = function (id, N = 1) {
             let n = N || orderedList.length;
             if (!orderedList.includes(id))
                 throw Error(`${id} is not in KB list`);
@@ -464,21 +469,38 @@
 
     var nodeList, nodeURL, nodeKBucket; //Container for (backup) node list
 
+    Object.defineProperties(exchangeAPI, {
+        adminID: {
+            get: () => DEFAULT.marketID
+        },
+        application: {
+            get: () => DEFAULT.marketApp
+        },
+        nodeList: {
+            get: () => {
+                if (Array.isArray(nodeList))
+                    return Array.from(nodeList);
+                else
+                    throw "Exchange API is not loaded";
+            }
+        }
+    });
+
     function fetch_api(api, options) {
         return new Promise((resolve, reject) => {
             let curPos = fetch_api.curPos || 0;
             if (curPos >= nodeList.length)
-                return reject(ExchangeError(ExchangeError.NODES_OFFLINE_CODE, 'No Node online! Try again later', errorCode.NODES_OFFLINE));
+                return reject(ExchangeError(ExchangeError.NODES_OFFLINE_CODE, 'No Node online! Refresh the page or try again later', errorCode.NODES_OFFLINE));
             let url = "https://" + nodeURL[nodeList[curPos]];
             (options ? fetch(url + api, options) : fetch(url + api))
-            .then(result => resolve(result)).catch(error => {
-                console.warn(nodeList[curPos], 'is offline');
-                //try next node
-                fetch_api.curPos = curPos + 1;
-                fetch_api(api, options)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
-            });
+                .then(result => resolve(result)).catch(error => {
+                    console.warn(nodeList[curPos], 'is offline');
+                    //try next node
+                    fetch_api.curPos = curPos + 1;
+                    fetch_api(api, options)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                });
         })
     }
 
@@ -497,6 +519,7 @@
         DUPLICATE_SIGNATURE: '017',
         SESSION_INVALID: '018',
         SESSION_EXPIRED: '019',
+        INVALID_VALUE: '020',
         INVALID_TOKEN_NAME: '021',
         INVALID_NUMBER: '022',
         INVALID_TYPE: '023',
@@ -513,13 +536,15 @@
         INSUFFICIENT_BALANCE: '201',
         INSUFFICIENT_SELLCHIP: '203',
         GREATER_SELLCHIP_BASE: '204',
+        INSUFFICIENT_PERIOD: '206',
+        INSUFFICIENT_FUND: '207',
 
         //OTHERS
         NODES_OFFLINE: '404',
         INTERNAL_ERROR: '500'
     };
 
-    const parseErrorCode = exchangeAPI.parseErrorCode = function(message) {
+    const parseErrorCode = exchangeAPI.parseErrorCode = function (message) {
         let code = message.match(/^E\d{3}:/g);
         if (!code || !code.length)
             return null;
@@ -546,20 +571,57 @@
         return new Promise((resolve, reject) => {
             if (!response.ok)
                 response.text()
-                .then(result => reject(ExchangeError(response.status, result)))
-                .catch(error => reject(ExchangeError(response.status, error)));
+                    .then(result => reject(ExchangeError(response.status, result)))
+                    .catch(error => reject(ExchangeError(response.status, error)));
             else if (json_)
                 response.json()
-                .then(result => resolve(result))
-                .catch(error => reject(ExchangeError(ExchangeError.BAD_RESPONSE_CODE, error)));
+                    .then(result => resolve(result))
+                    .catch(error => reject(ExchangeError(ExchangeError.BAD_RESPONSE_CODE, error)));
             else
                 response.text()
-                .then(result => resolve(result))
-                .catch(error => reject(ExchangeError(ExchangeError.BAD_RESPONSE_CODE, error)));
+                    .then(result => resolve(result))
+                    .catch(error => reject(ExchangeError(ExchangeError.BAD_RESPONSE_CODE, error)));
         });
     }
 
-    exchangeAPI.getAccount = function(floID, proxySecret) {
+    const processCode = exchangeAPI.processCode = {
+        ASSET_TYPE_COIN: 0,
+        ASSET_TYPE_TOKEN: 1,
+
+        VAULT_MODE_DEPOSIT: 1,
+        VAULT_MODE_WITHDRAW: 0,
+
+        STATUS_PENDING: 0,
+        STATUS_PROCESSING: 1,
+        STATUS_CONFIRMATION: 90,
+        STATUS_REJECTED: -1,
+        STATUS_SUCCESS: 100,
+
+        CONVERT_MODE_GET: 1,
+        CONVERT_MODE_PUT: 0,
+    }
+
+    const serviceList = exchangeAPI.serviceList = {
+        EXCHANGE: "exchange",
+        CONVERT: "convert",
+        BLOCKCHAIN_BOND: "blockchain-bond",
+        BOBS_FUND: "bobs-fund"
+    }
+
+    exchangeAPI.getSink = function (service = serviceList.EXCHANGE) {
+        return new Promise((resolve, reject) => {
+            if (!(Object.values(serviceList).includes(service)))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, 'service required', errorCode.INVALID_VALUE));
+            fetch_api('/get-sink?service=' + service)
+                .then(result => {
+                    responseParse(result, false)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
+        })
+    }
+
+    exchangeAPI.getAccount = function (floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -574,69 +636,75 @@
             console.debug(request);
 
             fetch_api('/account', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                    .catch(error => reject(error))
+            }).catch(error => reject(error));
         });
     }
 
-    exchangeAPI.getBuyList = function(asset = null) {
+    exchangeAPI.getBuyList = function (asset = null) {
         return new Promise((resolve, reject) => {
             fetch_api('/list-buyorders' + (asset ? "?asset=" + asset : ""))
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         });
     }
 
-    exchangeAPI.getSellList = function(asset = null) {
+    exchangeAPI.getSellList = function (asset = null) {
         return new Promise((resolve, reject) => {
             fetch_api('/list-sellorders' + (asset ? "?asset=" + asset : ""))
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         });
     }
 
-    exchangeAPI.getTradeList = function(asset = null) {
+    exchangeAPI.getTradeList = function (asset = null) {
         return new Promise((resolve, reject) => {
             fetch_api('/list-trades' + (asset ? "?asset=" + asset : ""))
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         });
     }
 
-    exchangeAPI.getRates = function(asset = null) {
+    exchangeAPI.getRates = function (asset = null) {
         return new Promise((resolve, reject) => {
             fetch_api('/get-rates' + (asset ? "?asset=" + asset : ""))
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         });
     }
 
-    exchangeAPI.getRateHistory = function(asset, duration = null) {
+    exchangeAPI.getRateHistory = function (asset, duration = null) {
         return new Promise((resolve, reject) => {
             fetch_api('/rate-history?asset=' + asset + (duration ? '&duration=' + duration : ""))
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         });
     }
 
-    exchangeAPI.getBalance = function(floID = null, token = null) {
+    exchangeAPI.getBalance = function (floID = null, token = null) {
         return new Promise((resolve, reject) => {
             if (!floID && !token)
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Need atleast one argument", errorCode.MISSING_PARAMETER));
@@ -644,22 +712,24 @@
                 (floID && token ? "&" : "") +
                 (token ? "token=" + token : "");
             fetch_api('/get-balance?' + queryStr)
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         })
     }
 
-    exchangeAPI.getTx = function(txid) {
+    exchangeAPI.getTx = function (txid) {
         return new Promise((resolve, reject) => {
             if (!txid)
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, 'txid required', errorCode.MISSING_PARAMETER));
             fetch_api('/get-transaction?txid=' + txid)
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         })
     }
 
@@ -670,50 +740,18 @@
         return floCrypto.signData(req_str, signKey);
     }
 
-    exchangeAPI.getLoginCode = function() {
+    exchangeAPI.getLoginCode = function () {
         return new Promise((resolve, reject) => {
             fetch_api('/get-login-code')
-                .then(result => responseParse(result)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
         })
     }
 
-    /*
-    exchangeAPI.signUp = function (privKey, code, hash) {
-        return new Promise((resolve, reject) => {
-            if (!code || !hash)
-                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Login Code missing", errorCode.MISSING_PARAMETER));
-            let request = {
-                pubKey: floCrypto.getPubKeyHex(privKey),
-                floID: floCrypto.getFloID(privKey),
-                code: code,
-                hash: hash,
-                timestamp: Date.now()
-            };
-            request.sign = signRequest({
-                type: "create_account",
-                random: code,
-                timestamp: request.timestamp
-            }, privKey);
-            console.debug(request);
-
-            fetch_api("/signup", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
-        });
-    }
-    */
-
-    exchangeAPI.login = function(privKey, proxyKey, code, hash) {
+    exchangeAPI.login = function (privKey, proxyKey, code, hash) {
         return new Promise((resolve, reject) => {
             if (!code || !hash)
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Login Code missing", errorCode.MISSING_PARAMETER));
@@ -736,19 +774,20 @@
             console.debug(request);
 
             fetch_api("/login", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error));
+                    .catch(error => reject(error))
+            }).catch(error => reject(error));
         })
     }
 
-    exchangeAPI.logout = function(floID, proxySecret) {
+    exchangeAPI.logout = function (floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -763,19 +802,20 @@
             console.debug(request);
 
             fetch_api("/logout", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.buy = function(asset, quantity, max_price, floID, proxySecret) {
+    exchangeAPI.buy = function (asset, quantity, max_price, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             if (typeof quantity !== "number" || quantity <= 0)
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, `Invalid quantity (${quantity})`, errorCode.INVALID_NUMBER));
@@ -800,20 +840,21 @@
             console.debug(request);
 
             fetch_api('/buy', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
 
     }
 
-    exchangeAPI.sell = function(asset, quantity, min_price, floID, proxySecret) {
+    exchangeAPI.sell = function (asset, quantity, min_price, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             if (typeof quantity !== "number" || quantity <= 0)
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, `Invalid quantity (${quantity})`, errorCode.INVALID_NUMBER));
@@ -838,20 +879,21 @@
             console.debug(request);
 
             fetch_api('/sell', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
 
     }
 
-    exchangeAPI.cancelOrder = function(type, id, floID, proxySecret) {
+    exchangeAPI.cancelOrder = function (type, id, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             if (type !== "buy" && type !== "sell")
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, `Invalid type (${type}): type should be sell (or) buy`, errorCode.INVALID_TYPE));
@@ -872,20 +914,21 @@
             console.debug(request);
 
             fetch_api('/cancel', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
     //receiver should be object eg {floID1: amount1, floID2: amount2 ...}
-    exchangeAPI.transferToken = function(receiver, token, floID, proxySecret) {
+    exchangeAPI.transferToken = function (receiver, token, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             if (typeof receiver !== 'object' || receiver === null)
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid receiver: parameter is not an object", errorCode.INVALID_FLO_ID));
@@ -918,19 +961,20 @@
             console.debug(request);
 
             fetch_api('/transfer-token', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.depositFLO = function(quantity, floID, sinkID, privKey, proxySecret = null) {
+    exchangeAPI.depositFLO = function (quantity, floID, sinkID, privKey, proxySecret = null) {
         return new Promise((resolve, reject) => {
             if (typeof quantity !== "number" || quantity <= floGlobals.fee)
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, `Invalid quantity (${quantity})`, errorCode.INVALID_NUMBER));
@@ -952,20 +996,21 @@
                 console.debug(request);
 
                 fetch_api('/deposit-flo', {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(request)
-                    }).then(result => responseParse(result, false)
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                }).then(result => {
+                    responseParse(result, false)
                         .then(result => resolve(result))
-                        .catch(error => reject(error)))
-                    .catch(error => reject(error))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.withdrawFLO = function(quantity, floID, proxySecret) {
+    exchangeAPI.withdrawFLO = function (quantity, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -982,19 +1027,20 @@
             console.debug(request);
 
             fetch_api('/withdraw-flo', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.depositToken = function(token, quantity, floID, sinkID, privKey, proxySecret = null) {
+    exchangeAPI.depositToken = function (token, quantity, floID, sinkID, privKey, proxySecret = null) {
         return new Promise((resolve, reject) => {
             if (!floCrypto.verifyPrivKey(privKey, floID))
                 return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
@@ -1014,20 +1060,21 @@
                 console.debug(request);
 
                 fetch_api('/deposit-token', {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(request)
-                    }).then(result => responseParse(result, false)
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                }).then(result => {
+                    responseParse(result, false)
                         .then(result => resolve(result))
-                        .catch(error => reject(error)))
-                    .catch(error => reject(error))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.withdrawToken = function(token, quantity, floID, proxySecret) {
+    exchangeAPI.withdrawToken = function (token, quantity, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -1046,19 +1093,48 @@
             console.debug(request);
 
             fetch_api('/withdraw-token', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.addUserTag = function(tag_user, tag, floID, proxySecret) {
+    exchangeAPI.getUserTransacts = function (floID, proxySecret) {
+        return new Promise((resolve, reject) => {
+            let request = {
+                floID: floID,
+                timestamp: Date.now()
+            };
+            if (floCrypto.getFloID(proxySecret) === floID) //Direct signing (without proxy)
+                request.pubKey = floCrypto.getPubKeyHex(proxySecret);
+            request.sign = signRequest({
+                type: "get_transact",
+                timestamp: request.timestamp
+            }, proxySecret);
+            console.debug(request);
+
+            fetch_api('/get-transact', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.addUserTag = function (tag_user, tag, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -1077,19 +1153,20 @@
             console.debug(request);
 
             fetch_api('/add-tag', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.removeUserTag = function(tag_user, tag, floID, proxySecret) {
+    exchangeAPI.removeUserTag = function (tag_user, tag, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -1108,19 +1185,20 @@
             console.debug(request);
 
             fetch_api('/remove-tag', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.addDistributor = function(distributor, asset, floID, proxySecret) {
+    exchangeAPI.addDistributor = function (distributor, asset, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -1139,19 +1217,20 @@
             console.debug(request);
 
             fetch_api('/add-distributor', {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
                     .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.removeDistributor = function(distributor, asset, floID, proxySecret) {
+    exchangeAPI.removeDistributor = function (distributor, asset, floID, proxySecret) {
         return new Promise((resolve, reject) => {
             let request = {
                 floID: floID,
@@ -1170,42 +1249,503 @@
             console.debug(request);
 
             fetch_api('/remove-distributor', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.getConvertValues = function () {
+        return new Promise((resolve, reject) => {
+            fetch_api('/get-convert-values')
+                .then(result => {
+                    responseParse(result)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error));
+        })
+    }
+
+    exchangeAPI.convertToBTC = function (amount, floID, sinkID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            floTokenAPI.sendToken(privKey, amount, sinkID, '(convert to BTC)', floGlobals.currency).then(txid => {
+                let request = {
+                    floID: floID,
+                    txid: txid,
+                    coin: "BTC",
+                    amount: amount,
+                    timestamp: Date.now()
+                };
+                request.pubKey = floCrypto.getPubKeyHex(privKey);
+                request.sign = signRequest({
+                    type: "convert_to",
+                    coin: request.coin,
+                    amount: amount,
+                    txid: txid,
+                    timestamp: request.timestamp
+                }, privKey);
+                console.debug(request);
+
+                fetch_api('/convert-to', {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(request)
-                }).then(result => responseParse(result, false)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error)))
-                .catch(error => reject(error))
+                }).then(result => {
+                    responseParse(result, false)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
+            }).catch(error => reject(error))
         })
     }
 
-    exchangeAPI.init = function refreshDataFromBlockchain(adminID = floGlobals.adminID, appName = floGlobals.application) {
+    exchangeAPI.convertFromBTC = function (quantity, floID, sinkID, privKey, fee = null) {
         return new Promise((resolve, reject) => {
-            let nodes, assets, tags, lastTx;
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            let btc_id = btcOperator.convert.legacy2bech(floID),
+                btc_sink = btcOperator.convert.legacy2bech(sinkID);
+            btcOperator.createSignedTx(btc_id, privKey, btc_sink, quantity, fee).then(result => {
+                let request = {
+                    floID: floID,
+                    txid: btcOperator.transactionID(result.transaction),
+                    tx_hex: result.transaction.serialize(),
+                    coin: "BTC",
+                    quantity: quantity,
+                    timestamp: Date.now()
+                };
+                request.pubKey = floCrypto.getPubKeyHex(privKey);
+                request.sign = signRequest({
+                    type: "convert_from",
+                    coin: request.coin,
+                    quantity: quantity,
+                    txid: request.txid,
+                    timestamp: request.timestamp
+                }, privKey);
+                console.debug(request);
+
+                fetch_api('/convert-from', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                }).then(result => {
+                    responseParse(result, false)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.depositConvertFundCurrency = function (amount, floID, sinkID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            if (floID !== DEFAULT.marketID)
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Access Denied", errorCode.ACCESS_DENIED));
+            floTokenAPI.sendToken(privKey, amount, sinkID, '(add convert fund)', floGlobals.currency).then(txid => {
+                let request = {
+                    floID: floID,
+                    txid: txid,
+                    coin: "BTC",
+                    timestamp: Date.now()
+                };
+                request.pubKey = floCrypto.getPubKeyHex(privKey);
+                request.sign = signRequest({
+                    type: "deposit_convert_currency_fund",
+                    coin: request.coin,
+                    txid: txid,
+                    timestamp: request.timestamp
+                }, privKey);
+                console.debug(request);
+
+                fetch_api('/deposit-convert-currency-fund', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                }).then(result => {
+                    responseParse(result, false)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.depositConvertFundBTC = function (quantity, floID, sinkID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            if (floID !== DEFAULT.marketID)
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Access Denied", errorCode.ACCESS_DENIED));
+            let btc_id = btcOperator.convert.legacy2bech(floID),
+                btc_sink = btcOperator.convert.legacy2bech(sinkID);
+            btcOperator.sendTx(btc_id, privKey, btc_sink, quantity, null).then(txid => {
+                let request = {
+                    floID: floID,
+                    txid: txid,
+                    coin: "BTC",
+                    timestamp: Date.now()
+                };
+                request.pubKey = floCrypto.getPubKeyHex(privKey);
+                request.sign = signRequest({
+                    type: "deposit_convert_coin_fund",
+                    coin: request.coin,
+                    txid: txid,
+                    timestamp: request.timestamp
+                }, privKey);
+                console.debug(request);
+
+                fetch_api('/deposit-convert-coin-fund', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                }).then(result => {
+                    responseParse(result, false)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.withdrawConvertFundCurrency = function (amount, floID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            if (floID !== DEFAULT.marketID)
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Access Denied", errorCode.ACCESS_DENIED));
+            let request = {
+                floID: floID,
+                amount: amount,
+                coin: "BTC",
+                timestamp: Date.now()
+            };
+            request.pubKey = floCrypto.getPubKeyHex(privKey);
+            request.sign = signRequest({
+                type: "withdraw_convert_currency_fund",
+                coin: request.coin,
+                amount: amount,
+                timestamp: request.timestamp
+            }, privKey);
+            console.debug(request);
+
+            fetch_api('/withdraw-convert-currency-fund', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.withdrawConvertFundCoin = function (quantity, floID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            if (floID !== DEFAULT.marketID)
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Access Denied", errorCode.ACCESS_DENIED));
+            let request = {
+                floID: floID,
+                quantity: quantity,
+                coin: "BTC",
+                timestamp: Date.now()
+            };
+            request.pubKey = floCrypto.getPubKeyHex(privKey);
+            request.sign = signRequest({
+                type: "withdraw_convert_coin_fund",
+                coin: request.coin,
+                quantity: quantity,
+                timestamp: request.timestamp
+            }, privKey);
+            console.debug(request);
+
+            fetch_api('/withdraw-convert-coin-fund', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.closeBlockchainBond = function (bond_id, floID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            let request = {
+                floID: floID,
+                bond_id: bond_id,
+                timestamp: Date.now()
+            };
+            request.pubKey = floCrypto.getPubKeyHex(privKey);
+            request.sign = signRequest({
+                type: "close_blockchain_bond",
+                bond_id: request.bond_id,
+                timestamp: request.timestamp
+            }, privKey);
+            console.debug(request);
+
+            fetch_api('/close-blockchain-bonds', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.checkBlockchainBond = function (prior_time, floID, proxySecret) {
+        return new Promise((resolve, reject) => {
+            let request = {
+                floID: floID,
+                prior_time,
+                timestamp: Date.now()
+            };
+            if (floCrypto.getFloID(proxySecret) === floID) //Direct signing (without proxy)
+                request.pubKey = floCrypto.getPubKeyHex(proxySecret);
+            request.sign = signRequest({
+                type: "check_blockchain_bond",
+                prior_time,
+                timestamp: request.timestamp
+            }, proxySecret);
+            console.debug(request);
+
+            fetch_api('/check-blockchain-bond', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.checkBobsFund = function (prior_time, floID, proxySecret) {
+        return new Promise((resolve, reject) => {
+            let request = {
+                floID: floID,
+                prior_time,
+                timestamp: Date.now()
+            };
+            if (floCrypto.getFloID(proxySecret) === floID) //Direct signing (without proxy)
+                request.pubKey = floCrypto.getPubKeyHex(proxySecret);
+            request.sign = signRequest({
+                type: "check_bobs_fund",
+                prior_time,
+                timestamp: request.timestamp
+            }, proxySecret);
+            console.debug(request);
+
+            fetch_api('/check-bobs-fund', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.closeBobsFundInvestment = function (fund_id, floID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            let request = {
+                floID: floID,
+                fund_id: fund_id,
+                timestamp: Date.now()
+            };
+            request.pubKey = floCrypto.getPubKeyHex(privKey);
+            request.sign = signRequest({
+                type: "close_bobs_fund",
+                fund_id: request.fund_id,
+                timestamp: request.timestamp
+            }, privKey);
+            console.debug(request);
+
+            fetch_api('/close-bobs-fund-investment', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.generateSink = function (group, floID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            if (floID !== DEFAULT.marketID)
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Access Denied", errorCode.ACCESS_DENIED));
+            let request = {
+                floID: floID,
+                group: group,
+                timestamp: Date.now()
+            };
+            request.pubKey = floCrypto.getPubKeyHex(privKey);
+            request.sign = signRequest({
+                type: "generate_sink",
+                group: group,
+                timestamp: request.timestamp
+            }, privKey);
+            console.debug(request);
+
+            fetch_api('/generate-sink', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.reshareSink = function (sinkID, floID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            if (floID !== DEFAULT.marketID)
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Access Denied", errorCode.ACCESS_DENIED));
+            let request = {
+                floID: floID,
+                id: sinkID,
+                timestamp: Date.now()
+            };
+            request.pubKey = floCrypto.getPubKeyHex(privKey);
+            request.sign = signRequest({
+                type: "reshare_sink",
+                id: sinkID,
+                timestamp: request.timestamp
+            }, privKey);
+            console.debug(request);
+
+            fetch_api('/reshare-sink', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    exchangeAPI.discardSink = function (sinkID, floID, privKey) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Invalid Private Key", errorCode.INVALID_PRIVATE_KEY));
+            if (floID !== DEFAULT.marketID)
+                return reject(ExchangeError(ExchangeError.BAD_REQUEST_CODE, "Access Denied", errorCode.ACCESS_DENIED));
+            let request = {
+                floID: floID,
+                id: sinkID,
+                timestamp: Date.now()
+            };
+            request.pubKey = floCrypto.getPubKeyHex(privKey);
+            request.sign = signRequest({
+                type: "discard_sink",
+                id: sinkID,
+                timestamp: request.timestamp
+            }, privKey);
+            console.debug(request);
+
+            fetch_api('/discard-sink', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            }).then(result => {
+                responseParse(result, false)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+
+    }
+
+    const _l = key => DEFAULT.marketApp + '-' + key;
+
+    exchangeAPI.init = function refreshDataFromBlockchain() {
+        return new Promise((resolve, reject) => {
+            let nodes, trusted = new Set(), assets, tags, lastTx;
             try {
-                nodes = JSON.parse(localStorage.getItem('exchange-nodes'));
-                assets = new Set((localStorage.getItem('exchange-assets') || "").split(','));
-                tags = new Set((localStorage.getItem('exchange-tags') || "").split(','));
+                nodes = JSON.parse(localStorage.getItem(_l('nodes')));
+                trusted = new Set((localStorage.getItem(_l('trusted')) || "").split(','));
+                assets = new Set((localStorage.getItem(_l('assets')) || "").split(','));
+                tags = new Set((localStorage.getItem(_l('tags')) || "").split(','));
                 if (typeof nodes !== 'object' || nodes === null)
                     throw Error('nodes must be an object')
                 else
-                    lastTx = parseInt(localStorage.getItem('exchange-lastTx')) || 0;
+                    lastTx = parseInt(localStorage.getItem(_l('lastTx'))) || 0;
             } catch (error) {
                 nodes = {};
+                trusted = new Set();
                 assets = new Set();
                 tags = new Set();
                 lastTx = 0;
             }
-            floBlockchainAPI.readData(adminID, {
+            floBlockchainAPI.readData(DEFAULT.marketID, {
                 ignoreOld: lastTx,
                 sentOnly: true,
-                pattern: appName
+                pattern: DEFAULT.marketApp
             }).then(result => {
                 result.data.reverse().forEach(data => {
-                    var content = JSON.parse(data)[appName];
+                    var content = JSON.parse(data)[DEFAULT.marketApp];
                     //Node List
                     if (content.Nodes) {
                         if (content.Nodes.remove)
@@ -1214,6 +1754,18 @@
                         if (content.Nodes.add)
                             for (let n in content.Nodes.add)
                                 nodes[n] = content.Nodes.add[n];
+                        if (content.Nodes.update)
+                            for (let n in content.Nodes.update)
+                                nodes[n] = content.Nodes.update[n];
+                    }
+                    //Trusted List
+                    if (content.Trusted) {
+                        if (content.Trusted.remove)
+                            for (let id of content.Trusted.remove)
+                                trusted.delete(id);
+                        if (content.Trusted.add)
+                            for (let id of content.Trusted.add)
+                                trusted.add(id);
                     }
                     //Asset List
                     if (content.Assets) {
@@ -1230,26 +1782,132 @@
                                 tags.add(t);
                     }
                 });
-                localStorage.setItem('exchange-lastTx', result.totalTxs);
-                localStorage.setItem('exchange-nodes', JSON.stringify(nodes));
-                localStorage.setItem('exchange-assets', Array.from(assets).join(","));
-                localStorage.setItem('exchange-tags', Array.from(tags).join(","));
+                localStorage.setItem(_l('lastTx'), result.totalTxs);
+                localStorage.setItem(_l('nodes'), JSON.stringify(nodes));
+                localStorage.setItem(_l('trusted'), Array.from(trusted).join(","));
+                localStorage.setItem(_l('assets'), Array.from(assets).join(","));
+                localStorage.setItem(_l('tags'), Array.from(tags).join(","));
                 nodeURL = nodes;
-                nodeKBucket = new K_Bucket(adminID, Object.keys(nodeURL));
+                nodeKBucket = new K_Bucket(DEFAULT.marketID, Object.keys(nodeURL));
                 nodeList = nodeKBucket.order;
                 resolve(nodes);
             }).catch(error => reject(error));
         })
     }
 
-    exchangeAPI.clearAllLocalData = function() {
-        localStorage.removeItem('exchange-nodes');
-        localStorage.removeItem('exchange-assets');
-        localStorage.removeItem('exchange-tags');
-        localStorage.removeItem('exchange-lastTx');
-        localStorage.removeItem('exchange-proxy_secret');
-        localStorage.removeItem('exchange-user_ID');
+    const config = exchangeAPI.config = {
+        get trustedList() {
+            return new Set((localStorage.getItem(_l('trusted')) || "").split(','));
+        },
+        get assetList() {
+            return new Set((localStorage.getItem(_l('assets')) || "").split(','));
+        },
+        get tagList() {
+            return new Set((localStorage.getItem(_l('tags')) || "").split(','));
+        }
+    }
+
+    exchangeAPI.clearAllLocalData = function () {
+        localStorage.removeItem(_l('nodes'));
+        localStorage.removeItem(_l('trusted'));
+        localStorage.removeItem(_l('assets'));
+        localStorage.removeItem(_l('tags'));
+        localStorage.removeItem(_l('lastTx'));
+        localStorage.removeItem(_l('proxy_secret'));
+        localStorage.removeItem(_l('user_ID'));
         location.reload();
+    }
+
+    //container for user ID and proxy private-key
+    const proxy = exchangeAPI.proxy = {
+        user: null,
+        private: null,
+        public: null,
+        async lock() {
+            if (!this.private)
+                return notify("No proxy key found!", 'error');
+            getPromptInput("Add password", 'This password applies to this browser only!', {
+                isPassword: true,
+                confirmText: "Add password"
+            }).then(pwd => {
+                if (!pwd)
+                    notify("Password cannot be empty", 'error');
+                else if (pwd.length < 4)
+                    notify("Password minimum length is 4", 'error');
+                else {
+                    let tmp = Crypto.AES.encrypt(this.private, pwd);
+                    localStorage.setItem(_l('proxy_secret'), "?" + tmp);
+                    notify("Successfully locked with Password", 'success');
+                }
+            }).catch(_ => null);
+        },
+        clear() {
+            localStorage.removeItem(_l('proxy_secret'));
+            localStorage.removeItem(_l('user_ID'));
+            this.user = null;
+            this.private = null;
+            this.public = null;
+        },
+        get sinkID() {
+            return getRef("sink_id").value;
+        },
+        set userID(id) {
+            localStorage.setItem(_l('user_ID'), id);
+            this.user = id;
+        },
+        get userID() {
+            if (this.user)
+                return this.user;
+            else {
+                let id = localStorage.getItem(_l('user_ID'));
+                return id ? this.user = id : undefined;
+            }
+        },
+        set secret(key) {
+            localStorage.setItem(_l('proxy_secret'), key);
+            this.private = key;
+            this.public = floCrypto.getPubKeyHex(key);
+        },
+        get secret() {
+            const self = this;
+            return new Promise((resolve, reject) => {
+                if (self.private)
+                    return resolve(self.private);
+
+                const Reject = reason => {
+                    notify(reason, 'error');
+                    reject(reason);
+                }
+                const setValues = priv => {
+                    try {
+                        self.private = priv;
+                        self.public = floCrypto.getPubKeyHex(priv);
+                        resolve(self.private);
+                    } catch (error) {
+                        Reject("Unable to fetch Proxy secret");
+                    }
+                };
+                let tmp = localStorage.getItem(_l('proxy_secret'));
+                if (typeof tmp !== "string")
+                    Reject("Unable to fetch Proxy secret");
+                else if (tmp.startsWith("?")) {
+                    getPromptInput("Enter password", '', {
+                        isPassword: true
+                    }).then(pwd => {
+                        if (!pwd)
+                            return Reject("Password Required for making transactions");
+                        try {
+                            tmp = Crypto.AES.decrypt(tmp.substring(1), pwd);
+                            setValues(tmp);
+                        } catch (error) {
+                            Reject("Incorrect Password! Password Required for making transactions");
+
+                        }
+                    }).catch(_ => Reject("Password Required for making transactions"));
+                } else
+                    setValues(tmp);
+            })
+        }
     }
 
 })('object' === typeof module ? module.exports : window.floExchangeAPI = {});
