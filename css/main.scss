@@ -794,23 +794,6 @@ ol {
 #cashier {
   padding: 1rem 0;
 }
-.swap-input {
-  display: grid;
-  grid-template-columns: 6rem 1fr;
-  background-color: rgba(var(--text-color), 0.06);
-  border-radius: 0.5rem;
-  padding: 0 0.2rem;
-  sm-input {
-    --background: transparent;
-  }
-  sm-select {
-    margin: 0.2rem 0;
-    --background: rgba(var(--foreground-color), 1);
-    &[open] {
-      z-index: 10;
-    }
-  }
-}
 #wallet_cards_wrapper {
   display: grid;
   grid-template-columns: 6rem 1fr;
@@ -848,11 +831,9 @@ ol {
   }
 }
 .actions-wrapper {
-  display: flex;
-  gap: 0.5rem;
-  > * {
-    flex: 1;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
+  gap: 1rem 0.5rem;
 }
 .wallet-action,
 .integrated-action-button {
@@ -875,13 +856,14 @@ ol {
   }
 }
 .wallet-action {
-  gap: 1rem;
+  gap: 0.5rem;
   flex-direction: column;
   align-items: center;
   font-size: 0.8rem;
   white-space: initial;
   border-radius: 0.5rem;
   padding: 0;
+  min-width: 0;
 }
 .integrated-action-button {
   padding: 0;
@@ -1554,6 +1536,17 @@ fieldset {
   padding: 0.4rem 0.4rem 0.4rem 1rem;
   border-radius: 0.5rem;
   background-color: rgba(var(--text-color), 0.03);
+}
+
+#convert_asset_popup {
+  .error-icon {
+    height: 3rem;
+    width: 3rem;
+    fill: var(--danger-color);
+  }
+}
+#conversion_loading_status {
+  padding-bottom: 1.5rem;
 }
 @media screen and (max-width: 40rem) {
   #home {

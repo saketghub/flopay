@@ -332,6 +332,20 @@
                                 </svg>
                                 Withdraw
                             </button>
+                            <button class="wallet-action" onclick="initConversion('btc')">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                                    height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <g>
+                                        <rect fill="none" height="24" width="24"></rect>
+                                    </g>
+                                    <g>
+                                        <path
+                                            d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z">
+                                        </path>
+                                    </g>
+                                </svg>
+                                Convert to BTC
+                            </button>
                         </div>
                         <a id="wallet_history_button" class="integrated-action-button flex align-center user-element"
                             href="#/wallet">
@@ -399,6 +413,21 @@
                             </svg>
                             Send
                         </button>
+                        <button class="wallet-action" onclick="initConversion('rupee')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <g>
+                                    <rect fill="none" height="24" width="24" />
+                                </g>
+                                <g>
+                                    <g>
+                                        <path
+                                            d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z" />
+                                    </g>
+                                </g>
+                            </svg>
+                            Convert to Rupee
+                        </button>
                     </div>
 
                 </div>
@@ -442,86 +471,6 @@
                 <div class="empty-state">
                     <h4 class="empty-state__title">No contacts yet</h4>
                     <p class="empty-state__subtitle">Add some contacts to see them here</p>
-                </div>
-            </div>
-            <div class="hidden">
-                <h4 class="margin-bottom-1">Convert assets</h4>
-                <div class="card user-element" style="width: min(26rem, 100%);">
-                    <sm-form>
-                        <div class="grid gap-0-3 w-100 ">
-                            <h5>From</h5>
-                            <div class="align-start swap-input">
-                                <sm-select id="from_asset_selector">
-                                    <sm-option value="rupee" selected>Rupee</sm-option>
-                                    <sm-option value="btc">BTC</sm-option>
-                                </sm-select>
-                                <sm-input id="from_amount" type="number" placeholder="Amount" min="50" step="0.01"
-                                    error-text="minimum amount is ₹50" required>
-                                    <div slot="icon" id="from_asset_icon" class="flex">
-                                        <svg class="icon asset-icon" xmlns="http://www.w3.org/2000/svg"
-                                            enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24"
-                                            width="24px" fill="#000000">
-                                            <g>
-                                                <rect fill="none" height="24" width="24" />
-                                            </g>
-                                            <g>
-                                                <g>
-                                                    <path
-                                                        d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z" />
-                                                </g>
-                                            </g>
-                                        </svg>
-                                    </div>
-                                </sm-input>
-                            </div>
-                        </div>
-                        <div class="grid gap-0-3 w-100 ">
-                            <h5>To</h5>
-                            <div class="align-start swap-input w-100">
-                                <sm-select id="to_asset_selector">
-                                    <sm-option value="rupee">Rupee</sm-option>
-                                    <sm-option value="btc" selected>BTC</sm-option>
-                                </sm-select>
-                                <sm-input id="to_amount" type="number" placeholder="Amount" class="w-100"
-                                    min="0.00000001" step="0.00000001" required>
-                                    <div slot="icon" id="to_asset_icon" class="flex">
-                                        <svg class="icon asset-icon" xmlns="http://www.w3.org/2000/svg"
-                                            enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24"
-                                            width="24px" fill="#000000">
-                                            <g>
-                                                <rect fill="none" height="24" width="24" />
-                                            </g>
-                                            <g>
-                                                <path
-                                                    d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z" />
-                                            </g>
-                                        </svg>
-                                    </div>
-                                </sm-input>
-                            </div>
-                        </div>
-                        <div class="grid border-radius-0-5 font-0-9">
-                            <div class="flex align-center space-between padding-0-5">
-                                <span>Rate</span>
-                                <span id="conversion_rate">0.00</span>
-                            </div>
-                            <div class="flex align-center space-between padding-0-5">
-                                <span>Fees</span>
-                                <span id="conversion_fees">0.00</span>
-                            </div>
-                        </div>
-                        <div class="multi-state-button">
-                            <button id="convert_asset_button" class="button button--primary cta" type="submit"
-                                onclick="convertAsset()">
-                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                    viewBox="0 0 24 24" width="24px" fill="#000000">
-                                    <path d="M0 0h24v24H0V0z" fill="none" />
-                                    <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" />
-                                </svg>
-                                Convert
-                            </button>
-                        </div>
-                    </sm-form>
                 </div>
             </div>
             <section id="cashier" class=" grid gap-1 hidden admin-element">
@@ -1307,6 +1256,40 @@
             </div>
         </div>
     </sm-popup>
+    <sm-popup id="convert_asset_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+        </header>
+        <sm-form id="conversion_form" class="hidden">
+            <div class="grid gap-0-5">
+                <h3 id="convert_asset_title"></h3>
+                <p id="convert_asset_description"></p>
+            </div>
+            <sm-input id="conversion_amount" type="number" placeholder="Amount" autofocus animate required>
+                <div id="conversion_asset_icon" slot="icon"></div>
+            </sm-input>
+            <div class="flex align-center space-between">
+                You'll get:
+                <h4 id="converted_amount">0</h4>
+            </div>
+            <div class="flex align-center space-between">
+                Exchange rate:
+                <h4 id="conversion_rate"></h4>
+            </div>
+            <div class="multi-state-button">
+                <button id="convert_asset" type="submit" class="button button--primary cta w-100"
+                    onclick="convertAsset()" disabled>Convert</button>
+            </div>
+        </sm-form>
+        <div id="conversion_loading_status" class="grid gap-1 justify-center text-center"> </div>
+    </sm-popup>
     <sm-popup id="change_cashier_upi_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close justify-self-start">
@@ -1546,64 +1529,77 @@
     <script id="onLoadStartUp">
         let isShowingFloID = false;
         async function onLoadStartUp() {
-            routeTo('loading')
-            console.log("Starting the app! Please Wait!")
-            floDapps.setCustomPrivKeyInput(getSignedIn)
-            floDapps.setAppObjectStores({ savedIds: {}, savedUserData: {} })
-            await floExchangeAPI.init("FMxYC7gYZhouzqtHZukGnPiQ8nvG4CMzXM", "exchange")
-            console.log('Exchange API initialized!')
-            floDapps.launchStartUp().then(result => {
-                console.log(`Welcome ${floDapps.user.id}`);
-                floGlobals.myFloID = floCrypto.toFloID(floDapps.user.id);
-                floGlobals.myBtcID = btcOperator.convert.legacy2bech(floGlobals.myFloID)
-                getRef('user_profile_id').textContent = floGlobals.myFloID
-                let showingFloID = true
-                // alternating between floID and btcID every 10 seconds
-                setInterval(() => {
-                    getRef('user_profile_id').textContent = showingFloID ? floGlobals.myBtcID : floGlobals.myFloID
-                    showingFloID = !showingFloID
-                }, 10000)
-                floGlobals.savedIds = {};
-                floGlobals.savedUserData = {
-                    upiIds: {}
-                }
-                floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
-                refreshBalance()
-                getExchangeRate().then(rate => {
-                    getRef('conversion_rate').textContent = `1BTC = ${formatAmount(rate.inr)}`;
+            try {
+                routeTo('loading')
+                console.log("Starting the app! Please Wait!")
+                floDapps.setCustomPrivKeyInput(getSignedIn)
+                floDapps.setAppObjectStores({ savedIds: {}, savedUserData: {} })
+                await floExchangeAPI.init("FMxYC7gYZhouzqtHZukGnPiQ8nvG4CMzXM", "exchange")
+                console.log('Exchange API initialized!')
+                floDapps.launchStartUp().then(result => {
+                    console.log(`Welcome ${floDapps.user.id}`);
+                    floGlobals.myFloID = floCrypto.toFloID(floDapps.user.id);
+                    floGlobals.myBtcID = btcOperator.convert.legacy2bech(floGlobals.myFloID)
+                    getRef('user_profile_id').textContent = floGlobals.myFloID
+                    let showingFloID = true
+                    // alternating between floID and btcID every 10 seconds
+                    setInterval(() => {
+                        getRef('user_profile_id').textContent = showingFloID ? floGlobals.myBtcID : floGlobals.myFloID
+                        showingFloID = !showingFloID
+                    }, 10000)
+                    floGlobals.savedIds = {};
+                    floGlobals.savedUserData = {
+                        upiIds: {}
+                    }
+                    floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
+                    Promise.all([floExchangeAPI.getSink(floExchangeAPI.serviceList.EXCHANGE), floExchangeAPI.getSink(floExchangeAPI.serviceList.CONVERT)])
+                        .then(([exchangeSink, convertSink]) => {
+                            floGlobals.exchangeSink = exchangeSink
+                            floGlobals.convertSink = convertSink
+                            console.log('Exchange sink: ', exchangeSink)
+                            console.log('Convert sink: ', convertSink)
+                        }).catch(error => {
+                            console.error(error)
+                        })
+                    refreshBalance()
+                    getExchangeRate().then(rate => {
+                        getRef('conversion_rate').textContent = `1BTC = ${formatAmount(rate.inr)}`;
+                    }).catch(error => {
+                        console.error(error)
+                    })
+                    if (floGlobals.isSubAdmin) {
+                        cashierUI.renderRequests(Cashier.Requests);
+                        Cashier.init().then(result => {
+                            console.log(result);
+                            document.querySelectorAll('.admin-element').forEach(elem => elem.classList.remove('hidden'))
+                            document.querySelectorAll('.user-element').forEach(elem => elem.classList.add('hidden'))
+                            getRef('home').classList.add('is-sub-admin')
+                            routeTo(window.location.hash, { firstLoad: true })
+                        }).catch(error => {
+                            console.error(error)
+                            detectAdBlocker(error)
+                        })
+                    } else {
+                        userUI.renderCashierRequests(User.cashierRequests);
+                        userUI.renderMoneyRequests(User.moneyRequests);
+                        User.init().then(result => {
+                            console.log(result);
+                            console.log("Cashiers:", cashierUPI);
+                            document.querySelectorAll('.admin-element').forEach(elem => elem.classList.add('hidden'))
+                            document.querySelectorAll('.user-element').forEach(elem => elem.classList.remove('hidden'))
+                            routeTo(window.location.hash, { firstLoad: true })
+                            floGlobals.loaded = true
+                        }).catch(error => {
+                            console.error(error)
+                            detectAdBlocker(error)
+                        })
+                    }
                 }).catch(error => {
                     console.error(error)
                 })
-                if (floGlobals.isSubAdmin) {
-                    cashierUI.renderRequests(Cashier.Requests);
-                    Cashier.init().then(result => {
-                        console.log(result);
-                        document.querySelectorAll('.admin-element').forEach(elem => elem.classList.remove('hidden'))
-                        document.querySelectorAll('.user-element').forEach(elem => elem.classList.add('hidden'))
-                        getRef('home').classList.add('is-sub-admin')
-                        routeTo(window.location.hash, { firstLoad: true })
-                    }).catch(error => {
-                        console.error(error)
-                        detectAdBlocker(error)
-                    })
-                } else {
-                    userUI.renderCashierRequests(User.cashierRequests);
-                    userUI.renderMoneyRequests(User.moneyRequests);
-                    User.init().then(result => {
-                        console.log(result);
-                        console.log("Cashiers:", cashierUPI);
-                        document.querySelectorAll('.admin-element').forEach(elem => elem.classList.add('hidden'))
-                        document.querySelectorAll('.user-element').forEach(elem => elem.classList.remove('hidden'))
-                        routeTo(window.location.hash, { firstLoad: true })
-                        floGlobals.loaded = true
-                    }).catch(error => {
-                        console.error(error)
-                        detectAdBlocker(error)
-                    })
-                }
-            }).catch(error => {
-                console.error(error)
-            })
+            } catch (error) {
+                console.log(error)
+            }
         }
         function detectAdBlocker(error) {
             if (error === 'Cloud offline') {
@@ -2934,7 +2930,7 @@
             switch (type) {
                 case 'exchange': {
                     confirmationMessage = `You are depositing ${amount} rupee tokens to exchange`;
-                    receiverFloID = 'FRJkPqdbbsug3TtQRAWviqvTL9Qr2EMnrm';
+                    receiverFloID = floGlobals.exchangeSink;
                     name = 'RanchiMall Exchange';
                 } break;
                 case 'btc-bonds': {
@@ -3880,6 +3876,7 @@
                 easing: 'ease'
             }
             if (show) {
+                button.parentNode.append(createElement('sm-spinner'))
                 button.animate([
                     {
                         clipPath: 'circle(100%)',
@@ -3887,13 +3884,9 @@
                     {
                         clipPath: 'circle(0)',
                     },
-                ], animOptions).onfinish = e => {
-                    e.target.commitStyles()
-                    e.target.cancel()
-                }
-                button.parentNode.append(createElement('sm-spinner'))
+                ], animOptions)
             } else {
-                button.style = ''
+                button.getAnimations().forEach(anim => anim.cancel())
                 const potentialTarget = button.parentNode.querySelector('sm-spinner')
                 if (potentialTarget) potentialTarget.remove();
             }
@@ -3924,52 +3917,6 @@
                 console.error(e)
             }
         }
-
-        const assetIcons = {
-            btc: ` <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg> `,
-            usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
-            rupee: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
-        }
-        function setCorrectInputParams({ fromAsset, toAsset }) {
-            getRef('from_amount').setAttribute('min', fromAsset === 'rupee' ? '50' : '0.00000001');
-            getRef('from_amount').setAttribute('step', fromAsset === 'rupee' ? '0.01' : '0.00000001');
-            getRef('from_amount').setAttribute('error-text', `Minimum amount is ${fromAsset === 'rupee' ? '₹50' : '0.000001BTC'}`);
-
-            getRef('to_amount').setAttribute('min', toAsset === 'rupee' ? '50' : '0.00000001');
-            getRef('to_amount').setAttribute('step', toAsset === 'rupee' ? '0.01' : '0.00000001');
-            getRef('to_amount').setAttribute('error-text', `Minimum amount is ${toAsset === 'rupee' ? '₹50' : '0.000001BTC'}`);
-
-            getRef('from_asset_icon').innerHTML = assetIcons[fromAsset]
-            getRef('to_asset_icon').innerHTML = assetIcons[toAsset]
-        }
-        getRef('from_asset_selector').addEventListener('change', e => {
-            const fromAsset = e.target.value;
-            const toAsset = fromAsset === 'rupee' ? 'btc' : 'rupee';
-            setCorrectInputParams({ fromAsset, toAsset });
-            getRef('to_asset_selector').value = toAsset
-        })
-        getRef('to_asset_selector').addEventListener('change', e => {
-            const toAsset = e.target.value
-            const fromAsset = toAsset === 'rupee' ? 'btc' : 'rupee';
-            setCorrectInputParams({ fromAsset, toAsset });
-            getRef('from_asset_selector').value = fromAsset
-        })
-        getRef('from_amount').addEventListener('input', e => {
-            const fromAsset = getRef('from_asset_selector').value;
-            let fromAmount = parseFloat(e.target.value.trim());
-            if (fromAmount && !Number.isNaN(fromAmount))
-                getRef('to_amount').value = fromAsset === 'rupee' ? parseFloat((fromAmount / globalExchangeRate.inr).toFixed(8)) : parseFloat((fromAmount * globalExchangeRate.inr).toFixed(2))
-            else
-                getRef('to_amount').value = ''
-        })
-        getRef('to_amount').addEventListener('input', e => {
-            const toAsset = getRef('to_asset_selector').value;
-            let toAmount = parseFloat(e.target.value.trim());
-            if (toAmount && !Number.isNaN(toAmount))
-                getRef('from_amount').value = toAsset === 'rupee' ? parseFloat((toAmount / globalExchangeRate.inr).toFixed(8)) : parseFloat((toAmount * globalExchangeRate.inr).toFixed(2))
-            else
-                getRef('from_amount').value = ''
-        })
 
         function getArrayOfSavedIds() {
             const arr = [];
@@ -4493,28 +4440,125 @@
             })
         }
 
-        function convertAsset() {
-            buttonLoader('convert_asset_button', true)
-            const fromAsset = getRef('from_asset_selector').value;
-            const fromAmount = parseFloat(getRef('from_amount').value.trim());
-            if (fromAsset === 'BTC') {
-                btcOperator.getBalance(floGlobals.myBtcID).then(btcBalance => {
-                    if (btcBalance < fromAmount) {
-                        notify('You do not have enough BTC to convert', 'error');
-                        buttonLoader('convert_asset_button', false)
-                        return;
-                    }
-                })
-            } else {
-                floTokenAPI.getBalance(floGlobals.myFloID).then((balance = 0) => {
-                    if (balance < fromAmount) {
-                        notify('You do not have enough rupee tokens to convert', 'error');
-                        buttonLoader('convert_asset_button', false)
-                        return;
-                    }
-                })
+        const assetIcons = {
+            btc: ` <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg> `,
+            usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
+            rupee: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
+        }
+        function setCorrectInputParams({ fromAsset, toAsset }) {
+            const convertingTo = fromAsset === 'rupee' ? 'btc' : 'rupee';
+            getRef('conversion_amount').setAttribute('min', fromAsset === 'rupee' ? '10' : '0.00000001');
+            getRef('conversion_amount').setAttribute('step', fromAsset === 'rupee' ? '0.01' : '0.00000001');
+            getRef('conversion_amount').setAttribute('error-text', `Minimum amount is ${fromAsset === 'rupee' ? '₹10' : '0.000001BTC'}`);
+        }
+        getRef('conversion_amount').addEventListener('input', async e => {
+            const fromAmount = parseFloat(e.target.value.trim());
+            const fromAsset = convertingTo === 'btc' ? 'rupee' : 'btc';
+            let convertedAmount = 0;
+
+            if (fromAmount && !Number.isNaN(fromAmount)) {
+                if (convertingTo === 'rupee') {
+                    convertedAmount = parseFloat((fromAmount * globalExchangeRate.inr).toFixed(2));
+                } else {
+                    convertedAmount = parseFloat((fromAmount / globalExchangeRate.inr).toFixed(8))
+                }
             }
-            // use api to convert asset
+            getRef('converted_amount').textContent = formatAmount(convertedAmount, convertingTo === 'btc' ? 'btc' : 'inr');
+            if (e.target.validity.rangeUnderflow)
+                e.target.setAttribute('error-text', `Minimum amount is ${convertingTo === 'btc' ? '₹10' : '0.000001BTC'}`)
+            if (e.target.validity.rangeOverflow)
+                e.target.setAttribute('error-text', `You do not have enough ${convertingTo === 'btc' ? 'rupee tokens' : 'BTC'}`)
+        })
+
+        let convertingTo = 'btc';
+        async function initConversion(toAsset) {
+            try {
+                convertingTo = toAsset;
+                renderElem(getRef('conversion_loading_status'), html`
+                    <sm-spinner class="justify-self-center"></sm-spinner>
+                    <p class="text-center">Checking conversion capability...</p>
+                `)
+                getRef('conversion_loading_status').classList.remove('hidden');
+                getRef('conversion_form').classList.add('hidden');
+                openPopup('convert_asset_popup');
+                // get possible conversion values
+                const {
+                    [floExchangeAPI.processCode.CONVERT_MODE_GET]: permissibleBtc,
+                    [floExchangeAPI.processCode.CONVERT_MODE_PUT]: permissibleRupee
+                } = await floExchangeAPI.getConvertValues()
+                if (convertingTo === 'btc' && !permissibleBtc || convertingTo === 'rupee' && !permissibleRupee) {
+                    renderElem(getRef('conversion_loading_status'), html`
+                        <svg class="icon justify-self-center error-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M15.73 3H8.27L3 8.27v7.46L8.27 21h7.46L21 15.73V8.27L15.73 3zM12 17.3c-.72 0-1.3-.58-1.3-1.3 0-.72.58-1.3 1.3-1.3.72 0 1.3.58 1.3 1.3 0 .72-.58 1.3-1.3 1.3zm1-4.3h-2V7h2v6z"/></svg>
+                        <strong>Conversion service not available</strong>
+                    `)
+                    return
+                }
+                switch (convertingTo) {
+                    case 'btc':
+                        if (Array.isArray(permissibleBtc)) {
+                            console.log(permissibleBtc)
+                        } else if (permissibleBtc.min) {
+                            const { min, max } = permissibleBtc;
+                        }
+                        break;
+                    case 'rupee':
+                        if (Array.isArray(permissibleRupee)) {
+                            console.log(permissibleRupee)
+                        } else if (permissibleRupee.min) {
+                            const { min, max } = permissibleRupee;
+                        }
+                        break;
+                }
+                getRef('conversion_loading_status').classList.add('hidden');
+                getRef('conversion_form').classList.remove('hidden');
+                if (toAsset === 'btc') {
+                    getRef('convert_asset_title').textContent = `Convert to BTC`;
+                    getRef('convert_asset_description').textContent = 'Enter the amount of rupee tokens you want to convert to BTC';
+                    getRef('conversion_asset_icon').innerHTML = assetIcons.rupee;
+                } else {
+                    getRef('convert_asset_title').textContent = `Convert to Rupee tokens`;
+                    getRef('convert_asset_description').textContent = 'Enter the amount of BTC you want to convert to rupee tokens';
+                    getRef('conversion_asset_icon').innerHTML = assetIcons.btc;
+                }
+                const fromAsset = toAsset === 'btc' ? 'rupee' : 'btc';
+                setCorrectInputParams({ fromAsset, toAsset: convertingTo });
+                getRef('convert_asset_title').textContent = `Convert to ${toAsset}`;
+                getRef('converted_amount').textContent = formatAmount(0, toAsset === 'btc' ? 'btc' : 'inr');
+                let assetBalance = 0;
+                if (convertingTo === 'btc') {
+                    assetBalance = await floTokenAPI.getBalance(floGlobals.myFloID)
+                } else {
+                    assetBalance = await btcOperator.getBalance(floGlobals.myBtcID)
+                }
+                getRef('conversion_amount').setAttribute('max', assetBalance)
+            } catch (e) {
+                console.log(e)
+                notify(`Could not initialize conversion: ${e.message}`, 'error')
+            }
+        }
+
+        function convertAsset() {
+            getConfirmation('Are you sure you want to convert?', { confirmText: 'Convert' }).then(async (res) => {
+                if (!res) return;
+                buttonLoader('convert_asset', true)
+                const fromAsset = convertingTo === 'btc' ? 'rupee' : 'btc';
+                const fromAmount = parseFloat(getRef('conversion_amount').value.trim());
+                try {
+                    let result
+                    if (convertingTo === 'btc') {
+                        result = floExchangeAPI.convertToBTC(fromAmount, floGlobals.myFloID, floGlobals.convertSink, await floDapps.user.private)
+                    } else {
+                        result = floExchangeAPI.convertFromBTC(fromAmount, floGlobals.myBtcID, floGlobals.convertSink, await floDapps.user.private)
+                    }
+                    console.log(result)
+                    notify('success', 'Conversion successful')
+                } catch (e) {
+                    notify('error', `Conversion failed: ${e.message}`)
+                    console.log(e)
+                } finally {
+                    buttonLoader('convert_asset', false)
+                }
+            })
         }
     </script>
 </body>
