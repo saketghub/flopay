@@ -1545,8 +1545,19 @@ fieldset {
     fill: var(--danger-color);
   }
 }
-#conversion_loading_status {
+#conversion_status {
   padding-bottom: 1.5rem;
+}
+.amount-option {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.3rem;
+  background-color: rgba(var(--text-color), 0.06);
+  cursor: pointer;
+  accent-color: var(--accent-color);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 @media screen and (max-width: 40rem) {
   #home {
