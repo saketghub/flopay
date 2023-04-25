@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.4.4
+(function (EXPORTS) { //floBlockchainAPI v2.5.1
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -21,6 +21,7 @@
 
     util.Sat_to_FLO = value => parseFloat((value / SATOSHI_IN_BTC).toFixed(8));
     util.FLO_to_Sat = value => parseInt(value * SATOSHI_IN_BTC);
+    util.toFixed = value => parseFloat((value).toFixed(8));
 
     Object.defineProperties(floBlockchainAPI, {
         sendAmt: {
@@ -120,13 +121,45 @@
     }
 
     //Get balance for the given Address
-    const getBalance = floBlockchainAPI.getBalance = function (addr) {
+    const getBalance = floBlockchainAPI.getBalance = function (addr, after = null) {
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addr/${addr}/balance`)
-                .then(balance => resolve(parseFloat(balance)))
-                .catch(error => reject(error));
+            let api = `api/addr/${addr}/balance`;
+            if (after) {
+                if (typeof after === 'string' && /^[0-9a-z]{64}$/i.test(after))
+                    api += '?after=' + after;
+                else return reject("Invalid 'after' parameter");
+            }
+            promisedAPI(api).then(result => {
+                if (typeof result === 'object' && result.lastItem) {
+                    getBalance(addr, result.lastItem)
+                        .then(r => resolve(util.toFixed(r + result.data)))
+                        .catch(error => reject(error))
+                } else resolve(result);
+            }).catch(error => reject(error))
         });
     }
+
+    const getUTXOs = address => new Promise((resolve, reject) => {
+        promisedAPI(`api/addr/${address}/utxo`)
+            .then(utxo => resolve(utxo))
+            .catch(error => reject(error))
+    })
+
+    const getUnconfirmedSpent = address => new Promise((resolve, reject) => {
+        readTxs(address, { mempool: "only" }).then(result => {
+            let unconfirmedSpent = {};
+            for (let tx of result.items)
+                if (tx.confirmations == 0)
+                    for (let vin of tx.vin)
+                        if (vin.addr === address) {
+                            if (Array.isArray(unconfirmedSpent[vin.txid]))
+                                unconfirmedSpent[vin.txid].push(vin.vout);
+                            else
+                                unconfirmedSpent[vin.txid] = [vin.vout];
+                        }
+            resolve(unconfirmedSpent);
+        }).catch(error => reject(error))
+    })
 
     //create a transaction with single sender
     const createTx = function (senderAddr, receiverAddr, sendAmt, floData = '', strict_utxo = true) {
@@ -144,45 +177,31 @@
                 var fee = DEFAULT.fee;
                 if (balance < sendAmt + fee)
                     return reject("Insufficient FLO balance!");
-                //get unconfirmed tx list
-                promisedAPI(`api/addr/${senderAddr}`).then(result => {
-                    readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
-                        let unconfirmedSpent = {};
-                        for (let tx of result.items)
-                            if (tx.confirmations == 0)
-                                for (let vin of tx.vin)
-                                    if (vin.addr === senderAddr) {
-                                        if (Array.isArray(unconfirmedSpent[vin.txid]))
-                                            unconfirmedSpent[vin.txid].push(vin.vout);
-                                        else
-                                            unconfirmedSpent[vin.txid] = [vin.vout];
-                                    }
-                        //get utxos list
-                        promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
-                            //form/construct the transaction data
-                            var trx = bitjs.transaction();
-                            var utxoAmt = 0.0;
-                            for (var i = utxos.length - 1;
-                                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
-                                //use only utxos with confirmations (strict_utxo mode)
-                                if (utxos[i].confirmations || !strict_utxo) {
-                                    if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
-                                        continue; //A transaction has already used the utxo, but is unconfirmed.
-                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
-                                    utxoAmt += utxos[i].amount;
-                                };
-                            }
-                            if (utxoAmt < sendAmt + fee)
-                                reject("Insufficient FLO: Some UTXOs are unconfirmed");
-                            else {
-                                trx.addoutput(receiverAddr, sendAmt);
-                                var change = utxoAmt - sendAmt - fee;
-                                if (change > DEFAULT.minChangeAmt)
-                                    trx.addoutput(senderAddr, change);
-                                trx.addflodata(floData.replace(/\n/g, ' '));
-                                resolve(trx);
-                            }
-                        }).catch(error => reject(error))
+                getUnconfirmedSpent(senderAddr).then(unconfirmedSpent => {
+                    getUTXOs(senderAddr).then(utxos => {
+                        //form/construct the transaction data
+                        var trx = bitjs.transaction();
+                        var utxoAmt = 0.0;
+                        for (var i = utxos.length - 1;
+                            (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                            //use only utxos with confirmations (strict_utxo mode)
+                            if (utxos[i].confirmations || !strict_utxo) {
+                                if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                    continue; //A transaction has already used the utxo, but is unconfirmed.
+                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                utxoAmt += utxos[i].amount;
+                            };
+                        }
+                        if (utxoAmt < sendAmt + fee)
+                            reject("Insufficient FLO: Some UTXOs are unconfirmed");
+                        else {
+                            trx.addoutput(receiverAddr, sendAmt);
+                            var change = utxoAmt - sendAmt - fee;
+                            if (change > DEFAULT.minChangeAmt)
+                                trx.addoutput(senderAddr, change);
+                            trx.addflodata(floData.replace(/\n/g, ' '));
+                            resolve(trx);
+                        }
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
             }).catch(error => reject(error))
@@ -238,7 +257,7 @@
             var trx = bitjs.transaction();
             var utxoAmt = 0.0;
             var fee = DEFAULT.fee;
-            promisedAPI(`api/addr/${floID}/utxo`).then(utxos => {
+            getUTXOs(floID).then(utxos => {
                 for (var i = utxos.length - 1; i >= 0; i--)
                     if (utxos[i].confirmations) {
                         trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
@@ -405,7 +424,7 @@
                 //Get the UTXOs of the senders
                 let promises = [];
                 for (let floID in senders)
-                    promises.push(promisedAPI(`api/addr/${floID}/utxo`));
+                    promises.push(getUTXOs(floID));
                 Promise.all(promises).then(results => {
                     var trx = bitjs.transaction();
                     for (let floID in senders) {
@@ -479,46 +498,32 @@
                 var fee = DEFAULT.fee;
                 if (balance < sendAmt + fee)
                     return reject("Insufficient FLO balance!");
-                //get unconfirmed tx list
-                promisedAPI(`api/addr/${senderAddr}`).then(result => {
-                    readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
-                        let unconfirmedSpent = {};
-                        for (let tx of result.items)
-                            if (tx.confirmations == 0)
-                                for (let vin of tx.vin)
-                                    if (vin.addr === senderAddr) {
-                                        if (Array.isArray(unconfirmedSpent[vin.txid]))
-                                            unconfirmedSpent[vin.txid].push(vin.vout);
-                                        else
-                                            unconfirmedSpent[vin.txid] = [vin.vout];
-                                    }
-                        //get utxos list
-                        promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
-                            //form/construct the transaction data
-                            var trx = bitjs.transaction();
-                            var utxoAmt = 0.0;
-                            for (var i = utxos.length - 1;
-                                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
-                                //use only utxos with confirmations (strict_utxo mode)
-                                if (utxos[i].confirmations || !strict_utxo) {
-                                    if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
-                                        continue; //A transaction has already used the utxo, but is unconfirmed.
-                                    trx.addinput(utxos[i].txid, utxos[i].vout, redeemScript); //for multisig, script=redeemScript
-                                    utxoAmt += utxos[i].amount;
-                                };
-                            }
-                            if (utxoAmt < sendAmt + fee)
-                                reject("Insufficient FLO: Some UTXOs are unconfirmed");
-                            else {
-                                for (let i in receivers)
-                                    trx.addoutput(receivers[i], amounts[i]);
-                                var change = utxoAmt - sendAmt - fee;
-                                if (change > DEFAULT.minChangeAmt)
-                                    trx.addoutput(senderAddr, change);
-                                trx.addflodata(floData.replace(/\n/g, ' '));
-                                resolve(trx);
-                            }
-                        }).catch(error => reject(error))
+                getUnconfirmedSpent(senderAddr).then(unconfirmedSpent => {
+                    getUTXOs(senderAddr).then(utxos => {
+                        //form/construct the transaction data
+                        var trx = bitjs.transaction();
+                        var utxoAmt = 0.0;
+                        for (var i = utxos.length - 1;
+                            (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                            //use only utxos with confirmations (strict_utxo mode)
+                            if (utxos[i].confirmations || !strict_utxo) {
+                                if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                    continue; //A transaction has already used the utxo, but is unconfirmed.
+                                trx.addinput(utxos[i].txid, utxos[i].vout, redeemScript); //for multisig, script=redeemScript
+                                utxoAmt += utxos[i].amount;
+                            };
+                        }
+                        if (utxoAmt < sendAmt + fee)
+                            reject("Insufficient FLO: Some UTXOs are unconfirmed");
+                        else {
+                            for (let i in receivers)
+                                trx.addoutput(receivers[i], amounts[i]);
+                            var change = utxoAmt - sendAmt - fee;
+                            if (change > DEFAULT.minChangeAmt)
+                                trx.addoutput(senderAddr, change);
+                            trx.addflodata(floData.replace(/\n/g, ' '));
+                            resolve(trx);
+                        }
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
             }).catch(error => reject(error))
@@ -657,7 +662,7 @@
     }
 
     const getTxOutput = (txid, i) => new Promise((resolve, reject) => {
-        fetch_api(`api/tx/${txid}`)
+        promisedAPI(`api/tx/${txid}`)
             .then(result => resolve(result.vout[i]))
             .catch(error => reject(error))
     });
@@ -740,30 +745,57 @@
         })
     }
 
+    const isUndefined = val => typeof val === 'undefined';
+
     //Read Txs of Address between from and to
-    const readTxs = floBlockchainAPI.readTxs = function (addr, from, to) {
+    const readTxs = floBlockchainAPI.readTxs = function (addr, options = {}) {
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addrs/${addr}/txs?from=${from}&to=${to}`)
+            let api = `api/addrs/${addr}/txs`;
+            //API options
+            let api_options = [];
+            if (!isUndefined(options.after))
+                api_options.push(`after=${options.after}`);
+            else {
+                if (!isUndefined(options.from))
+                    api_options.push(`from=${options.from}`);
+                if (!isUndefined(options.to))
+                    api_options.push(`to=${options.to}`);
+            }
+            if (!isUndefined(options.mempool))
+                api_options.push(`mempool=${options.mempool}`)
+            if (api_options.length)
+                api += "?" + api_options.join('&');
+            promisedAPI(api)
                 .then(response => resolve(response))
                 .catch(error => reject(error))
         });
     }
 
     //Read All Txs of Address (newest first)
-    floBlockchainAPI.readAllTxs = function (addr) {
+    const readAllTxs = floBlockchainAPI.readAllTxs = function (addr, options) {
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-                promisedAPI(`api/addrs/${addr}/txs?from=0&to=${response.totalItems}0`)
-                    .then(response => resolve(response.items))
-                    .catch(error => reject(error));
-            }).catch(error => reject(error))
+            readTxs(addr, options).then(response => {
+                if (response.incomplete) {
+                    let next_options = Object.assign({}, options);
+                    next_options.after = response.lastItem;
+                    readAllTxs(addr, next_options).then(r => {
+                        r.items = r.items.concat(response.items);   //latest tx are 1st in array
+                        resolve(r);
+                    }).catch(error => reject(error))
+                } else
+                    resolve({
+                        lastKey: response.lastItem || options.after,
+                        items: response.items
+                    });
+            })
         });
     }
 
     /*Read flo Data from txs of given Address
     options can be used to filter data
-    limit       : maximum number of filtered data (default = 1000, negative  = no limit)
-    ignoreOld   : ignore old txs (default = 0)
+    after       : query after the given txid
+    mempool     : query mempool tx or not (options same as readAllTx, DEFAULT=false: ignore unconfirmed tx)
+    ignoreOld   : ignore old txs (deprecated: support for backward compatibility only, cannot be used with 'after')
     sentOnly    : filters only sent data
     receivedOnly: filters only received data
     pattern     : filters data that with JSON pattern
@@ -773,98 +805,73 @@
     receiver    : flo-id(s) of receiver
     */
     floBlockchainAPI.readData = function (addr, options = {}) {
-        options.limit = options.limit || 0;
-        options.ignoreOld = options.ignoreOld || 0;
-        if (typeof options.senders === "string") options.senders = [options.senders];
-        if (typeof options.receivers === "string") options.receivers = [options.receivers];
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-                var newItems = response.totalItems - options.ignoreOld;
-                promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems * 2}`).then(response => {
-                    if (options.limit <= 0)
-                        options.limit = response.items.length;
-                    var filteredData = [];
-                    let numToRead = response.totalItems - options.ignoreOld,
-                        unconfirmedCount = 0;
-                    for (let i = 0; i < numToRead && filteredData.length < options.limit; i++) {
-                        if (!response.items[i].confirmations) { //unconfirmed transactions
-                            unconfirmedCount++;
-                            if (numToRead < response.items[i].length)
-                                numToRead++;
-                            continue;
-                        }
-                        if (options.pattern) {
-                            try {
-                                let jsonContent = JSON.parse(response.items[i].floData);
-                                if (!Object.keys(jsonContent).includes(options.pattern))
-                                    continue;
-                            } catch (error) {
-                                continue;
-                            }
-                        }
-                        if (options.sentOnly) {
-                            let flag = false;
-                            for (let vin of response.items[i].vin)
-                                if (vin.addr === addr) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (Array.isArray(options.senders)) {
-                            let flag = false;
-                            for (let vin of response.items[i].vin)
-                                if (options.senders.includes(vin.addr)) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (options.receivedOnly) {
-                            let flag = false;
-                            for (let vout of response.items[i].vout)
-                                if (vout.scriptPubKey.addresses[0] === addr) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (Array.isArray(options.receivers)) {
-                            let flag = false;
-                            for (let vout of response.items[i].vout)
-                                if (options.receivers.includes(vout.scriptPubKey.addresses[0])) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (options.filter && !options.filter(response.items[i].floData))
-                            continue;
 
-                        if (options.tx) {
-                            let d = {}
-                            d.txid = response.items[i].txid;
-                            d.time = response.items[i].time;
-                            d.blockheight = response.items[i].blockheight;
-                            d.senders = new Set(response.items[i].vin.map(v => v.addr));
-                            d.receivers = new Set(response.items[i].vout.map(v => v.scriptPubKey.addresses[0]));
-                            d.data = response.items[i].floData;
-                            filteredData.push(d);
-                        } else
-                            filteredData.push(response.items[i].floData);
+            //fetch options
+            let fetch_options = {};
+            fetch_options.mempool = isUndefined(options.mempool) ? 'false' : options.mempool; //DEFAULT: ignore unconfirmed tx
+            if (!isUndefined(options.after)) {
+                if (!isUndefined(options.ignoreOld)) //Backward support
+                    return reject("Invalid options: cannot use after and ignoreOld in same query");
+                else
+                    fetch_options.after = options.after;
+            }
+            readAllTxs(addr, fetch_options).then(response => {
+
+                if (Number.isInteger(options.ignoreOld))  //backward support, cannot be used with options.after
+                    response.items.splice(-options.ignoreOld);   //negative to count from end of the array
+
+                if (typeof options.senders === "string") options.senders = [options.senders];
+                if (typeof options.receivers === "string") options.receivers = [options.receivers];
+
+                //filter the txs based on options
+                const filteredData = response.items.filter(tx => {
+
+                    if (!tx.confirmations)  //unconfirmed transactions: this should not happen as we send mempool=false in API query
+                        return false;
+
+                    if (options.sentOnly && !tx.vin.some(vin => vin.addr === addr))
+                        return false;
+                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.addr)))
+                        return false;
+
+                    if (options.receivedOnly && !tx.vout.some(vout => vout.scriptPubKey.addresses[0] === addr))
+                        return false;
+                    else if (Array.isArray(options.receivers) && !tx.vout.some(vout => options.receivers.includes(vout.scriptPubKey.addresses[0])))
+                        return false;
+
+                    if (options.pattern) {
+                        try {
+                            let jsonContent = JSON.parse(tx.floData);
+                            if (!Object.keys(jsonContent).includes(options.pattern))
+                                return false;
+                        } catch {
+                            return false;
+                        }
                     }
-                    resolve({
-                        totalTxs: response.totalItems - unconfirmedCount,
-                        data: filteredData
-                    });
-                }).catch(error => {
-                    reject(error);
-                });
-            }).catch(error => {
-                reject(error);
-            });
-        });
-    }
 
+                    if (options.filter && !options.filter(tx.floData))
+                        return false;
+
+                    return true;
+                }).map(tx => options.tx ? {
+                    txid: tx.txid,
+                    time: tx.time,
+                    blockheight: tx.blockheight,
+                    senders: new Set(tx.vin.map(v => v.addr)),
+                    receivers: new Set(tx.vout.map(v => v.scriptPubKey.addresses[0])),
+                    data: tx.floData
+                } : tx.floData);
+
+                const result = { lastKey: response.lastKey };
+                if (options.tx)
+                    result.items = filteredData;
+                else
+                    result.data = filteredData
+                resolve(result);
+
+            }).catch(error => reject(error))
+        })
+    }
 
 })('object' === typeof module ? module.exports : window.floBlockchainAPI = {});
