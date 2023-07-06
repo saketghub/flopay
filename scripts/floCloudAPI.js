@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCloudAPI v2.4.3
+(function (EXPORTS) { //floCloudAPI v2.4.3a
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -8,6 +8,7 @@
         SNStorageID: floGlobals.SNStorageID || "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
         adminID: floGlobals.adminID,
         application: floGlobals.application,
+        SNStorageName: "SuperNodeStorage",
         callback: (d, e) => console.debug(d, e)
     };
 
@@ -57,6 +58,9 @@
     Object.defineProperties(floCloudAPI, {
         SNStorageID: {
             get: () => DEFAULT.SNStorageID
+        },
+        SNStorageName: {
+            get: () => DEFAULT.SNStorageName
         },
         adminID: {
             get: () => DEFAULT.adminID
