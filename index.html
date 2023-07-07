@@ -2144,7 +2144,7 @@
                         status = note ? note.split(':')[0] : 'PENDING';
                         getRef('transaction__type').textContent = 'Payment request'
                         if (status === 'PAID')
-                            shouldRender['txLink'] = `https://flosight.duckdns.org/tx/${note.split(':')[1].trim()}`;
+                            shouldRender['txLink'] = `${floBlockchainAPI.current_server}tx/${note.split(':')[1].trim()}`;
                         if (remark !== '')
                             shouldRender.txRemark = remark
                     } else if (params.type === 'wallet') {
@@ -2164,7 +2164,7 @@
                         status = tag ? tag : (note ? 'REJECTED' : "PENDING");
                         getRef('transaction__type').textContent = mode === 'cash-to-token' ? 'Wallet top-up' : 'Withdraw';
                         if (status === 'COMPLETED') {
-                            shouldRender['txLink'] = `https://flosight.duckdns.org/tx/${mode === 'cash-to-token' ? note : token_txid}`
+                            shouldRender['txLink'] = `${floBlockchainAPI.current_server}tx/${mode === 'cash-to-token' ? note : token_txid}`
                         } else if (status === 'REJECTED') {
                             shouldRender.txNote = html`<svg class="icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg> ${note.split(':')[1]}`
                         }
@@ -2832,7 +2832,7 @@
                     showChildElement('withdraw_wallet_process', 1);
                     refreshBalance();
                     getRef('withdrawal_blockchain_link').classList.remove('hidden');
-                    getRef('withdrawal_blockchain_link').href = `https://flosight.duckdns.org/tx/${txid}`
+                    getRef('withdrawal_blockchain_link').href = `${floBlockchainAPI.current_server}tx/${txid}`
                     console.log(result);
                 }).catch(error => {
                     getRef('withdrawal_failed_reason').textContent = error;
@@ -2932,7 +2932,7 @@
                             let result
                             if (type === 'btc-bonds' || type === 'bobs-fund') {
                                 result = await User.sendToken(receiverFloID, amount, remarks)
-                                document.getElementById('external_transfer__link').href = `https://flosight.duckdns.org/tx/${result}`;
+                                document.getElementById('external_transfer__link').href = `${floBlockchainAPI.current_server}tx/${result}`;
                             } else if (type === 'exchange') {
                                 result = await floExchangeAPI.depositToken('rupee', amount, floGlobals.myFloID, receiverFloID, privateKey)
                             }
@@ -3477,7 +3477,7 @@
                                 <div class="transaction__amount">${formatAmount(tokenAmount)}</div>
                             </div>
                             <div class="flex align-center gap-0-5">
-                                <a class="button button--small" target="_blank" href=${`https://flosight.duckdns.org/tx/${txid}`}>View details</a>
+                                <a class="button button--small" target="_blank" href=${`${floBlockchainAPI.current_server}tx/${txid}`}>View details</a>
                                 <button class="button button--small" onclick=${copyTxId}>Copy ID</button>
                             </div>
                         </div>
