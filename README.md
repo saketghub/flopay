@@ -64,8 +64,8 @@ iii) To send Rupee tokens to these products, click on the product name, enter th
 i) FLO addresses or BTC addresses can be added as contacts for future ease of use  
 
 #### Note:  
-For security, data are not stored in any server but rather stored in the IndexDB (the web browser's storage)  
-Contacts saved in a web browser cannot be accessed through another web browser  
+**For security, data are not stored in any server but rather stored in the IndexDB (the web browser's storage)  
+Contacts saved in a web browser cannot be accessed through another web browser**  
 
 ii) Click on the "Add FLO address" button  
 iii) Enter the FLO or BTC address  
