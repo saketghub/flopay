@@ -363,7 +363,8 @@
                             </svg>
                         </a>
                         <details class="grid gap-1"
-                            style="border-top: solid thin rgba(var(--text-color), 0.5); padding-top: 1rem" open>
+                            style="border-top: solid thin rgba(var(--text-color), 0.5); padding-top: 1rem; padding-bottom: 1rem;"
+                            open>
                             <summary style="margin-bottom: 1.5rem;">
                                 <h4 style="font-weight: 500;">Send Rupee tokens to other
                                     RanchiMall products</h4>
@@ -3502,7 +3503,9 @@
                 return clone;
             },
             walletRequestCard(details) {
-                const { time, message: { mode, amount }, note, tag, vectorClock } = details;
+                const { time, message: { mode, amount }, note, tag, vectorClock, senderID } = details;
+                // return empty text node if not my request
+                if (senderID !== floGlobals.myFloID) return document.createTextNode('');
                 const clone = getRef('wallet_request_template').content.cloneNode(true).firstElementChild.firstElementChild;
                 const type = mode === 'cash-to-token' ? 'Top-up' : 'Withdraw';
                 let status = tag ? tag : (note ? 'REJECTED' : "PENDING");

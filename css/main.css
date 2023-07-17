@@ -709,6 +709,7 @@ ol li::before {
   align-items: center;
   grid-template-columns: minmax(0, 1fr) auto auto;
   min-height: 4rem;
+  flex-shrink: 0;
 }
 
 #user_profile_button {
