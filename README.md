@@ -1,6 +1,9 @@
 # FLO Pay  
-FLO Pay eliminates the need of proving payment to a third party. Payments done in Rupee can be recorded on the blockchain using an equivalent valued token called Rupee token on the blockchain.  
-Users can also pay in Rupees and buy or participate in RanchiMall's financial products such as Exchange Market and Blockchain Bonds. 1 Rupee token is always equal to 1 INR. Anyone with Rupee tokens in their FLO blockchain address or FLO ID can convert it into Rupee cash. An open and authorized network of cashiers with their FLO ID approves and verifies Rupee-based deposits and withdrawals.    
+FLO Pay simplifies the process of verifying payments with third parties. By leveraging blockchain technology, Rupee payments can be securely recorded using Rupee tokens, which hold an equivalent value on the blockchain.  
+
+In addition to making payments in Rupees, users can utilize their Rupee tokens to purchase or engage with RanchiMall's financial products, including the Exchange Market and Blockchain Bonds. It's important to note that 1 Rupee token always equals 1 INR.  
+
+Individuals who possess Rupee tokens in their FLO blockchain address or FLO ID have the ability to convert them into Rupee cash. This conversion process is facilitated by an open and authorized network of cashiers who possess their own FLO ID.
 
 ### Live URL for FLO Pay:
 *https://ranchimall.github.io/flopay/*  
