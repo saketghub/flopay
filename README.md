@@ -1,5 +1,5 @@
 # FLO Pay  
-FLO Pay simplifies the process of verifying payments with third parties. By leveraging blockchain technology, Rupee payments can be securely recorded using Rupee tokens, which hold an equivalent value on the blockchain.  
+FLO Pay simplifies the process of verifying payments with third parties. This platform departs from the conventional monthly-based system and instead adopts a task-based approach. To maintain exceptional output quality, all performance evaluations are recorded on the blockchain, guaranteeing transparency and reliability throughout the internship journey.
 
 In addition to making payments in Rupees, users can utilize their Rupee tokens to purchase or engage with RanchiMall's financial products, including the Exchange Market and Blockchain Bonds. It's important to note that 1 Rupee token always equals 1 INR.  
 
@@ -12,7 +12,7 @@ Individuals who possess Rupee tokens in their FLO blockchain address or FLO ID h
 Note: FLO Pay uses IndedxedDB for storing data, which means data is stored in the respective browser you use to open the web wallet. Data stored by one browser can't be accessed by other browsers.  
 
 ### Sign in  
-Sign in using your FLO private key. Upon signing in, the FLO, BTC, and, Rupee balance of the FLO ID will reflect on the dashboard. To add FLO or BTC to your FLO Pay wallet, a top-up (deposit) of Rupee tokens is required. Deposited Rupee tokens can be further used to buy FLO or BTC from the Exchange market.  
+Sign in using a FLO or BTC private key. Upon signing in, the FLO, BTC, and, Rupee balance of the FLO ID will reflect on the dashboard. To add FLO or BTC to your FLO Pay wallet, a top-up (deposit) of Rupee tokens is required. Deposited Rupee tokens can be further used to buy FLO or BTC from the Exchange market.  
 
 ### Send  
 i) Select Rupee to send/transfer Rupee tokens  
