@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCloudAPI v2.4.3a
+(function (EXPORTS) { //floCloudAPI v2.4.4
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -609,49 +609,39 @@
         })
     }
     */
-    /*(NEEDS UPDATE)
-    //edit comment of data in supernode cloud (mutable comments only)
-    floCloudAPI.editApplicationData = function(vectorClock, newComment, oldData, options = {}) {
+    //edit comment of data in supernode cloud (sender only)
+    floCloudAPI.editApplicationData = function (vectorClock, comment_edit, options = {}) {
         return new Promise((resolve, reject) => {
-            let p0
-            if (!oldData) {
-                options.atVectorClock = vectorClock;
-                options.callback = false;
-                p0 = requestApplicationData(false, options)
-            } else
-                p0 = Promise.resolve({
-                    vectorClock: {
-                        ...oldData
-                    }
-                })
-            p0.then(d => {
-                if (d.senderID != user.id)
-                    return reject("Invalid requestorID")
-                else if (!d.comment.startsWith("EDIT:"))
-                    return reject("Data immutable")
-                let data = {
+            //request the data from cloud for resigning
+            let req_options = Object.assign({}, options);
+            req_options.atVectorClock = vectorClock;
+            requestApplicationData(undefined, req_options).then(result => {
+                if (!result.length)
+                    return reject("Data not found");
+                let data = result[0];
+                if (data.senderID !== user.id)
+                    return reject("Only sender can edit comment");
+                data.comment = comment_edit;
+                let hashcontent = ["receiverID", "time", "application", "type", "message", "comment"]
+                    .map(d => data[d]).join("|");
+                let re_sign = user.sign(hashcontent);
+                var request = {
+                    receiverID: options.receiverID || DEFAULT.adminID,
                     requestorID: user.id,
-                    receiverID: d.receiverID,
+                    pubKey: user.public,
                     time: Date.now(),
-                    application: d.application,
-                    edit: {
-                        vectorClock: vectorClock,
-                        comment: newComment
-                    }
+                    vectorClock: vectorClock,
+                    edit: comment_edit,
+                    re_sign: re_sign
                 }
-                d.comment = data.edit.comment;
-                let hashcontent = ["receiverID", "time", "application", "type", "message",
-                        "comment"
-                    ]
-                    .map(x => d[x]).join("|")
-                data.edit.sign = user.sign(hashcontent)
-                singleRequest(data.receiverID, data)
-                    .then(result => resolve("Data comment updated"))
+                let request_hash = ["time", "vectorClock", "edit", "re_sign"].map(d => request[d]).join("|");
+                request.sign = user.sign(request_hash);
+                singleRequest(request.receiverID, request)
+                    .then(result => resolve(result))
                     .catch(error => reject(error))
-            })
+            }).catch(error => reject(error))
         })
     }
-    */
 
     //tag data in supernode cloud (subAdmin access only)
     floCloudAPI.tagApplicationData = function (vectorClock, tag, options = {}) {
