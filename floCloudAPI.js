@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCloudAPI v2.4.4
+(function (EXPORTS) { //floCloudAPI v2.4.5
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -797,6 +797,67 @@
             sendApplicationData(message, objectName, options).then(result => {
                 lastCommit.set(objectName);
                 resolve(result)
+            }).catch(error => reject(error))
+        })
+    }
+
+    //upload file
+    floCloudAPI.uploadFile = function (fileBlob, type, options = {}) {
+        return new Promise((resolve, reject) => {
+            if (!(fileBlob instanceof File) && !(fileBlob instanceof Blob))
+                return reject("file must be instance of File/Blob");
+            fileBlob.arrayBuffer().then(arraybuf => {
+                let file_data = { type: fileBlob.type, name: fileBlob.name };
+                file_data.content = Crypto.util.bytesToBase64(new Uint8Array(arraybuf));
+                if (options.encrypt) {
+                    let encryptionKey = options.encrypt === true ?
+                        floGlobals.settings.encryptionKey : options.encrypt
+                    file_data = floCrypto.encryptData(JSON.stringify(file_data), encryptionKey)
+                }
+                sendApplicationData(file_data, type, options)
+                    .then(({ vectorClock, receiverID, type, application }) => resolve({ vectorClock, receiverID, type, application }))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    //download file
+    floCloudAPI.downloadFile = function (vectorClock, options = {}) {
+        return new Promise((resolve, reject) => {
+            options.atVectorClock = vectorClock;
+            requestApplicationData(options.type, options).then(result => {
+                if (!result.length)
+                    return reject("File not found");
+                result = result[0];
+                try {
+                    let file_data = decodeMessage(result.message);
+                    //file is encrypted: decryption required
+                    if (file_data instanceof Object && "secret" in file_data) {
+                        if (!options.decrypt)
+                            return reject("Data is encrypted");
+                        let decryptionKey = (options.decrypt === true) ? Crypto.AES.decrypt(user_private, aes_key) : options.decrypt;
+                        if (!Array.isArray(decryptionKey))
+                            decryptionKey = [decryptionKey];
+                        let flag = false;
+                        for (let key of decryptionKey) {
+                            try {
+                                let tmp = floCrypto.decryptData(file_data, key);
+                                file_data = JSON.parse(tmp);
+                                flag = true;
+                                break;
+                            } catch (error) { }
+                        }
+                        if (!flag)
+                            return reject("Unable to decrypt file: Invalid private key");
+                    }
+                    //reconstruct the file
+                    let arraybuf = new Uint8Array(Crypto.util.base64ToBytes(file_data.content))
+                    result.file = new File([arraybuf], file_data.name, { type: file_data.type });
+                    resolve(result)
+                } catch (error) {
+                    console.error(error);
+                    reject("Data is not a file");
+                }
             }).catch(error => reject(error))
         })
     }
