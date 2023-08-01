@@ -2743,9 +2743,10 @@
         // store user data in separate IDB 
         async function organizeSyncedData(obsName) {
             const fetchedData = await floCloudAPI.requestApplicationData(obsName, { mostRecent: true, senderIDs: [floGlobals.myFloID], receiverID: floGlobals.myFloID });
-            if (fetchedData.length && await compactIDB.readData(obsName, 'lastSyncTime') !== fetchedData[0].time) {
+            let vc = Object.keys(fetchedData).sort().pop();
+            if (vc && await compactIDB.readData(obsName, 'lastSyncTime') !== fetchedData[vc].time) {
                 await compactIDB.clearData(obsName);
-                const dataToDecrypt = floCloudAPI.util.decodeMessage(fetchedData[0].message);
+                const dataToDecrypt = fetchedData[vc].message;
                 floDapps.user.private.then(privateKey => {
                     if (!privateKey) return;
                     const decryptedData = JSON.parse(Crypto.AES.decrypt(dataToDecrypt, privateKey));
@@ -2753,7 +2754,7 @@
                         floGlobals[obsName][key] = decryptedData[key];
                         compactIDB.addData(obsName, decryptedData[key], key);
                     }
-                    compactIDB.addData(obsName, fetchedData[0].time, 'lastSyncTime');
+                    compactIDB.addData(obsName, fetchedData[vc].time, 'lastSyncTime');
                     return true;
                 }).catch(error => {
                     console.log(error);

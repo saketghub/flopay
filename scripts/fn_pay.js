@@ -63,9 +63,10 @@ User.getCashierUPI = function () {
             mostRecent: true
         }))).then(result => {
             for (let r of result)
-                if (r.status === "fulfilled" && r.value.length) {
-                    cashierUPI[r.value[0].senderID] = floCloudAPI.util.decodeMessage(r.value[0].message).upi;
-                    cashierPubKeys[r.value[0].senderID] = r.value[0].pubKey; //get pubKey of cashier from messages for encryption
+                if (r.status === "fulfilled" && Object.keys(r.value).length) {
+                    let vc = Object.keys(r.value).sort().pop()
+                    cashierUPI[r.value[vc].senderID] = r.value[vc].message.upi;
+                    cashierPubKeys[r.value[vc].senderID] = r.value[vc].pubKey; //get pubKey of cashier from messages for encryption
                 }
             resolve(cashierUPI);
         })
