@@ -10,3 +10,141 @@ const smSelect = document.createElement("template"); smSelect.innerHTML = '<styl
 const spinner = document.createElement("template"); spinner.innerHTML = '<style> *{ padding: 0; margin: 0; -webkit-box-sizing: border-box; box-sizing: border-box;}.loader { display: flex; height: var(--size, 1.5rem); width: var(--size, 1.5rem); stroke-width: 8; overflow: visible; stroke: var(--accent-color, teal); fill: none; stroke-dashoffset: 180; stroke-dasharray: 180; animation: load 2s infinite, spin 1s linear infinite;}@keyframes load { 50% { stroke-dashoffset: 0; } 100%{ stroke-dashoffset: -180; }}@keyframes spin { 100% { transform: rotate(360deg); }}</style><svg viewBox="0 0 64 64" class="loader"><circle cx="32" cy="32" r="32" /></svg>'; class SpinnerLoader extends HTMLElement { constructor() { super(), this.attachShadow({ mode: "open" }).append(spinner.content.cloneNode(!0)) } } window.customElements.define("sm-spinner", SpinnerLoader);
 const smTextarea = document.createElement("template"); smTextarea.innerHTML = ' <style> *, *::before, *::after {  padding: 0; margin: 0; -webkit-box-sizing: border-box; box-sizing: border-box; }  ::-moz-focus-inner{ border: none; } .hide{ opacity: 0 !important; } :host{ display: grid; --danger-color: red; --border-radius: 0.3rem; --background: rgba(var(--text-color,(17,17,17)), 0.06); --padding: initial; --max-height: 8rem; } :host([variant="outlined"]) .textarea { box-shadow: 0 0 0 0.1rem rgba(var(--text-color,(17,17,17)), 0.4) inset; background: rgba(var(--background-color,(255,255,255)), 1); } .textarea{ display: grid; position: relative; cursor: text; min-width: 0; text-align: left; grid-template-columns: 1fr; align-items: stretch; max-height: var(--max-height); background: var(--background); border-radius: var(--border-radius); padding: var(--padding); transition: opacity 0.3s, box-shadow 0.2s; } .textarea::after, textarea{ padding: var(--padding,0.6rem 0.8rem); width: 100%; min-width: 1em; font: inherit; color: inherit; resize: none; grid-area: 2/1; justify-self: stretch; background: none; appearance: none; border: none; outline: none; line-height: 1.5; overflow: hidden auto; } .textarea::after{ content: attr(data-value) \' \'; visibility: hidden; white-space: pre-wrap; overflow-wrap: break-word; word-wrap: break-word; hyphens: auto; } .readonly{ pointer-events: none; } .textarea:focus-within:not(.readonly){ box-shadow: 0 0 0 0.1rem var(--accent-color,teal) inset; } .placeholder{ margin: var(--padding,0.6rem 0.8rem); opacity: .7; font-weight: inherit; font-size: inherit; line-height: 1.5; pointer-events: none; user-select: none; grid-area: 2/1; } :host([disabled]) .textarea{ cursor: not-allowed; opacity: 0.6; } @media (any-hover: hover){ ::-webkit-scrollbar{ width: 0.5rem; height: 0.5rem; }  ::-webkit-scrollbar-thumb{ background: rgba(var(--text-color,(17,17,17)), 0.3); border-radius: 1rem; &:hover{ background: rgba(var(--text-color,(17,17,17)), 0.5); } } } </style> <label class="textarea" part="textarea"> <span class="placeholder"></span> <textarea rows="1"></textarea> </label> ', customElements.define("sm-textarea", class extends HTMLElement { constructor() { super(), this.attachShadow({ mode: "open" }).append(smTextarea.content.cloneNode(!0)), this.textarea = this.shadowRoot.querySelector("textarea"), this.textareaBox = this.shadowRoot.querySelector(".textarea"), this.placeholder = this.shadowRoot.querySelector(".placeholder"), this.reflectedAttributes = ["disabled", "required", "readonly", "rows", "minlength", "maxlength"], this.reset = this.reset.bind(this), this.focusIn = this.focusIn.bind(this), this.fireEvent = this.fireEvent.bind(this), this.checkInput = this.checkInput.bind(this) } static get observedAttributes() { return ["disabled", "value", "placeholder", "required", "readonly", "rows", "minlength", "maxlength"] } get value() { return this.textarea.value } set value(e) { this.setAttribute("value", e), this.fireEvent() } get disabled() { return this.hasAttribute("disabled") } set disabled(e) { e ? this.setAttribute("disabled", "") : this.removeAttribute("disabled") } get isValid() { return this.textarea.checkValidity() } reset() { this.setAttribute("value", "") } focusIn() { this.textarea.focus() } fireEvent() { let e = new Event("input", { bubbles: !0, cancelable: !0, composed: !0 }); this.dispatchEvent(e) } checkInput() { this.hasAttribute("placeholder") && "" !== this.getAttribute("placeholder") && ("" !== this.textarea.value ? this.placeholder.classList.add("hide") : this.placeholder.classList.remove("hide")) } connectedCallback() { this.textarea.addEventListener("input", e => { this.textareaBox.dataset.value = this.textarea.value, this.checkInput() }) } attributeChangedCallback(e, t, n) { this.reflectedAttributes.includes(e) ? this.hasAttribute(e) ? this.textarea.setAttribute(e, this.getAttribute(e) ? this.getAttribute(e) : "") : this.textContent.removeAttribute(e) : "placeholder" === e ? this.placeholder.textContent = this.getAttribute("placeholder") : "value" === e && (this.textarea.value = n, this.textareaBox.dataset.value = n, this.checkInput()) } });
 const themeToggle = document.createElement("template"); themeToggle.innerHTML = ' <style> *{ padding: 0; margin: 0; box-sizing: border-box; } :host{ cursor: pointer; --height: 2.5rem; --width: 2.5rem; } .theme-toggle { display: flex; position: relative; width: 1.2rem; height: 1.2rem; cursor: pointer; -webkit-tap-highlight-color: transparent; } .theme-toggle::after{ content: \'\'; position: absolute; height: var(--height); width: var(--width); top: 50%; left: 50%; opacity: 0; border-radius: 50%; pointer-events: none; transition: transform 0.3s, opacity 0.3s; transform: translate(-50%, -50%) scale(1.2); background-color: rgba(var(--text-color,inherit), 0.12); } :host(:focus-within) .theme-toggle{ outline: none; } :host(:focus-within) .theme-toggle::after{ opacity: 1; transform: translate(-50%, -50%) scale(1); } .icon { position: absolute; height: 100%; width: 100%; fill: rgba(var(--text-color,inherit), 1); transition: transform 0.3s, opacity 0.1s; }  .theme-switcher__checkbox { display: none; } :host([checked]) .moon-icon { transform: translateY(50%); opacity: 0; } :host(:not([checked])) .sun-icon { transform: translateY(50%); opacity: 0; } </style> <label class="theme-toggle" title="Change theme" tabindex="0"> <slot name="light-mode-icon"> <svg xmlns="http://www.w3.org/2000/svg" class="icon moon-icon" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><rect fill="none" height="24" width="24"/><path d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"/></svg> </slot> <slot name="dark-mode-icon"> <svg xmlns="http://www.w3.org/2000/svg" class="icon sun-icon" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><rect fill="none" height="24" width="24"/><path d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"/></svg> </slot> </label>'; class ThemeToggle extends HTMLElement { constructor() { super(), this.attachShadow({ mode: "open" }).append(themeToggle.content.cloneNode(!0)), this.isChecked = !1, this.hasTheme = "light", this.toggleState = this.toggleState.bind(this), this.fireEvent = this.fireEvent.bind(this), this.handleThemeChange = this.handleThemeChange.bind(this) } static get observedAttributes() { return ["checked"] } daylight() { this.hasTheme = "light", document.body.dataset.theme = "light", this.setAttribute("aria-checked", "false") } nightlight() { this.hasTheme = "dark", document.body.dataset.theme = "dark", this.setAttribute("aria-checked", "true") } toggleState() { this.toggleAttribute("checked"), this.fireEvent() } handleKeyDown(e) { " " === e.key && this.toggleState() } handleThemeChange(e) { e.detail.theme !== this.hasTheme && ("dark" === e.detail.theme ? this.setAttribute("checked", "") : this.removeAttribute("checked")) } fireEvent() { this.dispatchEvent(new CustomEvent("themechange", { bubbles: !0, composed: !0, detail: { theme: this.hasTheme } })) } connectedCallback() { this.setAttribute("role", "switch"), this.setAttribute("aria-label", "theme toggle"), "dark" === localStorage.getItem(`${window.location.hostname}-theme`) ? (this.nightlight(), this.setAttribute("checked", "")) : "light" === localStorage.getItem(`${window.location.hostname}-theme`) ? (this.daylight(), this.removeAttribute("checked")) : window.matchMedia("(prefers-color-scheme: dark)").matches ? (this.nightlight(), this.setAttribute("checked", "")) : (this.daylight(), this.removeAttribute("checked")), this.addEventListener("click", this.toggleState), this.addEventListener("keydown", this.handleKeyDown), document.addEventListener("themechange", this.handleThemeChange) } disconnectedCallback() { this.removeEventListener("click", this.toggleState), this.removeEventListener("keydown", this.handleKeyDown), document.removeEventListener("themechange", this.handleThemeChange) } attributeChangedCallback(e, t, n) { "checked" === e && (this.hasAttribute("checked") ? (this.nightlight(), localStorage.setItem(`${window.location.hostname}-theme`, "dark")) : (this.daylight(), localStorage.setItem(`${window.location.hostname}-theme`, "light"))) } } window.customElements.define("theme-toggle", ThemeToggle);
+
+window.customElements.define('keys-generator', class extends HTMLElement {
+    constructor() {
+        super();
+    }
+    get keys() {
+        return {
+            floID: this.querySelector('#generated_flo_address').value,
+            privKey: this.querySelector('#generated_private_key').value
+        }
+    }
+
+    generateKeys() {
+        const { floID, privKey } = floCrypto.generateNewID()
+        this.querySelector('#generated_flo_address').value = floID
+        this.querySelector('#generated_private_key').value = privKey
+    }
+    clearKeys() {
+        this.querySelector('#generated_flo_address').value = ''
+        this.querySelector('#generated_private_key').value = ''
+    }
+    connectedCallback() {
+        this.innerHTML = `
+                    <style>
+                        :host{
+                            display: flex;
+                            justify-content: center;
+                        }
+                        .generated-keys-wrapper {
+                            padding: 1rem;
+                            background-color: rgba(var(--foreground-color), 1);
+                            border-radius: 0.5rem;
+                        }
+                        #flo_id_warning{
+                            padding-bottom: 1.5rem;
+                        }
+                        #flo_id_warning .icon {
+                            height: 3rem;
+                            width: 3rem;
+                            padding: 0.8rem;
+                            overflow: visible;
+                            background-color: #ffc107;
+                            border-radius: 3rem;
+                            fill: rgba(0, 0, 0, 0.8);
+                        }
+                    </style>     
+                    <section class="grid gap-1-5">
+                        <div id="flo_id_warning" class="flex gap-1">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /> </svg>
+                            <div class="grid gap-0-5">
+                                <strong>
+                                    <h3> Keep your keys safe! </h3>
+                                </strong>
+                                <p>Don't share with anyone. Once lost private key can't be recovered.</p>
+                            </div>
+                        </div>
+                        <div class="grid gap-1-5 generated-keys-wrapper">
+                            <div class="grid gap-0-5">
+                                <h5>FLO address</h5>
+                                <sm-copy id="generated_flo_address"></sm-copy>
+                            </div>
+                            <div class="grid gap-0-5">
+                                <h5>Private key</h5>
+                                <sm-copy id="generated_private_key"></sm-copy>
+                            </div>
+                        </div>
+                        <button id="sign_up_button" class="button button--primary w-100">Sign in with these credentials</button>
+                        <p class="margin-top-1">You can use these FLO credentials with other RanchiMall apps too. </p>
+                    </section>
+                `
+    }
+});
+const adBlockerWarning = document.createElement('template')
+adBlockerWarning.innerHTML = `
+            <style>
+                * {
+                    padding: 0;
+                    margin: 0;
+                    box-sizing: border-box;
+                }
+                :host{
+                    display: flex;
+                    flex-direction: column;
+                    align-content: center;
+                    justify-content: center;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 50;
+                    background-color: rgba(var(--foreground-color), 1);
+                }
+                #adblocker_warning {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    gap: 1rem;
+                    padding: 1.5rem;
+                }
+                h1{
+                    font-size: 2rem;
+                    margin-top: 1rem;
+                }
+                p{
+                    font-size: 0.9rem;
+                    max-width: 65ch;
+                    line-height: 1.7;
+                    color: rgba(var(--text-color), 0.9);
+                }
+                .icon {
+                    height: 4rem;
+                    width: 4rem;
+                    fill: #ffc107;
+                }
+            </style>
+            <article id="adblocker_warning"></article>
+        `;
+window.customElements.define('adblocker-warning', class extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.appendChild(adBlockerWarning.content.cloneNode(true));
+    }
+    connectedCallback() {
+        const isBrave = navigator.brave !== undefined
+        this.shadowRoot.querySelector('#adblocker_warning').innerHTML = `
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z"/></svg>
+                    <h1>Ad-Blocker Detected!</h1>
+                    <p>
+                        Please disable your ad-blocker for optimal experience. Our app doesn't show ads or track activity.  
+                    </p>
+                    ${isBrave ? `<strong>If you have enabled Brave shield then disable it also.</strong>` : ''}
+                `;
+    }
+});
