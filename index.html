@@ -1598,9 +1598,9 @@
 
         //Checks for internet connection status
         if (!navigator.onLine)
-            floGlobals.connectionErrorNotifications.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+            floGlobals.connectionErrorNotifications.push(notify('There seems to be a problem connecting to the internet, Please check your internet connection.', 'error'))
         window.addEventListener('offline', () => {
-            floGlobals.connectionErrorNotifications.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+            floGlobals.connectionErrorNotifications.push(notify('There seems to be a problem connecting to the internet, Please check your internet connection.', 'error'))
         })
         window.addEventListener('online', () => {
             floGlobals.connectionErrorNotifications.forEach(notificationId => getRef('notification_drawer').remove(notificationId))
