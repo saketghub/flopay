@@ -182,15 +182,15 @@
 
     const util = tokenAPI.util = {};
 
-    util.parseTxData = function (txData) {
+     util.parseTxData = function (txData) {
         let parsedData = {};
         for (let p in txData.parsedFloData)
             parsedData[p] = txData.parsedFloData[p];
-        parsedData.sender = txData.transactionDetails.vin[0].addr;
-        for (let vout of txData.transactionDetails.vout)
+        parsedData.sender = txData.vin[0].addresses[0];
+        for (let vout of txData.vout)
             if (vout.scriptPubKey.addresses[0] !== parsedData.sender)
                 parsedData.receiver = vout.scriptPubKey.addresses[0];
-        parsedData.time = txData.transactionDetails.time;
+        parsedData.time = txData.time;
         return parsedData;
     }
 
