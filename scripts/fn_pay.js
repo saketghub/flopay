@@ -292,17 +292,25 @@ Cashier.checkIfTokenTxIsValid = function (tokenTxID, sender, amount) {
         floTokenAPI.getTx(tokenTxID).then(tx => {
             let parsedTxData = floTokenAPI.util.parseTxData(tx);
             console.debug(parsedTxData);
-            if (parsedTxData.type !== "transfer" || parsedTxData.transferType !== "token")
+            if (parsedTxData.type !== "transfer" || parsedTxData.transferType !== "token"){
+                debugger
                 reject([true, "Invalid token transfer type"]);
-            else if (parsedTxData.tokenAmount !== amount)
+            }
+            else if (parsedTxData.tokenAmount !== amount){
                 reject([true, "Incorrect token amount: " + parsedTxData.tokenAmount]);
-            else if (parsedTxData.tokenIdentification !== floGlobals.currency)
+            }
+            else if (parsedTxData.tokenIdentification !== floGlobals.currency){
                 reject([true, "Incorrect token: " + parsedTxData.tokenIdentification]);
-            else if (parsedTxData.sender !== sender)
+            }
+            else if (parsedTxData.sender !== sender){
                 reject([true, "Incorrect senderID: " + parsedTxData.sender]);
-            else if (parsedTxData.receiver !== myFloID)
+            }
+            else if (parsedTxData.receiver !== myFloID){
                 reject([true, "Incorrect receiverID: " + parsedTxData.receive])
-            else resolve(true);
+            }
+            else {
+                resolve(true);
+            }
         }).catch(error => reject([null, error]))
     })
 }
